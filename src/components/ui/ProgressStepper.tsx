@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { CheckCircle2, XCircle, Loader2, SkipForward, RefreshCw, Circle } from 'lucide-react';
 import type { StepStatus } from '../../types';
 
@@ -44,6 +45,15 @@ function stepDuration(step: Step): string | null {
 }
 
 export function ProgressStepper({ steps, currentStep }: ProgressStepperProps) {
+  // Tick every second so active-step durations update live
+  const hasActive = steps.some((s) => s.status === 'running' || s.status === 'retrying');
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!hasActive) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [hasActive]);
+
   const completedCount = steps.filter((s) => s.status === 'success').length;
   const totalCount = steps.filter((s) => s.status !== 'skipped').length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
@@ -76,7 +86,7 @@ export function ProgressStepper({ steps, currentStep }: ProgressStepperProps) {
               key={`${step.name}-${idx}`}
               className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 ${
                 isActive
-                  ? 'bg-primary-muted border border-primary/20 animate-glow-pulse'
+                  ? 'bg-primary-muted border border-primary/20'
                   : step.status === 'success'
                   ? 'bg-success-muted/30'
                   : step.status === 'failed'

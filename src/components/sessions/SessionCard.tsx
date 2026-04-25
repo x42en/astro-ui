@@ -88,7 +88,7 @@ export function SessionCard({ session, defaultPreset = 'standard', onProcess, on
         group relative bg-space-surface border rounded-lg p-5 flex flex-col gap-4
         hover:border-space-border-light hover:shadow-lg hover:shadow-black/20
         transition-all duration-200 cursor-pointer
-        ${isProcessing ? 'border-primary/30 shadow-[0_0_16px_rgba(99,102,241,0.08)]' : 'border-space-border'}
+        ${isProcessing ? 'border-primary/30' : 'border-space-border'}
       `}
       onClick={() => navigate(`/sessions/${session.id}`)}
       role="article"
