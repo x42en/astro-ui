@@ -66,9 +66,19 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
     ) {
       queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
     }
-    // Reload session on terminal events
-    if (evt.type === 'completed' || evt.type === 'cancelled' || evt.type === 'session_ready') {
-      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+
+    // Reload ALL session queries (lists in Sidebar/Dashboard + detail) on terminal events
+    const isTerminalError =
+      evt.type === 'error' &&
+      (!evt.retryable || evt.attempt >= evt.max_attempts);
+
+    if (
+      evt.type === 'completed' ||
+      evt.type === 'cancelled' ||
+      evt.type === 'session_ready' ||
+      isTerminalError
+    ) {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
     }
   };
 
@@ -130,10 +140,10 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
         </div>
       )}
 
-      {job.steps.length > 0 && (
-        <ProgressStepper
+      <ProgressStepper
           steps={job.steps.map((s) => ({
             name: s.step_name,
+            display_name: s.display_name,
             status: s.status,
             attempt_count: s.attempt_count,
             error_code: s.error_code,
@@ -142,7 +152,6 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
           }))}
           currentStep={job.current_step}
         />
-      )}
     </div>
   );
 }

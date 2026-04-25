@@ -41,7 +41,12 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
       setSessionJob(session.id, data.job_id);
       setSessionPreset(session.id, vars.preset);
       if (vars.profileId) setSessionProfileId(session.id, vars.profileId);
-      queryClient.invalidateQueries({ queryKey: ['sessions', session.id] });
+      // Optimistically set session status to 'processing' for immediate badge feedback
+      queryClient.setQueryData<SessionRead>(['sessions', session.id], (old) =>
+        old ? { ...old, status: 'processing' } : old
+      );
+      // Invalidate all session queries (lists in Sidebar/Dashboard + detail)
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
       addToast({ variant: 'info', title: 'Processing started', message: `Running ${vars.preset} pipeline` });
     },
     onError: (err: { message?: string }) => {
@@ -52,7 +57,7 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const cancelMutation = useMutation({
     mutationFn: () => cancelSession(session.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', session.id] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
       addToast({ variant: 'warning', title: 'Processing cancelled' });
     },
     onError: () => {

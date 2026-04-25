@@ -3,6 +3,7 @@ import type { StepStatus } from '../../types';
 
 export interface Step {
   name: string;
+  display_name?: string;
   status: StepStatus;
   attempt_count?: number;
   error_code?: string | null;
@@ -97,7 +98,7 @@ export function ProgressStepper({ steps, currentStep }: ProgressStepperProps) {
                     : 'text-text-muted'
                 }`}
               >
-                {step.name}
+                {step.display_name || step.name}
               </span>
               {step.attempt_count !== undefined && step.attempt_count > 1 && (
                 <span className="text-xs text-warning font-mono">

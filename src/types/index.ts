@@ -26,8 +26,9 @@ export interface SessionRead {
 }
 
 export interface JobStepRead {
-  id: string;
+  id: string | null;
   step_name: string;
+  display_name: string;
   step_index: number;
   status: StepStatus;
   attempt_count: number;
