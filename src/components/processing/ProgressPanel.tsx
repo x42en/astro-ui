@@ -57,13 +57,17 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
   const handleWsEvent = (evt: WsEvent) => {
     if (!isActive.current) return;
 
-    if (evt.type === 'job_status' && evt.job_id === jobId) {
+    // Reload job on any pipeline status change
+    if (
+      evt.type === 'completed' ||
+      evt.type === 'cancelled' ||
+      evt.type === 'step_status' ||
+      evt.type === 'error'
+    ) {
       queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
     }
-    if (evt.type === 'step_update') {
-      queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
-    }
-    if (evt.type === 'session_status') {
+    // Reload session on terminal events
+    if (evt.type === 'completed' || evt.type === 'cancelled' || evt.type === 'session_ready') {
       queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
     }
   };
