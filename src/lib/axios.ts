@@ -11,6 +11,15 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const { apiBaseUrl, apiKey, authEnabled } = useSettingsStore.getState();
   config.baseURL = apiBaseUrl;
+
+  // For multipart uploads (FormData), delete the instance-level Content-Type
+  // so XHR can set it automatically with the correct boundary string.
+  // Axios 1.x does NOT automatically remove the instance default for FormData
+  // in browser environments — this must be done explicitly.
+  if (config.data instanceof FormData) {
+    config.headers.delete('Content-Type');
+  }
+
   if (authEnabled && apiKey) {
     config.headers.Authorization = `Bearer ${apiKey}`;
   }

@@ -118,6 +118,8 @@ export function useUploadQueue() {
       const total = totalFileSize(currentFiles.map((f) => f.file));
 
       const updateFile = (id: string, patch: Partial<QueuedFile>) => {
+        // Keep filesRef in sync so the final allDone check reads correct statuses.
+        filesRef.current = filesRef.current.map((f) => (f.id === id ? { ...f, ...patch } : f));
         setState((prev) => ({
           ...prev,
           files: prev.files.map((f) => (f.id === id ? { ...f, ...patch } : f)),
