@@ -64,7 +64,10 @@ export async function uploadFileChunked(
     if (i === totalChunks - 1) headers['Upload-Finalize'] = 'true';
 
     const response = await api.post<UploadResult>('/sessions/upload', formData, {
-      headers: { ...headers, 'Content-Type': 'multipart/form-data' },
+      // Do NOT set Content-Type manually — the browser must set it automatically
+      // to include the multipart boundary (e.g. "multipart/form-data; boundary=----XYZ").
+      // Forcing it here strips the boundary and causes a 422 on the server.
+      headers,
       signal,
       // No timeout for uploads: large files on slow connections can take minutes.
       // The global axios timeout (30s) applies to API calls only, not file transfers.
