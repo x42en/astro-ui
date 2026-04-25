@@ -11,6 +11,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  # github.repository preserves the original casing (e.g. "BitsDiver/astro-ui").
+  # OCI registries require lowercase — use the lowercased form everywhere below.
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -38,6 +40,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME_LC=${IMAGE_NAME,,}" >> "$GITHUB_ENV"
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+
       - name: Build and push nightly image
         uses: docker/build-push-action@v5
         with:
@@ -45,14 +52,14 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           # Always overwrites the single `nightly` tag
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:nightly
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.ref.name=${{ inputs.branch }}
           build-args: |
-            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'http://localhost:8080/api/v1' }}
-            VITE_WS_BASE_URL=${{ vars.VITE_WS_BASE_URL || 'ws://localhost:8080/ws' }}
+            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
+            VITE_WS_BASE_URL=${{ vars.VITE_WS_BASE_URL }}
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
           cache-from: type=gha

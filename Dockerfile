@@ -8,9 +8,11 @@ RUN npm ci --ignore-scripts
 
 COPY . .
 
-# Build-time variables injected by docker build --build-arg or GitHub Actions
-ARG VITE_API_BASE_URL=http://127.0.0.1:8080/api/v1
-ARG VITE_WS_BASE_URL=ws://127.0.0.1:8080/ws
+# Build-time variables injected by docker build --build-arg or GitHub Actions.
+# Defaults are intentionally empty so that the runtime fallback in settingsStore.ts
+# (relative /api/v1 URL) takes effect when no explicit value is passed at build time.
+ARG VITE_API_BASE_URL=
+ARG VITE_WS_BASE_URL=
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 
