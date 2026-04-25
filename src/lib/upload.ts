@@ -1,6 +1,8 @@
 import api from './axios';
 
-const CHUNK_SIZE = 5 * 1024 * 1024;
+// 10 MB chunks: each 8 MB FITS file fits in a single chunk (150 files → 150 requests).
+// Increasing beyond the file size has no drawback — the last chunk is always smaller.
+const CHUNK_SIZE = 10 * 1024 * 1024;
 
 export type FrameType = 'lights' | 'darks' | 'flats' | 'bias';
 
@@ -64,6 +66,9 @@ export async function uploadFileChunked(
     const response = await api.post<UploadResult>('/sessions/upload', formData, {
       headers: { ...headers, 'Content-Type': 'multipart/form-data' },
       signal,
+      // No timeout for uploads: large files on slow connections can take minutes.
+      // The global axios timeout (30s) applies to API calls only, not file transfers.
+      timeout: 0,
       onUploadProgress: (evt) => {
         if (onProgress && evt.total) {
           const totalLoaded = i * CHUNK_SIZE + evt.loaded;
