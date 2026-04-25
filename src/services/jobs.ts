@@ -1,4 +1,5 @@
 import api from '../lib/axios';
+import { useSettingsStore } from '../store/settingsStore';
 import type { JobRead } from '../types';
 
 export async function getJob(jobId: string): Promise<JobRead> {
@@ -7,12 +8,12 @@ export async function getJob(jobId: string): Promise<JobRead> {
 }
 
 export function getPreviewUrl(jobId: string): string {
-  const base = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+  const base = useSettingsStore.getState().apiBaseUrl;
   return `${base}/jobs/${jobId}/output/preview`;
 }
 
 export function getFitsDownloadUrl(jobId: string): string {
-  const base = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+  const base = useSettingsStore.getState().apiBaseUrl;
   return `${base}/jobs/${jobId}/output/fits`;
 }
 

@@ -46,7 +46,7 @@ export function useWebSocket({ sessionId, onEvent, enabled = true }: UseWebSocke
     disconnect();
 
     const wsBase = useSettingsStore.getState().wsBaseUrl;
-    const url = `${wsBase}?session_id=${sessionId}`;
+    const url = `${wsBase}/sessions/${sessionId}`;
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
