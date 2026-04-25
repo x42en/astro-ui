@@ -58,8 +58,8 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.ref.name=${{ inputs.branch }}
           build-args: |
-            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'http://127.0.0.1:8080/api/v1' }}
-            VITE_WS_BASE_URL=${{ vars.VITE_WS_BASE_URL || 'ws://127.0.0.1:8080/ws' }}
+            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
+            VITE_WS_BASE_URL=${{ vars.VITE_WS_BASE_URL }}
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
           cache-from: type=gha

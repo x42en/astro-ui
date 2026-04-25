@@ -33,8 +33,9 @@ const DEFAULTS: AppSettings = {
   // Relative URL — works regardless of the domain the app is served from.
   // Traefik routes /api/** to the backend container automatically.
   // Override at runtime via the Settings page or set VITE_API_BASE_URL at build time.
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api/v1',
-  wsBaseUrl: getDefaultWsUrl(),
+  // Use || rather than ?? so that an empty-string build arg falls through to the default.
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+  wsBaseUrl: import.meta.env.VITE_WS_BASE_URL || getDefaultWsUrl(),
   apiKey: '',
   authEnabled: false,
   inboxPath: '/data/inbox',
