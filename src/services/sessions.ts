@@ -1,0 +1,51 @@
+import api from '../lib/axios';
+import type { SessionRead, PaginatedResponse, ProfilePreset } from '../types';
+
+export interface SessionCreate {
+  name: string;
+  object_name?: string;
+  inbox_path?: string;
+}
+
+export async function createSession(data: SessionCreate): Promise<SessionRead> {
+  const response = await api.post<SessionRead>('/sessions', data);
+  return response.data;
+}
+
+export interface SessionListParams {
+  page?: number;
+  page_size?: number;
+  status?: string;
+  search?: string;
+}
+
+export async function listSessions(
+  params: SessionListParams = {}
+): Promise<PaginatedResponse<SessionRead>> {
+  const response = await api.get<PaginatedResponse<SessionRead>>('/sessions', { params });
+  return response.data;
+}
+
+export async function getSession(sessionId: string): Promise<SessionRead> {
+  const response = await api.get<SessionRead>(`/sessions/${sessionId}`);
+  return response.data;
+}
+
+export async function startProcessing(
+  sessionId: string,
+  preset: ProfilePreset,
+  profileId?: string
+): Promise<{ job_id: string }> {
+  const params: Record<string, string> = { preset };
+  if (profileId) params.profile_id = profileId;
+  const response = await api.post<{ job_id: string }>(
+    `/sessions/${sessionId}/process`,
+    null,
+    { params }
+  );
+  return response.data;
+}
+
+export async function cancelSession(sessionId: string): Promise<void> {
+  await api.post(`/sessions/${sessionId}/cancel`);
+}
