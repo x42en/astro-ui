@@ -13,7 +13,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
-import { startProcessing, cancelSession } from '../../services/sessions';
+import { startProcessing, cancelSession, getLightPreviewUrl } from '../../services/sessions';
 import { listProfiles } from '../../services/profiles';
 import { getPreviewUrl } from '../../services/jobs';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
@@ -48,7 +48,9 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const [selectedProfileId, setSelectedProfileId] = useState<string>(
     profileIdsBySession[session.id] ?? '',
   );
-  const [livePreviewUrl, setLivePreviewUrl] = useState<string | null>(null);
+  const [livePreviewUrl, setLivePreviewUrl] = useState<string | null>(
+    () => getLightPreviewUrl(session.id),
+  );
 
   const { data: profiles = [] } = useQuery({
     queryKey: ['profiles'],

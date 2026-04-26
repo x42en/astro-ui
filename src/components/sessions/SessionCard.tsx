@@ -4,6 +4,7 @@ import { StatusBadge } from '../ui/StatusBadge';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { useUiStore } from '../../store/uiStore';
 import { useSettingsStore } from '../../store/settingsStore';
+import { getLightPreviewUrl } from '../../services/sessions';
 import type { SessionRead } from '../../types';
 
 function formatDate(iso: string): string {
@@ -40,6 +41,18 @@ export function SessionCard({ session }: SessionCardProps) {
         sessionId={session.id}
         className="absolute inset-0 w-full h-full transition-transform duration-700 group-hover:scale-105"
       />
+
+      {/* Light-frame preview — shown for non-completed sessions (hides on 404) */}
+      {!isRendered && (
+        <img
+          src={getLightPreviewUrl(session.id)}
+          alt={session.name}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = 'none';
+          }}
+        />
+      )}
 
       {/* Real thumbnail on top when completed */}
       {isRendered && (
