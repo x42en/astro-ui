@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { getJob } from '../../services/jobs';
+import { useSettingsStore } from '../../store/settingsStore';
 import type { WsEvent } from '../../types/websocket';
 import type { JobRead, StepStatus } from '../../types';
 
@@ -90,8 +91,10 @@ export function ProgressPanel({ jobId, sessionId, onPreviewUpdate }: ProgressPan
   const handleWsEvent = (evt: WsEvent) => {
     if (!isActive.current) return;
 
-    if (evt.type === 'step_status' && evt.status === 'success' && evt.result?.preview_url) {
-      onPreviewUpdate?.(evt.result.preview_url as string);
+    if (evt.type === 'step_status' && evt.status === 'success' && evt.result?.has_preview) {
+      const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
+      const url = `${base}/sessions/${sessionId}/step-preview/${evt.step}`;
+      onPreviewUpdate?.(url);
     }
 
     if (
