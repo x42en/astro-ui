@@ -85,9 +85,7 @@ export function ProgressStepper({ steps, currentStep }: ProgressStepperProps) {
             <div
               key={`${step.name}-${idx}`}
               className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 ${
-                isActive
-                  ? 'bg-primary-muted border border-primary/20'
-                  : step.status === 'success'
+                step.status === 'success'
                   ? 'bg-success-muted/30'
                   : step.status === 'failed'
                   ? 'bg-error-muted/30'

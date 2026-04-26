@@ -123,13 +123,6 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
         </div>
       </div>
 
-      {job.current_step && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-primary-muted border border-primary/20 rounded-md">
-          <span className="text-xs text-text-secondary">Current:</span>
-          <span className="text-xs font-mono text-primary">{job.current_step}</span>
-        </div>
-      )}
-
       {job.error_code && (
         <div className="flex items-start gap-2 px-3 py-2.5 bg-error-muted border border-error/20 rounded-md">
           <AlertCircle size={14} className="text-error flex-shrink-0 mt-0.5" />
