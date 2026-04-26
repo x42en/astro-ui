@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { StatusBadge } from '../ui/StatusBadge';
+import { useUiStore } from '../../store/uiStore';
 import type { SessionRead, ProfilePreset } from '../../types';
 
 const PRESET_LABELS: Record<Exclude<ProfilePreset, 'advanced'>, { label: string; icon: React.ElementType; color: string }> = {
@@ -65,11 +66,15 @@ interface SessionCardProps {
 
 export function SessionCard({ session, defaultPreset = 'standard', onProcess, onCancel }: SessionCardProps) {
   const navigate = useNavigate();
+  const jobStatusBySession = useUiStore((s) => s.jobStatusBySession);
   const isProcessing = session.status === 'processing';
   const canProcess =
     session.status === 'ready' ||
     session.status === 'completed' ||
     session.status === 'failed';
+
+  // Show live job status (from broadcast WS) when available; fall back to session status
+  const liveStatus = jobStatusBySession[session.id] ?? session.status;
 
   const safePreset: Exclude<ProfilePreset, 'advanced'> =
     defaultPreset === 'advanced' ? 'standard' : defaultPreset;
@@ -88,7 +93,7 @@ export function SessionCard({ session, defaultPreset = 'standard', onProcess, on
         group relative bg-space-surface border rounded-lg p-5 flex flex-col gap-4
         hover:border-space-border-light hover:shadow-lg hover:shadow-black/20
         transition-all duration-200 cursor-pointer
-        ${isProcessing ? 'border-primary/30 shadow-[0_0_16px_rgba(99,102,241,0.08)]' : 'border-space-border'}
+        ${isProcessing ? 'border-primary/30' : 'border-space-border'}
       `}
       onClick={() => navigate(`/sessions/${session.id}`)}
       role="article"
@@ -119,7 +124,7 @@ export function SessionCard({ session, defaultPreset = 'standard', onProcess, on
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <StatusBadge status={session.status} />
+          <StatusBadge status={liveStatus as any} />
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button

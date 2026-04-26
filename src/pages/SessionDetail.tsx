@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
@@ -72,6 +73,8 @@ function formatDateTime(iso: string): string {
 export function SessionDetail() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
+  const processingPanelRef = useRef<HTMLDivElement>(null);
+  const prevJobStatus = useRef<string | undefined>(undefined);
 
   const jobsBySession = useUiStore((s) => s.jobsBySession);
   const jobId = sessionId ? jobsBySession[sessionId] : undefined;
@@ -92,6 +95,14 @@ export function SessionDetail() {
       return false;
     },
   });
+
+  // Auto-scroll to the processing panel when the job transitions to completed
+  useEffect(() => {
+    if (activeJob?.status === 'completed' && prevJobStatus.current === 'running') {
+      processingPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    prevJobStatus.current = activeJob?.status;
+  }, [activeJob?.status]);
 
   if (isLoading || !session) {
     return (
@@ -206,7 +217,7 @@ export function SessionDetail() {
         </div>
 
         <div className="lg:col-span-3">
-          <div className="bg-space-surface border border-space-border rounded-lg p-5 h-full">
+          <div ref={processingPanelRef} className="bg-space-surface border border-space-border rounded-lg p-5 h-full">
             <ProcessingPanel
               session={session}
               activeJob={activeJob ?? null}

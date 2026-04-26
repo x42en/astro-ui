@@ -41,16 +41,21 @@ export function useUploadQueue() {
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Synchronous ref mirror of state.files — always up to date even inside async functions.
+  // React 18 automatic batching makes setState updaters asynchronous outside event handlers,
+  // so reading state.files from inside startUpload (async) would always return the initial [].
+  const filesRef = useRef<QueuedFile[]>([]);
 
   const addFiles = useCallback((newFiles: File[], frameType: FrameType) => {
+    const queued: QueuedFile[] = newFiles.map((file) => ({
+      id: nextId(),
+      file,
+      frameType,
+      status: 'queued',
+      progress: 0,
+    }));
+    filesRef.current = [...filesRef.current, ...queued];
     setState((prev) => {
-      const queued: QueuedFile[] = newFiles.map((file) => ({
-        id: nextId(),
-        file,
-        frameType,
-        status: 'queued',
-        progress: 0,
-      }));
       const nextFiles = [...prev.files, ...queued];
       return {
         ...prev,
@@ -61,6 +66,7 @@ export function useUploadQueue() {
   }, []);
 
   const removeFile = useCallback((id: string) => {
+    filesRef.current = filesRef.current.filter((f) => f.id !== id);
     setState((prev) => {
       const nextFiles = prev.files.filter((f) => f.id !== id);
       return {
@@ -73,6 +79,7 @@ export function useUploadQueue() {
 
   const reset = useCallback(() => {
     abortControllerRef.current?.abort();
+    filesRef.current = [];
     setState({
       files: [],
       phase: 'idle',
@@ -105,16 +112,14 @@ export function useUploadQueue() {
       let resolvedSessionId: string | null = null;
       let cumulativeBytes = 0;
 
-      const snapshot = (): QueuedFile[] => {
-        let result: QueuedFile[] = [];
-        setState((prev) => { result = prev.files; return prev; });
-        return result;
-      };
-
-      const currentFiles = snapshot();
+      // Read the current file list synchronously from the ref.
+      // (setState updaters cannot be used as synchronous reads in async functions.)
+      const currentFiles = filesRef.current;
       const total = totalFileSize(currentFiles.map((f) => f.file));
 
       const updateFile = (id: string, patch: Partial<QueuedFile>) => {
+        // Keep filesRef in sync so the final allDone check reads correct statuses.
+        filesRef.current = filesRef.current.map((f) => (f.id === id ? { ...f, ...patch } : f));
         setState((prev) => ({
           ...prev,
           files: prev.files.map((f) => (f.id === id ? { ...f, ...patch } : f)),
@@ -178,7 +183,7 @@ export function useUploadQueue() {
       }
 
       if (!controller.signal.aborted) {
-        const allDone = snapshot().every((f) => f.status === 'done');
+        const allDone = filesRef.current.every((f) => f.status === 'done');
         setState((prev) => ({
           ...prev,
           phase: allDone ? 'done' : 'error',

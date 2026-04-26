@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, AlertCircle } from 'lucide-react';
+import { Clock, AlertCircle, Eye } from 'lucide-react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { getJob } from '../../services/jobs';
 import { ProgressStepper } from '../ui/ProgressStepper';
@@ -41,6 +41,7 @@ interface ProgressPanelProps {
 export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
   const queryClient = useQueryClient();
   const isActive = useRef(true);
+  const [stepPreviews, setStepPreviews] = useState<Record<string, string>>({});
 
   const { data: job, isLoading } = useQuery<JobRead>({
     queryKey: ['jobs', jobId],
@@ -57,6 +58,14 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
   const handleWsEvent = (evt: WsEvent) => {
     if (!isActive.current) return;
 
+    // Capture per-step preview URLs as they arrive
+    if (evt.type === 'step_status' && evt.status === 'success' && evt.result?.preview_url) {
+      setStepPreviews((prev) => ({
+        ...prev,
+        [evt.step]: evt.result!.preview_url as string,
+      }));
+    }
+
     // Reload job on any pipeline status change
     if (
       evt.type === 'completed' ||
@@ -66,9 +75,19 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
     ) {
       queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
     }
-    // Reload session on terminal events
-    if (evt.type === 'completed' || evt.type === 'cancelled' || evt.type === 'session_ready') {
-      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+
+    // Reload ALL session queries (lists in Sidebar/Dashboard + detail) on terminal events
+    const isTerminalError =
+      evt.type === 'error' &&
+      (!evt.retryable || evt.attempt >= evt.max_attempts);
+
+    if (
+      evt.type === 'completed' ||
+      evt.type === 'cancelled' ||
+      evt.type === 'session_ready' ||
+      isTerminalError
+    ) {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
     }
   };
 
@@ -113,13 +132,6 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
         </div>
       </div>
 
-      {job.current_step && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-primary-muted border border-primary/20 rounded-md">
-          <span className="text-xs text-text-secondary">Current:</span>
-          <span className="text-xs font-mono text-primary">{job.current_step}</span>
-        </div>
-      )}
-
       {job.error_code && (
         <div className="flex items-start gap-2 px-3 py-2.5 bg-error-muted border border-error/20 rounded-md">
           <AlertCircle size={14} className="text-error flex-shrink-0 mt-0.5" />
@@ -130,10 +142,10 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
         </div>
       )}
 
-      {job.steps.length > 0 && (
-        <ProgressStepper
+      <ProgressStepper
           steps={job.steps.map((s) => ({
             name: s.step_name,
+            display_name: s.display_name,
             status: s.status,
             attempt_count: s.attempt_count,
             error_code: s.error_code,
@@ -142,7 +154,28 @@ export function ProgressPanel({ jobId, sessionId }: ProgressPanelProps) {
           }))}
           currentStep={job.current_step}
         />
-      )}
+
+      {/* Live step preview — updated after each completed step */}
+      {Object.keys(stepPreviews).length > 0 && (() => {
+        const latestStep = Object.keys(stepPreviews).at(-1)!;
+        const previewUrl = stepPreviews[latestStep];
+        return (
+          <div className="rounded-md overflow-hidden border border-space-border bg-space-surface animate-fade-in">
+            <div className="px-3 py-2 border-b border-space-border flex items-center gap-1.5">
+              <Eye size={11} className="text-text-muted" />
+              <span className="text-xs font-medium text-text-secondary">
+                Step preview — <span className="font-mono text-text-muted">{latestStep}</span>
+              </span>
+            </div>
+            <img
+              src={previewUrl}
+              alt={`Preview after ${latestStep}`}
+              className="w-full object-cover max-h-56"
+              loading="lazy"
+            />
+          </div>
+        );
+      })()}
     </div>
   );
 }

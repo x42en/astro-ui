@@ -68,6 +68,12 @@ export interface WsSessionReadyEvent extends WsBaseEvent {
   input_format: string;
 }
 
+export interface WsSessionStatusEvent extends WsBaseEvent {
+  type: 'session_status';
+  new_status: string;
+  job_status: string | null;
+}
+
 export type WsEvent =
   | WsProgressEvent
   | WsLogEvent
@@ -76,4 +82,5 @@ export type WsEvent =
   | WsCompletedEvent
   | WsCancelledEvent
   | WsSessionDetectedEvent
-  | WsSessionReadyEvent;
+  | WsSessionReadyEvent
+  | WsSessionStatusEvent;
