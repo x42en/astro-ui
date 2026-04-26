@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Eye, FileImage, Database, CheckCircle2 } from 'lucide-react';
+import { Download, FileImage, Database, CheckCircle2 } from 'lucide-react';
 import { downloadPreview, downloadFits, getPreviewUrl } from '../../services/jobs';
 import { useUiStore } from '../../store/uiStore';
 import type { JobRead } from '../../types';
@@ -21,7 +21,6 @@ function triggerDownload(blob: Blob, filename: string) {
 
 export function OutputActions({ job }: OutputActionsProps) {
   const addToast = useUiStore((s) => s.addToast);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [downloading, setDownloading] = useState<'preview' | 'fits' | null>(null);
 
   const handleDownloadPreview = async () => {
@@ -66,54 +65,41 @@ export function OutputActions({ job }: OutputActionsProps) {
 
       {job.output_preview_path && (
         <div className="rounded-md overflow-hidden border border-space-border bg-space-surface">
-          <div className="px-3 py-2 border-b border-space-border flex items-center justify-between">
-            <span className="text-xs font-medium text-text-secondary">Preview</span>
-            <button
-              type="button"
-              onClick={() => setPreviewOpen(!previewOpen)}
-              className="text-xs text-primary hover:text-primary-hover transition-colors flex items-center gap-1"
-            >
-              <Eye size={12} />
-              {previewOpen ? 'Hide' : 'Show'}
-            </button>
-          </div>
-          {previewOpen && (
-            <img
-              src={getPreviewUrl(job.id)}
-              alt="Processing preview"
-              className="w-full object-cover max-h-64"
-            />
-          )}
+          <img
+            src={getPreviewUrl(job.id)}
+            alt="Final render preview"
+            className="w-full object-cover"
+          />
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="flex items-center gap-2 justify-end">
         <button
           type="button"
           onClick={handleDownloadPreview}
           disabled={downloading !== null || !job.output_preview_path}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-space-elevated border border-space-border hover:border-accent/40 rounded-md text-sm font-medium text-text-secondary hover:text-text-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-muted hover:text-text-secondary border border-space-border hover:border-space-border-light rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {downloading === 'preview' ? (
-            <Download size={14} className="animate-bounce" />
+            <Download size={12} className="animate-bounce" />
           ) : (
-            <FileImage size={14} className="text-accent" />
+            <FileImage size={12} className="text-accent" />
           )}
-          JPEG Preview
+          JPEG
         </button>
 
         <button
           type="button"
           onClick={handleDownloadFits}
           disabled={downloading !== null || !job.output_fits_path}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-hover text-white rounded-md text-sm font-medium transition-all duration-150 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-muted hover:text-text-secondary border border-space-border hover:border-space-border-light rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {downloading === 'fits' ? (
-            <Download size={14} className="animate-bounce" />
+            <Download size={12} className="animate-bounce" />
           ) : (
-            <Database size={14} />
+            <Database size={12} />
           )}
-          Download FITS
+          FITS
         </button>
       </div>
     </div>

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { StatusBadge } from '../ui/StatusBadge';
+import { useUiStore } from '../../store/uiStore';
 import type { SessionRead, ProfilePreset } from '../../types';
 
 const PRESET_LABELS: Record<Exclude<ProfilePreset, 'advanced'>, { label: string; icon: React.ElementType; color: string }> = {
@@ -65,11 +66,15 @@ interface SessionCardProps {
 
 export function SessionCard({ session, defaultPreset = 'standard', onProcess, onCancel }: SessionCardProps) {
   const navigate = useNavigate();
+  const jobStatusBySession = useUiStore((s) => s.jobStatusBySession);
   const isProcessing = session.status === 'processing';
   const canProcess =
     session.status === 'ready' ||
     session.status === 'completed' ||
     session.status === 'failed';
+
+  // Show live job status (from broadcast WS) when available; fall back to session status
+  const liveStatus = jobStatusBySession[session.id] ?? session.status;
 
   const safePreset: Exclude<ProfilePreset, 'advanced'> =
     defaultPreset === 'advanced' ? 'standard' : defaultPreset;
@@ -119,7 +124,7 @@ export function SessionCard({ session, defaultPreset = 'standard', onProcess, on
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <StatusBadge status={session.status} />
+          <StatusBadge status={liveStatus as any} />
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button

@@ -40,6 +40,9 @@ interface UiStore {
   jobsBySession: Record<string, string>;
   setSessionJob: (sessionId: string, jobId: string) => void;
 
+  jobStatusBySession: Record<string, string>;
+  setJobStatus: (sessionId: string, status: string) => void;
+
   presetsBySession: Record<string, ProfilePreset>;
   setSessionPreset: (sessionId: string, preset: ProfilePreset) => void;
 
@@ -79,6 +82,10 @@ export const useUiStore = create<UiStore>()(
       jobsBySession: {},
       setSessionJob: (sessionId, jobId) =>
         set((s) => ({ jobsBySession: { ...s.jobsBySession, [sessionId]: jobId } })),
+
+      jobStatusBySession: {},
+      setJobStatus: (sessionId, status) =>
+        set((s) => ({ jobStatusBySession: { ...s.jobStatusBySession, [sessionId]: status } })),
 
       presetsBySession: {},
       setSessionPreset: (sessionId, preset) =>

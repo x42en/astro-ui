@@ -41,7 +41,7 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
     className: 'bg-primary-muted text-primary border-primary/30',
   },
   completed: {
-    label: 'Completed',
+    label: 'Rendered',
     icon: CheckCircle2,
     className: 'bg-success-muted text-success border-success/30',
   },
