@@ -38,7 +38,7 @@ export default {
           secondary: '#888888',
           muted: '#555555',
         },
-      }
+      },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
