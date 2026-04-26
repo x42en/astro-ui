@@ -98,6 +98,7 @@ export function ProfileEditor() {
   const showForm = isCreating || selectedId !== null;
 
   return (
+    <div className="p-6 lg:p-8 max-w-screen-2xl mx-auto animate-fade-in">
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -200,6 +201,7 @@ export function ProfileEditor() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

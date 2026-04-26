@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Sun,
   Moon,
@@ -21,7 +21,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useUploadQueue } from '../../hooks/useUploadQueue';
 import { isValidAstroFile, formatFileSize, totalFileSize } from '../../lib/upload';
 import { useUiStore } from '../../store/uiStore';
-import { PresetSelector } from '../ui/PresetSelector';
+import { startProcessing } from '../../services/sessions';
 import type { FrameType } from '../../lib/upload';
 import type { QueuedFile } from '../../hooks/useUploadQueue';
 import type { ProfilePreset } from '../../types';
@@ -72,8 +72,14 @@ const CATEGORIES: FrameCategory[] = [
   },
 ];
 
-function StepIndicator({ current, total }: { current: number; total: number }) {
-  const labels = ['Session info', 'Frame files', 'Processing profile'];
+const PRESETS: Array<{ value: Exclude<ProfilePreset, 'advanced'>; label: string; desc: string }> = [
+  { value: 'quick', label: 'Quick', desc: '~2 min · Minimal AI' },
+  { value: 'standard', label: 'Standard', desc: '~8 min · Balanced' },
+  { value: 'quality', label: 'Quality', desc: '~20 min · Full AI' },
+];
+
+function StepIndicator({ current }: { current: number }) {
+  const labels = ['Session & profile', 'Upload frames'];
   return (
     <div className="flex items-center gap-1 px-6 py-3 border-b border-space-border/60 bg-space-bg/40">
       {labels.map((label, i) => {
@@ -88,8 +94,8 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
                   isDone
                     ? 'bg-success text-white'
                     : isActive
-                    ? 'bg-primary text-white'
-                    : 'bg-space-elevated border border-space-border text-text-muted'
+                      ? 'bg-primary text-white'
+                      : 'bg-space-elevated border border-space-border text-text-muted'
                 }`}
               >
                 {isDone ? <CheckCircle2 size={11} /> : step}
@@ -102,7 +108,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
                 {label}
               </span>
             </div>
-            {i < total - 1 && (
+            {i < labels.length - 1 && (
               <ChevronRight size={13} className="text-text-muted mx-2 flex-shrink-0" />
             )}
           </div>
@@ -166,8 +172,8 @@ function MiniDropZone({
             dragging
               ? 'border-accent/60 bg-accent-muted scale-[1.01]'
               : disabled
-              ? 'border-space-border/50 opacity-50 cursor-not-allowed'
-              : `${category.borderColor} bg-space-elevated hover:bg-space-border/20`
+                ? 'border-space-border/50 opacity-50 cursor-not-allowed'
+                : `${category.borderColor} bg-space-elevated hover:bg-space-border/20`
           }
         `}
         onClick={() =>
@@ -290,7 +296,7 @@ function UploadProgressView({
   return (
     <div className="space-y-5 py-2">
       <div className="text-center space-y-1">
-        <p className="text-sm font-semibold text-text-primary">Uploading files…</p>
+        <p className="text-sm font-semibold text-text-primary">Uploading frames…</p>
         <p className="text-xs text-text-muted truncate max-w-xs mx-auto">{sessionName}</p>
       </div>
 
@@ -339,9 +345,7 @@ function UploadProgressView({
       {state.currentFileName && (
         <div className="flex items-center gap-2 px-3 py-2 bg-space-elevated rounded-md border border-space-border">
           <Loader2 size={12} className="text-primary animate-spin flex-shrink-0" />
-          <span className="text-xs text-text-muted font-mono truncate">
-            {state.currentFileName}
-          </span>
+          <span className="text-xs text-text-muted font-mono truncate">{state.currentFileName}</span>
         </div>
       )}
 
@@ -357,102 +361,20 @@ function UploadProgressView({
   );
 }
 
-function DoneView({
-  state,
-  sessionName,
-  onOpenSession,
-  onClose,
-}: {
-  state: ReturnType<typeof useUploadQueue>['state'];
-  sessionName: string;
-  onOpenSession: () => void;
-  onClose: () => void;
-}) {
-  const totalFiles = state.files.length;
-  const bytes = totalFileSize(state.files.map((f) => f.file));
-  const errors = state.files.filter((f) => f.status === 'error').length;
-
-  if (state.phase === 'cancelled') {
-    return (
-      <div className="space-y-4 py-4 text-center">
-        <div className="w-12 h-12 rounded-full bg-space-elevated border border-space-border flex items-center justify-center mx-auto">
-          <Ban size={20} className="text-text-muted" />
-        </div>
-        <p className="text-sm font-semibold text-text-primary">Upload cancelled</p>
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 bg-space-elevated border border-space-border text-text-secondary hover:text-text-primary rounded-md text-sm transition-all"
-        >
-          Close
-        </button>
-      </div>
-    );
-  }
-
+// Auto-start overlay shown after upload completes
+function AutoStartView({ sessionName }: { sessionName: string }) {
   return (
-    <div className="space-y-5 py-2 text-center">
-      <div className="flex flex-col items-center gap-3">
-        <div
-          className={`w-14 h-14 rounded-full flex items-center justify-center ${
-            errors > 0
-              ? 'bg-warning-muted border border-warning/30'
-              : 'bg-success-muted border border-success/30'
-          }`}
-        >
-          <CheckCircle2 size={24} className={errors > 0 ? 'text-warning' : 'text-success'} />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-text-primary">
-            {errors > 0 ? 'Upload completed with errors' : 'Session created successfully'}
-          </p>
-          <p className="text-xs text-text-muted mt-0.5 truncate max-w-xs mx-auto">
-            {sessionName}
-          </p>
-        </div>
+    <div className="space-y-4 py-6 text-center">
+      <div className="w-12 h-12 rounded-full bg-success-muted border border-success/30 flex items-center justify-center mx-auto">
+        <CheckCircle2 size={22} className="text-success" />
       </div>
-
-      <div className="grid grid-cols-3 gap-2">
-        <div className="bg-space-elevated border border-space-border rounded-md py-2">
-          <p className="text-base font-bold font-mono text-text-primary">{totalFiles - errors}</p>
-          <p className="text-xs text-text-muted">Uploaded</p>
-        </div>
-        <div className="bg-space-elevated border border-space-border rounded-md py-2">
-          <p className="text-base font-bold font-mono text-text-primary">
-            {formatFileSize(bytes)}
-          </p>
-          <p className="text-xs text-text-muted">Total size</p>
-        </div>
-        <div
-          className={`rounded-md py-2 border ${
-            errors > 0 ? 'bg-error-muted border-error/20' : 'bg-success-muted border-success/20'
-          }`}
-        >
-          <p className={`text-base font-bold font-mono ${errors > 0 ? 'text-error' : 'text-success'}`}>
-            {errors}
-          </p>
-          <p className="text-xs text-text-muted">Errors</p>
-        </div>
+      <div>
+        <p className="text-sm font-semibold text-text-primary">Upload complete</p>
+        <p className="text-xs text-text-muted mt-0.5 truncate max-w-xs mx-auto">{sessionName}</p>
       </div>
-
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-1 px-4 py-2 border border-space-border text-text-muted hover:text-text-secondary hover:bg-space-elevated rounded-md text-sm transition-all"
-        >
-          Close
-        </button>
-        {state.sessionId && (
-          <button
-            type="button"
-            onClick={onOpenSession}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md text-sm font-medium transition-all"
-          >
-            Open Session
-            <ArrowRight size={14} />
-          </button>
-        )}
+      <div className="flex items-center justify-center gap-2 text-xs text-text-muted">
+        <Loader2 size={12} className="animate-spin" />
+        Starting processing…
       </div>
     </div>
   );
@@ -466,24 +388,57 @@ interface CreateSessionModalProps {
 export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { addToast, selectedPreset, setSessionPreset } = useUiStore();
+  const { addToast, selectedPreset, setSessionPreset, setSessionJob } = useUiStore();
 
   const [step, setStep] = useState(1);
   const [sessionName, setSessionName] = useState('');
   const [objectName, setObjectName] = useState('');
-  const [chosenPreset, setChosenPreset] = useState<ProfilePreset>(selectedPreset);
+  const [chosenPreset, setChosenPreset] = useState<Exclude<ProfilePreset, 'advanced'>>(
+    selectedPreset === 'advanced' ? 'standard' : selectedPreset,
+  );
+
+  const alreadyStarted = useRef(false);
 
   const { state, addFiles, removeFile, startUpload, cancel, reset, filesByType } =
     useUploadQueue();
 
+  // Auto-start mutation
+  const startMutation = useMutation({
+    mutationFn: (sessionId: string) => startProcessing(sessionId, chosenPreset),
+    onSuccess: (data, sessionId) => {
+      setSessionJob(sessionId, data.job_id);
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      navigate(`/sessions/${sessionId}`);
+      onOpenChange(false);
+      setTimeout(() => {
+        reset();
+        alreadyStarted.current = false;
+      }, 300);
+    },
+    onError: (_err, sessionId) => {
+      addToast({
+        variant: 'warning',
+        title: 'Upload complete',
+        message: 'Could not auto-start — open the session to start manually.',
+      });
+      navigate(`/sessions/${sessionId}`);
+      onOpenChange(false);
+      setTimeout(() => {
+        reset();
+        alreadyStarted.current = false;
+      }, 300);
+    },
+  });
+
+  // Trigger auto-start when upload finishes
   useEffect(() => {
-    if (
-      (state.phase === 'done' || state.phase === 'error') &&
-      state.sessionId
-    ) {
+    if (state.phase === 'done' && state.sessionId && !alreadyStarted.current) {
+      alreadyStarted.current = true;
       setSessionPreset(state.sessionId, chosenPreset);
+      startMutation.mutate(state.sessionId);
     }
-  }, [state.phase, state.sessionId, chosenPreset, setSessionPreset]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.phase, state.sessionId]);
 
   const handleClose = useCallback(() => {
     if (state.phase === 'uploading') return;
@@ -493,18 +448,9 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
       setSessionName('');
       setObjectName('');
       setStep(1);
-      setChosenPreset(selectedPreset);
+      alreadyStarted.current = false;
     }, 300);
-  }, [state.phase, onOpenChange, reset, selectedPreset]);
-
-  const handleOpenSession = useCallback(() => {
-    if (state.sessionId) {
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      navigate(`/sessions/${state.sessionId}`);
-      onOpenChange(false);
-      setTimeout(reset, 300);
-    }
-  }, [state.sessionId, navigate, queryClient, onOpenChange, reset]);
+  }, [state.phase, onOpenChange, reset]);
 
   const handleStart = useCallback(async () => {
     await startUpload(sessionName.trim(), objectName.trim() || undefined);
@@ -519,52 +465,41 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
     setStep(2);
   };
 
-  const handleNextFromStep2 = () => {
-    const lights = filesByType('lights');
-    if (lights.length === 0) {
-      addToast({ variant: 'warning', title: 'At least one light frame is required' });
-      return;
-    }
-    setStep(3);
-  };
-
   const totalFiles = state.files.length;
   const totalBytes = state.files.reduce((sum, f) => sum + f.file.size, 0);
   const lightsCount = filesByType('lights').length;
 
   const isUploading = state.phase === 'uploading';
-  const isDone =
-    state.phase === 'done' || state.phase === 'error' || state.phase === 'cancelled';
+  const isDone = state.phase === 'done';
+  const isCancelled = state.phase === 'cancelled';
+  const isError = state.phase === 'error';
 
-  const titleMap: Record<number, string> = {
-    1: 'New Session',
-    2: 'New Session',
-    3: 'New Session',
-  };
+  // Show auto-start overlay when done (before navigation)
+  const showAutoStart = isDone && !isCancelled;
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm animate-fade-in" />
         <Dialog.Content
           className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-xl bg-space-elevated border border-space-border rounded-lg shadow-2xl animate-slide-in-up focus:outline-none"
-          onInteractOutside={(e) => { if (isUploading) e.preventDefault(); }}
-          onEscapeKeyDown={(e) => { if (isUploading) e.preventDefault(); }}
+          onInteractOutside={(e) => { if (isUploading || showAutoStart) e.preventDefault(); }}
+          onEscapeKeyDown={(e) => { if (isUploading || showAutoStart) e.preventDefault(); }}
         >
+          {/* Header */}
           <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-space-border">
             <div>
               <Dialog.Title className="text-base font-semibold text-text-primary">
-                {isDone ? '' : titleMap[step]}
+                {isCancelled ? 'Upload cancelled' : 'New Session'}
               </Dialog.Title>
-              {!isUploading && !isDone && (
+              {!isUploading && !showAutoStart && !isCancelled && (
                 <Dialog.Description className="text-sm text-text-secondary mt-0.5">
-                  {step === 1 && 'Name your session and target object'}
+                  {step === 1 && 'Name your session and choose a processing profile'}
                   {step === 2 && 'Add your calibration frames'}
-                  {step === 3 && 'Choose the default processing profile'}
                 </Dialog.Description>
               )}
             </div>
-            {!isUploading && (
+            {!isUploading && !showAutoStart && (
               <Dialog.Close asChild>
                 <button
                   type="button"
@@ -578,11 +513,14 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
             )}
           </div>
 
-          {!isUploading && !isDone && (
-            <StepIndicator current={step} total={3} />
+          {/* Step indicator */}
+          {!isUploading && !showAutoStart && !isCancelled && !isError && (
+            <StepIndicator current={step} />
           )}
 
+          {/* Body */}
           <div className="px-6 py-5">
+            {/* Uploading */}
             {isUploading && (
               <UploadProgressView
                 state={state}
@@ -591,16 +529,28 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
               />
             )}
 
-            {isDone && (
-              <DoneView
-                state={state}
-                sessionName={sessionName}
-                onOpenSession={handleOpenSession}
-                onClose={handleClose}
-              />
+            {/* Auto-start overlay */}
+            {showAutoStart && <AutoStartView sessionName={sessionName} />}
+
+            {/* Cancelled */}
+            {isCancelled && (
+              <div className="space-y-4 py-4 text-center">
+                <div className="w-12 h-12 rounded-full bg-space-elevated border border-space-border flex items-center justify-center mx-auto">
+                  <Ban size={20} className="text-text-muted" />
+                </div>
+                <p className="text-sm font-semibold text-text-primary">Upload cancelled</p>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-4 py-2 bg-space-elevated border border-space-border text-text-secondary hover:text-text-primary rounded-md text-sm transition-all"
+                >
+                  Close
+                </button>
+              </div>
             )}
 
-            {!isUploading && !isDone && step === 1 && (
+            {/* Step 1: Name + preset */}
+            {!isUploading && !showAutoStart && !isCancelled && step === 1 && (
               <div className="space-y-5">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -632,6 +582,29 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-xs font-medium text-text-secondary mb-2">
+                    Processing profile
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {PRESETS.map((p) => (
+                      <button
+                        key={p.value}
+                        type="button"
+                        onClick={() => setChosenPreset(p.value)}
+                        className={`flex flex-col items-center py-3 px-2 rounded-md border text-center transition-all duration-150 ${
+                          chosenPreset === p.value
+                            ? 'border-primary/50 bg-primary-muted text-text-primary'
+                            : 'border-space-border bg-space-surface text-text-muted hover:border-space-border-light hover:text-text-secondary'
+                        }`}
+                      >
+                        <span className="text-sm font-medium">{p.label}</span>
+                        <span className="text-[10px] mt-0.5 opacity-70">{p.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex gap-3 pt-1">
                   <button
                     type="button"
@@ -653,7 +626,8 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
               </div>
             )}
 
-            {!isUploading && !isDone && step === 2 && (
+            {/* Step 2: Upload frames */}
+            {!isUploading && !showAutoStart && !isCancelled && step === 2 && (
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -682,13 +656,6 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
                   </div>
                 </div>
 
-                {lightsCount === 0 && (
-                  <p className="text-xs text-warning flex items-center gap-1.5">
-                    <AlertCircle size={12} />
-                    Add at least one light frame to continue
-                  </p>
-                )}
-
                 <div className="flex gap-3 pt-1">
                   <button
                     type="button"
@@ -700,46 +667,12 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
                   </button>
                   <button
                     type="button"
-                    onClick={handleNextFromStep2}
-                    disabled={lightsCount === 0}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white font-medium rounded-md text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {!isUploading && !isDone && step === 3 && (
-              <div className="space-y-5">
-                <div>
-                  <p className="text-xs text-text-muted mb-3">
-                    This preset will be remembered for this session and pre-selected
-                    whenever you re-process it.
-                  </p>
-                  <PresetSelector
-                    selected={chosenPreset}
-                    onChange={setChosenPreset}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setStep(2)}
-                    className="flex items-center gap-1.5 px-4 py-2 border border-space-border text-text-muted hover:text-text-secondary hover:bg-space-surface rounded-md text-sm transition-all"
-                  >
-                    <ArrowLeft size={14} />
-                    Back
-                  </button>
-                  <button
-                    type="button"
                     onClick={handleStart}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white font-medium rounded-md text-sm transition-all shadow-sm"
+                    disabled={lightsCount === 0}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-hover text-white font-semibold rounded-md text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Upload size={14} />
-                    Create &amp; Upload
+                    Upload &amp; Start
                   </button>
                 </div>
               </div>
