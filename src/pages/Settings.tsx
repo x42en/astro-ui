@@ -4,7 +4,6 @@ import {
   Key,
   FolderOpen,
   Cpu,
-  LayoutGrid,
   Wifi,
   WifiOff,
   Loader2,
@@ -137,7 +136,7 @@ type ConnectionState = 'idle' | 'checking' | 'ok' | 'error';
 
 export function SettingsPage() {
   const store = useSettingsStore();
-  const { addToast, viewMode, setViewMode } = useUiStore();
+  const { addToast } = useUiStore();
 
   const [form, setForm] = useState<AppSettings>({
     apiBaseUrl: store.apiBaseUrl,
@@ -406,34 +405,6 @@ export function SettingsPage() {
               max={60}
             />
             <span className="text-sm text-text-muted">seconds</span>
-          </div>
-        </FieldRow>
-      </SettingsSection>
-
-      <SettingsSection
-        icon={LayoutGrid}
-        title="Interface"
-        description="Display preferences and default view mode"
-      >
-        <FieldRow
-          label="View mode"
-          hint="Simple mode shows preset cards only. Advanced mode exposes custom processing profiles"
-        >
-          <div className="flex gap-2">
-            {(['simple', 'advanced'] as const).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setViewMode(mode)}
-                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium border transition-all duration-150 capitalize ${
-                  viewMode === mode
-                    ? 'bg-primary-muted border-primary/40 text-text-primary'
-                    : 'border-space-border text-text-muted hover:text-text-secondary hover:border-space-border-light'
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
           </div>
         </FieldRow>
       </SettingsSection>

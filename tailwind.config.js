@@ -5,38 +5,38 @@ export default {
     extend: {
       colors: {
         space: {
-          bg: '#0a0a0f',
-          surface: '#12121a',
-          elevated: '#1a1a24',
-          border: '#2a2a3a',
-          'border-light': '#3a3a4a',
+          bg: '#080808',
+          surface: '#111111',
+          elevated: '#1a1a1a',
+          border: '#252525',
+          'border-light': '#333333',
         },
         primary: {
           DEFAULT: '#6366f1',
           hover: '#818cf8',
-          muted: 'rgba(99,102,241,0.12)',
+          muted: 'rgba(99,102,241,0.10)',
         },
         accent: {
           DEFAULT: '#22d3ee',
           hover: '#67e8f9',
-          muted: 'rgba(34,211,238,0.12)',
+          muted: 'rgba(34,211,238,0.10)',
         },
         success: {
           DEFAULT: '#10b981',
-          muted: 'rgba(16,185,129,0.12)',
+          muted: 'rgba(16,185,129,0.10)',
         },
         warning: {
           DEFAULT: '#f59e0b',
-          muted: 'rgba(245,158,11,0.12)',
+          muted: 'rgba(245,158,11,0.10)',
         },
         error: {
           DEFAULT: '#ef4444',
-          muted: 'rgba(239,68,68,0.12)',
+          muted: 'rgba(239,68,68,0.10)',
         },
         text: {
-          primary: '#f8fafc',
-          secondary: '#94a3b8',
-          muted: '#64748b',
+          primary: '#efefef',
+          secondary: '#888888',
+          muted: '#555555',
         },
       },
       fontFamily: {

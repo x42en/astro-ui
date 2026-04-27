@@ -1,85 +1,26 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowLeft,
-  Sun,
-  Moon,
-  Layers,
-  Minus,
-  MapPin,
-  FolderOpen,
-  Calendar,
-  RefreshCw,
-} from 'lucide-react';
-import { getSession } from '../services/sessions';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Trash2, RotateCcw } from 'lucide-react';
+import { getSession, deleteSession, resetSession } from '../services/sessions';
 import { getJob } from '../services/jobs';
 import { useUiStore } from '../store/uiStore';
-import { StatusBadge } from '../components/ui/StatusBadge';
 import { ProcessingPanel } from '../components/processing/ProcessingPanel';
-import { Skeleton } from '../components/ui/Skeleton';
+import { ThumbnailPlaceholder } from '../components/ui/ThumbnailPlaceholder';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 import type { JobRead } from '../types';
-
-function InfoRow({ icon: Icon, label, value }: {
-  icon: React.ElementType;
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon size={13} className="text-text-muted" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-text-muted">{label}</p>
-        <div className="text-sm text-text-secondary mt-0.5 break-all">{value}</div>
-      </div>
-    </div>
-  );
-}
-
-function FrameStat({
-  count,
-  label,
-  icon: Icon,
-  color,
-}: {
-  count: number;
-  label: string;
-  icon: React.ElementType;
-  color: string;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-1 py-3 px-4 bg-space-elevated rounded-md border border-space-border">
-      <div className={`flex items-center gap-1.5 font-mono text-xl font-bold ${color}`}>
-        <Icon size={14} className="opacity-70" />
-        {count}
-      </div>
-      <span className="text-xs text-text-muted">{label}</span>
-    </div>
-  );
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 export function SessionDetail() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
-  const processingPanelRef = useRef<HTMLDivElement>(null);
-  const prevJobStatus = useRef<string | undefined>(undefined);
-
+  const queryClient = useQueryClient();
   const jobsBySession = useUiStore((s) => s.jobsBySession);
   const jobId = sessionId ? jobsBySession[sessionId] : undefined;
 
-  const { data: session, isLoading, refetch } = useQuery({
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const { data: session, isLoading } = useQuery({
     queryKey: ['sessions', sessionId],
     queryFn: () => getSession(sessionId!),
     enabled: !!sessionId,
@@ -96,135 +37,98 @@ export function SessionDetail() {
     },
   });
 
-  // Auto-scroll to the processing panel when the job transitions to completed
-  useEffect(() => {
-    if (activeJob?.status === 'completed' && prevJobStatus.current === 'running') {
-      processingPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSession(sessionId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      navigate('/');
+    },
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: () => resetSession(sessionId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+    },
+  });
+
+  function handleDelete() {
+    if (!session) return;
+    const isProcessing = session.status === 'processing';
+    if (isProcessing) {
+      setShowResetConfirm(false);
+      alert('Cancel or reset the session before deleting.');
+      return;
     }
-    prevJobStatus.current = activeJob?.status;
-  }, [activeJob?.status]);
+    setShowConfirm(true);
+  }
 
   if (isLoading || !session) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12" />)}
-          </div>
-          <div className="lg:col-span-3">
-            <Skeleton className="h-64" />
-          </div>
+      <div className="h-[calc(100vh-3.5rem)] bg-black flex items-center justify-center">
+        {sessionId ? (
+          <ThumbnailPlaceholder
+            sessionId={sessionId}
+            className="w-full h-full absolute inset-0 opacity-40"
+          />
+        ) : null}
+        <div className="relative z-10 text-center space-y-2">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-text-muted">Loading session…</p>
         </div>
       </div>
     );
   }
 
+  const isProcessing = session.status === 'processing';
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center gap-4">
+    <div className="h-[calc(100vh-3.5rem)] relative">
+      <ConfirmModal
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Delete session"
+        message={`Delete “${session.name}”? This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => deleteMutation.mutate()}
+      />
+      <ConfirmModal
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset session status"
+        message={`Reset “${session.name}” back to Ready? Use this only if the pipeline crashed and the session is stuck in Processing.`}
+        confirmLabel="Reset to Ready"
+        variant="warning"
+        onConfirm={() => resetMutation.mutate()}
+      />
+      <ProcessingPanel session={session} activeJob={activeJob ?? null} />
+
+      {/* Reset button — only shown when stuck in processing */}
+      {isProcessing && (
         <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-secondary transition-colors"
+          onClick={() => setShowResetConfirm(true)}
+          disabled={resetMutation.isPending}
+          className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-warning/70 text-white/50 hover:text-white text-xs font-medium transition-all duration-200 disabled:opacity-40 backdrop-blur-sm"
+          title="Reset stuck session to Ready"
         >
-          <ArrowLeft size={15} />
-          Dashboard
+          <RotateCcw size={13} />
+          {resetMutation.isPending ? 'Resetting…' : 'Reset to Ready'}
         </button>
-        <span className="text-space-border">/</span>
-        <h1 className="text-xl font-semibold text-text-primary truncate">
-          {session.name}
-        </h1>
-        <StatusBadge status={session.status} />
+      )}
 
+      {/* Delete button — shown when not processing */}
+      {!isProcessing && (
         <button
-          type="button"
-          onClick={() => refetch()}
-          className="ml-auto p-1.5 rounded border border-space-border text-text-muted hover:text-text-secondary hover:bg-space-elevated transition-all"
-          aria-label="Refresh"
+          onClick={handleDelete}
+          disabled={deleteMutation.isPending}
+          className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-red-600/80 text-white/50 hover:text-white text-xs font-medium transition-all duration-200 disabled:opacity-40 backdrop-blur-sm"
+          title="Delete session"
         >
-          <RefreshCw size={14} />
+          <Trash2 size={13} />
+          {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
         </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-2 space-y-5">
-          <div className="bg-space-surface border border-space-border rounded-lg p-5">
-            <h2 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">
-              Session details
-            </h2>
-
-            <div className="space-y-3.5">
-              <InfoRow
-                icon={Calendar}
-                label="Created"
-                value={formatDateTime(session.created_at)}
-              />
-              <InfoRow
-                icon={FolderOpen}
-                label="Inbox path"
-                value={
-                  <span className="font-mono text-xs text-text-muted break-all">
-                    {session.inbox_path}
-                  </span>
-                }
-              />
-              {session.object_name && (
-                <InfoRow
-                  icon={Sun}
-                  label="Object"
-                  value={
-                    <span className="font-medium text-accent">{session.object_name}</span>
-                  }
-                />
-              )}
-              {session.ra != null && session.dec != null && (
-                <InfoRow
-                  icon={MapPin}
-                  label="Coordinates"
-                  value={
-                    <span className="font-mono text-xs">
-                      RA {session.ra.toFixed(6)}° / Dec {session.dec.toFixed(6)}°
-                    </span>
-                  }
-                />
-              )}
-              {session.input_format && (
-                <InfoRow
-                  icon={Layers}
-                  label="Input format"
-                  value={
-                    <span className="font-mono uppercase text-xs">
-                      {session.input_format.replace('_', ' ')}
-                    </span>
-                  }
-                />
-              )}
-            </div>
-          </div>
-
-          <div className="bg-space-surface border border-space-border rounded-lg p-5">
-            <h2 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">
-              Frame counts
-            </h2>
-            <div className="grid grid-cols-2 gap-2">
-              <FrameStat count={session.frame_count_lights} label="Lights" icon={Sun} color="text-warning" />
-              <FrameStat count={session.frame_count_darks} label="Darks" icon={Moon} color="text-text-secondary" />
-              <FrameStat count={session.frame_count_flats} label="Flats" icon={Layers} color="text-accent" />
-              <FrameStat count={session.frame_count_bias} label="Bias" icon={Minus} color="text-text-muted" />
-            </div>
-          </div>
-        </div>
-
-        <div className="lg:col-span-3">
-          <div ref={processingPanelRef} className="bg-space-surface border border-space-border rounded-lg p-5 h-full">
-            <ProcessingPanel
-              session={session}
-              activeJob={activeJob ?? null}
-            />
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

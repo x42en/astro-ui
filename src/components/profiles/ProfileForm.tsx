@@ -15,6 +15,7 @@ import {
 import { StepSection, SliderField, SelectField, ToggleField } from './StepSection';
 import type { ProcessingProfileConfig } from '../../types';
 import { DEFAULT_ADVANCED_CONFIG } from '../../lib/presets';
+import { OBJECT_PRESETS } from '../../lib/objectPresets';
 
 interface ProfileFormProps {
   initialConfig?: ProcessingProfileConfig;
@@ -23,6 +24,8 @@ interface ProfileFormProps {
   onNameChange: (v: string) => void;
   onDescriptionChange: (v: string) => void;
   onConfigChange: (config: ProcessingProfileConfig) => void;
+  /** When true, disables every input/select/button rendered by the form. */
+  readOnly?: boolean;
 }
 
 export function ProfileForm({
@@ -32,6 +35,7 @@ export function ProfileForm({
   onNameChange,
   onDescriptionChange,
   onConfigChange,
+  readOnly = false,
 }: ProfileFormProps) {
   const [config, setConfig] = useState<ProcessingProfileConfig>(
     initialConfig ?? DEFAULT_ADVANCED_CONFIG
@@ -46,7 +50,32 @@ export function ProfileForm({
   const c = config;
 
   return (
-    <div className="space-y-4">
+    <fieldset
+      disabled={readOnly}
+      className="space-y-4 disabled:opacity-80 disabled:cursor-not-allowed"
+    >
+
+      {/* ── Object-type templates ── */}
+      <div>
+        <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+          Start from template
+        </p>
+        <div className="flex gap-1.5 flex-wrap">
+          {OBJECT_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              title={preset.description}
+              onClick={() => update(preset.config)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-space-border hover:border-white/20 text-text-muted hover:text-text-secondary text-xs transition-all duration-150"
+            >
+              <span>{preset.emoji}</span>
+              <span className="font-medium">{preset.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-3">
         <div>
           <label className="block text-xs font-medium text-text-secondary mb-1.5">
@@ -83,6 +112,7 @@ export function ProfileForm({
 
           <StepSection
             title="Stacking"
+            description="Combines aligned light frames using statistical pixel rejection to suppress noise, satellites and cosmic rays."
             icon={<Layers size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -130,6 +160,7 @@ export function ProfileForm({
 
           <StepSection
             title="Debayer"
+            description="Reconstructs full RGB colour from the Bayer mosaic of OSC / DSLR sensors. Leave on auto unless your camera reports the wrong pattern."
             icon={<Cpu size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -152,6 +183,7 @@ export function ProfileForm({
 
           <StepSection
             title="Drizzle"
+            description="Sub-pixel resampling that increases effective resolution when many dithered sub-frames are available. Costly in time and disk."
             icon={<Droplets size={13} />}
             enabled={c.drizzle_enabled ?? false}
             onEnabledChange={(v) => update({ drizzle_enabled: v })}
@@ -178,6 +210,7 @@ export function ProfileForm({
 
           <StepSection
             title="Plate Solving"
+            description="Astrometric WCS solve via ASTAP. Required for photometric colour calibration and for the target-coordinate hint."
             icon={<MapPin size={13} />}
             enabled={c.plate_solving_enabled ?? true}
             onEnabledChange={(v) => update({ plate_solving_enabled: v })}
@@ -206,6 +239,7 @@ export function ProfileForm({
 
           <StepSection
             title="Gradient Removal"
+            description="Subtracts smooth background gradients caused by light pollution and vignetting. AI mode (GraXpert) is generally safer on heavy nebulosity."
             icon={<Blend size={13} />}
             enabled={c.gradient_removal_enabled ?? true}
             onEnabledChange={(v) => update({ gradient_removal_enabled: v })}
@@ -234,6 +268,7 @@ export function ProfileForm({
 
           <StepSection
             title="Stretch & Color"
+            description="Tone curve and colour balance. Asinh lifts faint nebulosity while preserving stellar cores. Photometric calibration is opt-in for defiltered cameras."
             icon={<Palette size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -252,10 +287,10 @@ export function ProfileForm({
             />
             <SliderField
               label="Stretch strength"
-              value={c.stretch_strength ?? 0.002}
-              min={0.0001}
-              max={0.02}
-              step={0.0001}
+              value={c.stretch_strength ?? 30}
+              min={1}
+              max={200}
+              step={1}
               onChange={(v) => update({ stretch_strength: v })}
             />
             <ToggleField
@@ -263,10 +298,16 @@ export function ProfileForm({
               value={c.color_calibration_enabled ?? true}
               onChange={(v) => update({ color_calibration_enabled: v })}
             />
+            <ToggleField
+              label="Photometric calibration (defiltered cameras)"
+              value={c.photometric_calibration_enabled ?? false}
+              onChange={(v) => update({ photometric_calibration_enabled: v })}
+            />
           </StepSection>
 
           <StepSection
             title="Denoise"
+            description="Cosmic Clarity AI denoise. Reduces shot noise while preserving sharp detail. Higher strength = smoother but softer."
             icon={<Wand2 size={13} />}
             enabled={c.denoise_enabled ?? true}
             onEnabledChange={(v) => update({ denoise_enabled: v })}
@@ -289,6 +330,7 @@ export function ProfileForm({
 
           <StepSection
             title="Sharpen"
+            description="Cosmic Clarity AI deconvolution. Tightens stars (stellar) and recovers nebular structure (non-stellar) independently."
             icon={<Focus size={13} />}
             enabled={c.sharpen_enabled ?? true}
             onEnabledChange={(v) => update({ sharpen_enabled: v })}
@@ -323,6 +365,7 @@ export function ProfileForm({
 
           <StepSection
             title="Super Resolution"
+            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow."
             icon={<Maximize2 size={13} />}
             enabled={c.super_resolution_enabled ?? false}
             onEnabledChange={(v) => update({ super_resolution_enabled: v })}
@@ -340,6 +383,7 @@ export function ProfileForm({
 
           <StepSection
             title="Star Separation"
+            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights."
             icon={<Sparkles size={13} />}
             enabled={c.star_separation_enabled ?? false}
             onEnabledChange={(v) => update({ star_separation_enabled: v })}
@@ -370,6 +414,7 @@ export function ProfileForm({
 
           <StepSection
             title="Retry"
+            description="Automatic retry policy for transient failures (network timeouts, GPU contention)."
             icon={<RefreshCw size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -388,6 +433,6 @@ export function ProfileForm({
 
         </div>
       </div>
-    </div>
+    </fieldset>
   );
 }

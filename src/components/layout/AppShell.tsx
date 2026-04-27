@@ -1,19 +1,28 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Header } from './Header';
-import { Sidebar } from './Sidebar';
+import { PublicHeader } from './PublicHeader';
 import { ToastContainer } from '../ui/Toast';
 import { useUiStore } from '../../store/uiStore';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useIsAuthenticated } from '../../store/authStore';
 
 interface AppShellProps {
   children: React.ReactNode;
 }
 
+/** Routes rendered without any chrome (full-bleed). */
+const CHROMELESS_ROUTES = new Set<string>(['/login']);
+
+/** Routes that always use the public header, even when signed in. */
+const PUBLIC_CHROME_ROUTES = new Set<string>(['/welcome']);
+
 export function AppShell({ children }: AppShellProps) {
-  const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const setJobStatus = useUiStore((s) => s.setJobStatus);
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const isAuthenticated = useIsAuthenticated();
 
   useEffect(() => {
     const wsBase = useSettingsStore.getState().wsBaseUrl;
@@ -21,7 +30,12 @@ export function AppShell({ children }: AppShellProps) {
 
     ws.onmessage = (evt) => {
       try {
-        const data = JSON.parse(evt.data as string) as { type: string; session_id?: string; job_status?: string; new_status?: string };
+        const data = JSON.parse(evt.data as string) as {
+          type: string;
+          session_id?: string;
+          job_status?: string;
+          new_status?: string;
+        };
         if (data.type === 'session_status' && data.session_id) {
           setJobStatus(data.session_id, data.job_status ?? data.new_status ?? '');
           queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -44,26 +58,18 @@ export function AppShell({ children }: AppShellProps) {
     };
   }, [queryClient, setJobStatus]);
 
+  const path = location.pathname;
+  const chromeless = CHROMELESS_ROUTES.has(path);
+  const forcePublic = PUBLIC_CHROME_ROUTES.has(path);
+  // Anonymous visitors browsing the public gallery get the public header too.
+  const usePublicHeader = forcePublic || (!isAuthenticated && path === '/gallery');
+
   return (
     <div className="min-h-screen bg-space-bg flex flex-col">
-      <Header />
-
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-
-        <main
-          className={`
-            flex-1 overflow-y-auto min-w-0
-            transition-all duration-300 ease-smooth
-            ${sidebarOpen ? 'lg:ml-0' : ''}
-          `}
-        >
-          <div className="p-6 max-w-7xl mx-auto animate-fade-in">
-            {children}
-          </div>
-        </main>
-      </div>
-
+      {!chromeless && (usePublicHeader ? <PublicHeader /> : <Header />)}
+      <main className="flex-1 min-w-0 overflow-y-auto">
+        {children}
+      </main>
       <ToastContainer />
     </div>
   );

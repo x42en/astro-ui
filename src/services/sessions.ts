@@ -1,4 +1,5 @@
 import api from '../lib/axios';
+import { useSettingsStore } from '../store/settingsStore';
 import type { SessionRead, PaginatedResponse, ProfilePreset } from '../types';
 
 export interface SessionCreate {
@@ -48,4 +49,18 @@ export async function startProcessing(
 
 export async function cancelSession(sessionId: string): Promise<void> {
   await api.post(`/sessions/${sessionId}/cancel`);
+}
+
+export async function resetSession(sessionId: string): Promise<SessionRead> {
+  const response = await api.post<SessionRead>(`/sessions/${sessionId}/reset`);
+  return response.data;
+}
+
+export async function deleteSession(sessionId: string): Promise<void> {
+  await api.delete(`/sessions/${sessionId}`);
+}
+
+export function getLightPreviewUrl(sessionId: string): string {
+  const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
+  return `${base}/sessions/${sessionId}/light-preview`;
 }

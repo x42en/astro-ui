@@ -3,8 +3,6 @@ import { persist } from 'zustand/middleware';
 import type { ProfilePreset } from '../types';
 import type { UploadProgress } from '../lib/upload';
 
-export type ViewMode = 'simple' | 'advanced';
-
 export type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
 export interface Toast {
@@ -23,9 +21,6 @@ export interface UploadState {
 }
 
 interface UiStore {
-  viewMode: ViewMode;
-  setViewMode: (mode: ViewMode) => void;
-
   selectedPreset: ProfilePreset;
   setSelectedPreset: (preset: ProfilePreset) => void;
 
@@ -58,9 +53,6 @@ interface UiStore {
 export const useUiStore = create<UiStore>()(
   persist(
     (set) => ({
-      viewMode: 'simple',
-      setViewMode: (mode) => set({ viewMode: mode }),
-
       selectedPreset: 'standard',
       setSelectedPreset: (preset) => set({ selectedPreset: preset }),
 
@@ -109,7 +101,6 @@ export const useUiStore = create<UiStore>()(
     {
       name: 'astrostack-ui',
       partialize: (s) => ({
-        viewMode: s.viewMode,
         selectedPreset: s.selectedPreset,
         sidebarOpen: s.sidebarOpen,
         presetsBySession: s.presetsBySession,

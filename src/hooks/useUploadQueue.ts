@@ -97,7 +97,12 @@ export function useUploadQueue() {
   }, []);
 
   const startUpload = useCallback(
-    async (sessionName: string, objectName?: string) => {
+    async (
+      sessionName: string,
+      objectName?: string,
+      targetRa?: number,
+      targetDec?: number,
+    ) => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
@@ -146,6 +151,8 @@ export function useUploadQueue() {
               sessionId: resolvedSessionId ?? undefined,
               sessionName: resolvedSessionId ? undefined : sessionName,
               objectName: resolvedSessionId ? undefined : objectName,
+              targetRa: resolvedSessionId ? undefined : targetRa,
+              targetDec: resolvedSessionId ? undefined : targetDec,
               frameType,
               signal: controller.signal,
               onProgress: ({ loaded }) => {
@@ -175,6 +182,23 @@ export function useUploadQueue() {
               setState((prev) => ({ ...prev, phase: 'cancelled' }));
               return;
             }
+            // Surface upload failures to the console so they can be diagnosed
+            // even when the API never receives the request (e.g. validation,
+            // network rejection, or chunking error).
+            const errAny = err as { message?: string; name?: string; stack?: string; code?: string; response?: { status?: number; data?: unknown } };
+            // eslint-disable-next-line no-console
+            console.error(
+              `[useUploadQueue] upload failed for "${qf.file.name}" (${frameType}):`,
+              errAny?.message ?? err,
+              {
+                name: errAny?.name,
+                code: errAny?.code,
+                status: errAny?.response?.status,
+                data: errAny?.response?.data,
+                stack: errAny?.stack,
+                raw: err,
+              },
+            );
             const message = err instanceof Error ? err.message : 'Upload failed';
             updateFile(qf.id, { status: 'error', error: message });
           }

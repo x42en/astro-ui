@@ -25,6 +25,10 @@ export interface UploadOptions {
   sessionId?: string;
   sessionName?: string;
   objectName?: string;
+  /** User-supplied right ascension hint, J2000 decimal degrees. */
+  targetRa?: number;
+  /** User-supplied declination hint, J2000 decimal degrees. */
+  targetDec?: number;
   frameType?: FrameType;
   onProgress?: ProgressCallback;
   signal?: AbortSignal;
@@ -34,7 +38,7 @@ export async function uploadFileChunked(
   file: File,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
-  const { sessionId, sessionName, objectName, frameType, onProgress, signal } = options;
+  const { sessionId, sessionName, objectName, targetRa, targetDec, frameType, onProgress, signal } = options;
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
   let uploadId: string | null = null;
 
@@ -52,13 +56,20 @@ export async function uploadFileChunked(
       'Content-Range': `bytes ${start}-${end - 1}/${file.size}`,
       'Upload-Chunk': String(i),
       'Upload-Total-Chunks': String(totalChunks),
-      'X-File-Name': file.name,
+      // File names may contain Unicode characters (accents, emoji, …); HTTP
+      // headers are limited to ISO-8859-1 so we percent-encode the value.
+      'X-File-Name': encodeURIComponent(file.name),
     };
 
     if (uploadId) headers['X-Upload-ID'] = uploadId;
     if (sessionId) headers['X-Session-ID'] = sessionId;
-    if (sessionName) headers['X-Session-Name'] = sessionName;
-    if (objectName) headers['X-Object-Name'] = objectName;
+    // Free-form text headers may contain Unicode (em-dashes, accents, …) but
+    // HTTP headers are restricted to ISO-8859-1. Percent-encode them so the
+    // browser's setRequestHeader() accepts the value; the API decodes it.
+    if (sessionName) headers['X-Session-Name'] = encodeURIComponent(sessionName);
+    if (objectName) headers['X-Object-Name'] = encodeURIComponent(objectName);
+    if (typeof targetRa === 'number') headers['X-Target-RA'] = String(targetRa);
+    if (typeof targetDec === 'number') headers['X-Target-Dec'] = String(targetDec);
     if (frameType) headers['X-Frame-Type'] = frameType;
     if (i === 0) headers['Upload-Start'] = 'true';
     if (i === totalChunks - 1) headers['Upload-Finalize'] = 'true';
