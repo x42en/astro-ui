@@ -1,13 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { User, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { useAuthStore, useCurrentUser, useIsAdmin } from '../../store/authStore';
 
 /**
- * Placeholder user menu shown in the top-right of the header.
- * Items are stubs until authentication is wired up.
+ * Top-right account menu.
+ *
+ * Displays the signed-in user's initials and exposes Sign out plus, for
+ * admins only, a shortcut to the Settings page.
  */
 export function UserMenu() {
   const navigate = useNavigate();
+  const user = useCurrentUser();
+  const isAdmin = useIsAdmin();
+  const logout = useAuthStore((s) => s.logout);
+
+  if (!user) return null;
+
+  const initials = user.username.slice(0, 2).toUpperCase();
+  const handleLogout = () => {
+    logout();
+    navigate('/', { replace: true });
+  };
 
   return (
     <DropdownMenu.Root>
@@ -23,7 +37,7 @@ export function UserMenu() {
             transition-colors duration-150
           "
         >
-          AS
+          {initials}
         </button>
       </DropdownMenu.Trigger>
 
@@ -32,54 +46,46 @@ export function UserMenu() {
           align="end"
           sideOffset={6}
           className="
-            min-w-[180px] bg-space-surface border border-space-border rounded-md
+            min-w-[200px] bg-space-surface border border-space-border rounded-md
             shadow-lg overflow-hidden z-50
             animate-in fade-in-0 zoom-in-95
           "
         >
           <div className="px-3 py-2 border-b border-space-border/60">
-            <div className="text-sm font-medium text-text-primary">Astronomer</div>
-            <div className="text-[11px] text-text-muted">Local session</div>
+            <div className="text-sm font-medium text-text-primary truncate">
+              {user.username}
+            </div>
+            <div className="text-[11px] text-text-muted">
+              {isAdmin ? 'Administrator' : 'Astronomer'}
+            </div>
           </div>
 
-          <DropdownMenu.Item
-            disabled
-            className="
-              flex items-center gap-2 px-3 py-2 text-sm text-text-muted
-              cursor-not-allowed select-none outline-none
-            "
-            title="Coming soon"
-          >
-            <User size={13} />
-            <span>Profile</span>
-            <span className="ml-auto text-[10px] text-text-muted/70">soon</span>
-          </DropdownMenu.Item>
+          {isAdmin && (
+            <DropdownMenu.Item
+              onSelect={() => navigate('/settings')}
+              className="
+                flex items-center gap-2 px-3 py-2 text-sm text-text-secondary
+                cursor-pointer select-none outline-none
+                hover:bg-white/4 focus:bg-white/4
+              "
+            >
+              <SettingsIcon size={13} />
+              <span>Settings</span>
+            </DropdownMenu.Item>
+          )}
+
+          {isAdmin && <DropdownMenu.Separator className="h-px bg-space-border/60" />}
 
           <DropdownMenu.Item
-            onSelect={() => navigate('/settings')}
+            onSelect={handleLogout}
             className="
               flex items-center gap-2 px-3 py-2 text-sm text-text-secondary
               cursor-pointer select-none outline-none
               hover:bg-white/4 focus:bg-white/4
             "
           >
-            <SettingsIcon size={13} />
-            <span>Settings</span>
-          </DropdownMenu.Item>
-
-          <DropdownMenu.Separator className="h-px bg-space-border/60" />
-
-          <DropdownMenu.Item
-            disabled
-            className="
-              flex items-center gap-2 px-3 py-2 text-sm text-text-muted
-              cursor-not-allowed select-none outline-none
-            "
-            title="Coming soon"
-          >
             <LogOut size={13} />
             <span>Sign out</span>
-            <span className="ml-auto text-[10px] text-text-muted/70">soon</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

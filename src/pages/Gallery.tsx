@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Images, Download, Star, Telescope } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Images, Download, Star, Telescope, LogIn } from 'lucide-react';
 import { listGallery, type GalleryItem } from '../services/gallery';
 import { EmailDownloadModal } from '../components/gallery/EmailDownloadModal';
 import { LightboxModal } from '../components/gallery/LightboxModal';
+import { useIsAuthenticated } from '../store/authStore';
 
 function formatDate(iso: string | null): string {
   if (!iso) return '';
@@ -17,6 +19,7 @@ function formatDate(iso: string | null): string {
 export function Gallery() {
   const [downloadTarget, setDownloadTarget] = useState<GalleryItem | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const isAuthenticated = useIsAuthenticated();
   const { data, isLoading } = useQuery({
     queryKey: ['gallery'],
     queryFn: listGallery,
@@ -38,6 +41,15 @@ export function Gallery() {
               : 'A curated selection of community astrophotography results.'}
           </p>
         </div>
+        {!isAuthenticated && (
+          <Link
+            to="/login?redirect=%2Fhistory"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-medium bg-primary/15 border border-primary/30 text-primary hover:bg-primary/20 transition-colors"
+          >
+            <LogIn size={14} />
+            <span>Sign in to publish</span>
+          </Link>
+        )}
       </div>
 
       {isLoading ? (

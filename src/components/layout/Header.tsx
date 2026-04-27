@@ -1,16 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { History, Images, BookOpen, Settings } from 'lucide-react';
+import { History, BookOpen, Settings } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Logo } from '../branding/Logo';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useIsAdmin } from '../../store/authStore';
 import { UserMenu } from './UserMenu';
 
-const NAV_LINKS = [
-  { to: '/', label: 'History', icon: History },
-  { to: '/gallery', label: 'Gallery', icon: Images },
+interface NavLink {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const BASE_NAV_LINKS: NavLink[] = [
+  { to: '/history', label: 'History', icon: History },
   { to: '/profiles', label: 'Profiles', icon: BookOpen },
-  { to: '/settings', label: 'Settings', icon: Settings },
 ];
+
+const ADMIN_NAV_LINK: NavLink = { to: '/settings', label: 'Settings', icon: Settings };
 
 function ConnectionDot() {
   const apiBaseUrl = useSettingsStore((s) => s.apiBaseUrl);
@@ -55,22 +63,24 @@ function ConnectionDot() {
 
 export function Header() {
   const location = useLocation();
+  const isAdmin = useIsAdmin();
+  const navLinks = useMemo<NavLink[]>(
+    () => (isAdmin ? [...BASE_NAV_LINKS, ADMIN_NAV_LINK] : BASE_NAV_LINKS),
+    [isAdmin],
+  );
 
   return (
     <header className="h-14 border-b border-space-border bg-space-bg/95 backdrop-blur-md sticky top-0 z-40 grid grid-cols-[auto_1fr_auto] items-center px-6 gap-6 flex-shrink-0">
       {/* Left — Logo */}
-      <Link to="/" className="flex items-center flex-shrink-0" aria-label="AstroStack — home">
+      <Link to="/history" className="flex items-center flex-shrink-0" aria-label="AstroStack — home">
         <Logo variant="wordmark" size={28} className="hidden sm:inline-flex" />
         <Logo variant="mark" size={28} className="sm:hidden" />
       </Link>
 
       {/* Center — Nav links */}
       <nav className="flex items-center justify-center gap-0.5">
-        {NAV_LINKS.map(({ to, label, icon: Icon }) => {
-          const isActive =
-            to === '/'
-              ? location.pathname === '/'
-              : location.pathname.startsWith(to);
+        {navLinks.map(({ to, label, icon: Icon }) => {
+          const isActive = location.pathname.startsWith(to);
           return (
             <Link
               key={to}
