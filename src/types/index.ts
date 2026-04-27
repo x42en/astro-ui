@@ -155,6 +155,10 @@ export interface ProcessingProfileConfig {
 
 export interface ProfileRead {
   id: string;
+  owner_user_id: string | null;
+  is_shared: boolean;
+  shared_at: string | null;
+  is_owner: boolean;
   name: string;
   description: string | null;
   config: ProcessingProfileConfig;

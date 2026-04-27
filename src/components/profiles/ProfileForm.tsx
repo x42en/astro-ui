@@ -24,6 +24,8 @@ interface ProfileFormProps {
   onNameChange: (v: string) => void;
   onDescriptionChange: (v: string) => void;
   onConfigChange: (config: ProcessingProfileConfig) => void;
+  /** When true, disables every input/select/button rendered by the form. */
+  readOnly?: boolean;
 }
 
 export function ProfileForm({
@@ -33,6 +35,7 @@ export function ProfileForm({
   onNameChange,
   onDescriptionChange,
   onConfigChange,
+  readOnly = false,
 }: ProfileFormProps) {
   const [config, setConfig] = useState<ProcessingProfileConfig>(
     initialConfig ?? DEFAULT_ADVANCED_CONFIG
@@ -47,7 +50,10 @@ export function ProfileForm({
   const c = config;
 
   return (
-    <div className="space-y-4">
+    <fieldset
+      disabled={readOnly}
+      className="space-y-4 disabled:opacity-80 disabled:cursor-not-allowed"
+    >
 
       {/* ── Object-type templates ── */}
       <div>
@@ -427,6 +433,6 @@ export function ProfileForm({
 
         </div>
       </div>
-    </div>
+    </fieldset>
   );
 }
