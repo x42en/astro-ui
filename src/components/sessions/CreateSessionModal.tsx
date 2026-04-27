@@ -255,7 +255,10 @@ function FileRow({
   disabled: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 bg-space-bg/50 rounded border border-space-border/40">
+    <div
+      className="flex items-center gap-2 px-2 py-1.5 bg-space-bg/50 rounded border border-space-border/40"
+      title={qf.status === 'error' ? qf.error : undefined}
+    >
       <div className="flex-shrink-0">
         {qf.status === 'done' ? (
           <CheckCircle2 size={12} className="text-success" />
@@ -270,6 +273,11 @@ function FileRow({
       <span className="flex-1 text-xs font-mono text-text-secondary truncate">
         {qf.file.name}
       </span>
+      {qf.status === 'error' && qf.error && (
+        <span className="text-xs text-error truncate max-w-[200px]" title={qf.error}>
+          {qf.error}
+        </span>
+      )}
       <span className="text-xs text-text-muted flex-shrink-0">
         {formatFileSize(qf.file.size)}
       </span>

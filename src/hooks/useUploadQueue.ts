@@ -182,6 +182,11 @@ export function useUploadQueue() {
               setState((prev) => ({ ...prev, phase: 'cancelled' }));
               return;
             }
+            // Surface upload failures to the console so they can be diagnosed
+            // even when the API never receives the request (e.g. validation,
+            // network rejection, or chunking error).
+            // eslint-disable-next-line no-console
+            console.error('[useUploadQueue] upload failed', { file: qf.file.name, frameType, err });
             const message = err instanceof Error ? err.message : 'Upload failed';
             updateFile(qf.id, { status: 'error', error: message });
           }
