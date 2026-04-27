@@ -93,7 +93,7 @@ export function ProgressPanel({ jobId, sessionId, onPreviewUpdate }: ProgressPan
 
     if (evt.type === 'step_status' && evt.status === 'success' && evt.result?.has_preview) {
       const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
-      const url = `${base}/sessions/${sessionId}/step-preview/${evt.step}`;
+      const url = `${base}/sessions/${sessionId}/step-preview/${evt.step}?t=${Date.now()}`;
       onPreviewUpdate?.(url);
     }
 
