@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
-import { getSession, deleteSession } from '../services/sessions';
+import { Trash2, RotateCcw } from 'lucide-react';
+import { getSession, deleteSession, resetSession } from '../services/sessions';
 import { getJob } from '../services/jobs';
 import { useUiStore } from '../store/uiStore';
 import { ProcessingPanel } from '../components/processing/ProcessingPanel';
@@ -18,6 +18,7 @@ export function SessionDetail() {
   const jobId = sessionId ? jobsBySession[sessionId] : undefined;
 
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ['sessions', sessionId],
@@ -44,11 +45,20 @@ export function SessionDetail() {
     },
   });
 
+  const resetMutation = useMutation({
+    mutationFn: () => resetSession(sessionId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+    },
+  });
+
   function handleDelete() {
     if (!session) return;
     const isProcessing = session.status === 'processing';
     if (isProcessing) {
-      alert('Cancel the running job before deleting this session.');
+      setShowResetConfirm(false);
+      alert('Cancel or reset the session before deleting.');
       return;
     }
     setShowConfirm(true);
@@ -83,8 +93,31 @@ export function SessionDetail() {
         confirmLabel="Delete"
         onConfirm={() => deleteMutation.mutate()}
       />
+      <ConfirmModal
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset session status"
+        message={`Reset “${session.name}” back to Ready? Use this only if the pipeline crashed and the session is stuck in Processing.`}
+        confirmLabel="Reset to Ready"
+        variant="warning"
+        onConfirm={() => resetMutation.mutate()}
+      />
       <ProcessingPanel session={session} activeJob={activeJob ?? null} />
-      {/* Delete button — fixed top-right overlay, hidden while processing */}
+
+      {/* Reset button — only shown when stuck in processing */}
+      {isProcessing && (
+        <button
+          onClick={() => setShowResetConfirm(true)}
+          disabled={resetMutation.isPending}
+          className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-warning/70 text-white/50 hover:text-white text-xs font-medium transition-all duration-200 disabled:opacity-40 backdrop-blur-sm"
+          title="Reset stuck session to Ready"
+        >
+          <RotateCcw size={13} />
+          {resetMutation.isPending ? 'Resetting…' : 'Reset to Ready'}
+        </button>
+      )}
+
+      {/* Delete button — shown when not processing */}
       {!isProcessing && (
         <button
           onClick={handleDelete}

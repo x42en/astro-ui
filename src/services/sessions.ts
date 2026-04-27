@@ -51,6 +51,11 @@ export async function cancelSession(sessionId: string): Promise<void> {
   await api.post(`/sessions/${sessionId}/cancel`);
 }
 
+export async function resetSession(sessionId: string): Promise<SessionRead> {
+  const response = await api.post<SessionRead>(`/sessions/${sessionId}/reset`);
+  return response.data;
+}
+
 export async function deleteSession(sessionId: string): Promise<void> {
   await api.delete(`/sessions/${sessionId}`);
 }
