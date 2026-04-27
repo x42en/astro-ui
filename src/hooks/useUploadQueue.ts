@@ -185,8 +185,20 @@ export function useUploadQueue() {
             // Surface upload failures to the console so they can be diagnosed
             // even when the API never receives the request (e.g. validation,
             // network rejection, or chunking error).
+            const errAny = err as { message?: string; name?: string; stack?: string; code?: string; response?: { status?: number; data?: unknown } };
             // eslint-disable-next-line no-console
-            console.error('[useUploadQueue] upload failed', { file: qf.file.name, frameType, err });
+            console.error(
+              `[useUploadQueue] upload failed for "${qf.file.name}" (${frameType}):`,
+              errAny?.message ?? err,
+              {
+                name: errAny?.name,
+                code: errAny?.code,
+                status: errAny?.response?.status,
+                data: errAny?.response?.data,
+                stack: errAny?.stack,
+                raw: err,
+              },
+            );
             const message = err instanceof Error ? err.message : 'Upload failed';
             updateFile(qf.id, { status: 'error', error: message });
           }
