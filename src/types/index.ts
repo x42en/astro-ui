@@ -80,6 +80,10 @@ export interface ProcessingProfileConfig {
   stretch_strength?: number;
 
   color_calibration_enabled?: boolean;
+  /** Siril photometric colour calibration (`pcc`).  Recommended only for
+   *  defiltered DSLR / dedicated OSC astro cameras: on stock DSLR it tends to
+   *  neutralise residual Hα. */
+  photometric_calibration_enabled?: boolean;
 
   denoise_enabled?: boolean;
   denoise_strength?: number;

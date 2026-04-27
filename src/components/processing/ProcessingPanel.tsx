@@ -10,7 +10,6 @@ import {
   MapPin,
   Loader2,
   SlidersHorizontal,
-  RotateCcw,
   Zap,
   Star,
 } from 'lucide-react';
@@ -21,6 +20,7 @@ import { getPreviewUrl } from '../../services/jobs';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { ProgressPanel } from './ProgressPanel';
 import { OutputActions } from './OutputActions';
+import { SearchableSelect, type SelectGroup } from '../ui/SearchableSelect';
 import { StatusBadge } from '../ui/StatusBadge';
 import type { SessionRead, JobRead, ProfilePreset } from '../../types';
 
@@ -132,6 +132,46 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
     }
   };
 
+  // ── Build grouped option list for the SearchableSelect ──
+  // Encoded as `preset:<name>` or `profile:<uuid>` so we can drive both
+  // localPreset and selectedProfileId from a single value.
+  const selectorOptions = useMemo<SelectGroup<string>[]>(() => {
+    const presetOpts = PRESET_CONFIG.map((p) => ({
+      value: `preset:${p.value}`,
+      label: p.label,
+      description: p.description,
+      icon: <p.Icon size={13} />,
+      searchHaystack: `${p.label} ${p.description} ${p.features.join(' ')}`,
+    }));
+    const profileOpts = profiles.map((p) => ({
+      value: `profile:${p.id}`,
+      label: p.name,
+      description: p.description ?? 'Custom profile',
+      icon: <SlidersHorizontal size={13} />,
+      searchHaystack: `${p.name} ${p.description ?? ''}`,
+    }));
+    const groups: SelectGroup<string>[] = [
+      { label: 'Presets', options: presetOpts },
+    ];
+    if (profileOpts.length > 0) {
+      groups.push({ label: 'My profiles', options: profileOpts });
+    }
+    return groups;
+  }, [profiles]);
+
+  const selectedSelectorValue = selectedProfileId
+    ? `profile:${selectedProfileId}`
+    : `preset:${localPreset}`;
+
+  const handleSelectorChange = (value: string) => {
+    if (value.startsWith('profile:')) {
+      setSelectedProfileId(value.slice('profile:'.length));
+    } else if (value.startsWith('preset:')) {
+      setLocalPreset(value.slice('preset:'.length) as ProfilePreset);
+      setSelectedProfileId('');
+    }
+  };
+
   const isProcessing =
     session.status === 'processing' || activeJob?.status === 'running';
   const isCompleted = activeJob?.status === 'completed';
@@ -233,60 +273,16 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
               <p className="text-[11px] text-text-muted uppercase tracking-wider mb-2 text-center">
                 Processing profile
               </p>
-              <div className="space-y-1 max-h-60 overflow-y-auto">
-                {PRESET_CONFIG.map((p) => {
-                  const active = localPreset === p.value && !selectedProfileId;
-                  return (
-                    <button
-                      key={p.value}
-                      type="button"
-                      onClick={() => { setLocalPreset(p.value); setSelectedProfileId(''); }}
-                      className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 ${
-                        active
-                          ? 'bg-white/12 ring-1 ring-white/20 text-text-primary'
-                          : 'bg-white/5 text-text-muted hover:text-text-secondary hover:bg-white/8'
-                      }`}
-                    >
-                      <p.Icon size={14} className={`flex-shrink-0 mt-0.5 ${active ? 'text-white' : 'text-white/40'}`} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium">{p.label}</p>
-                        <p className="text-[10px] text-text-muted mt-0.5 leading-relaxed">{p.description}</p>
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {p.features.map((f) => (
-                            <span key={f} className="text-[9px] bg-white/8 text-white/50 rounded px-1.5 py-0.5">{f}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {profiles.length > 0 && (
-                  <>
-                    <div className="pt-2 pb-1 px-1">
-                      <p className="text-[10px] text-text-muted uppercase tracking-wider flex items-center gap-1">
-                        <SlidersHorizontal size={9} />
-                        My profiles
-                      </p>
-                    </div>
-                    {profiles.map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setSelectedProfileId(p.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 ${
-                          selectedProfileId === p.id
-                            ? 'bg-primary/15 ring-1 ring-primary/30 text-text-primary'
-                            : 'bg-white/5 text-text-muted hover:text-text-secondary hover:bg-white/8'
-                        }`}
-                      >
-                        <SlidersHorizontal size={14} className={`flex-shrink-0 ${selectedProfileId === p.id ? 'text-primary/80' : 'text-white/30'}`} />
-                        <span className="text-xs font-medium truncate">{p.name}</span>
-                      </button>
-                    ))}
-                  </>
-                )}
-              </div>
+              <SearchableSelect<string>
+                value={selectedSelectorValue}
+                onChange={handleSelectorChange}
+                options={selectorOptions}
+                searchable={profiles.length > 3}
+                searchPlaceholder="Search profiles…"
+                ariaLabel="Processing profile"
+                maxHeight={280}
+                className="w-full bg-white/5 border-white/10 hover:bg-white/8"
+              />
             </div>
 
             {/* Start button */}

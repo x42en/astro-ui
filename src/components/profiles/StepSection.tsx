@@ -98,6 +98,7 @@ function ToggleField({ label, value, onChange, disabled }: ToggleFieldProps) {
 
 interface StepSectionProps {
   title: string;
+  description?: string;
   icon?: React.ReactNode;
   enabled: boolean;
   onEnabledChange: (v: boolean) => void;
@@ -108,6 +109,7 @@ interface StepSectionProps {
 
 export function StepSection({
   title,
+  description,
   icon,
   enabled,
   onEnabledChange,
@@ -132,9 +134,16 @@ export function StepSection({
             <ChevronDown size={13} className={enabled ? 'text-text-secondary' : 'text-text-muted'} />
           </span>
           {icon && <span className="text-text-muted">{icon}</span>}
-          <span className={`text-sm font-medium ${enabled ? 'text-text-primary' : 'text-text-muted'}`}>
-            {title}
-          </span>
+          <div className="flex flex-col min-w-0">
+            <span className={`text-sm font-medium ${enabled ? 'text-text-primary' : 'text-text-muted'}`}>
+              {title}
+            </span>
+            {description && (
+              <span className="text-[11px] text-text-muted leading-snug mt-0.5">
+                {description}
+              </span>
+            )}
+          </div>
         </button>
 
         {!hideToggle && (

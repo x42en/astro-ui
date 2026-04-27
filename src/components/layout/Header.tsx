@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Telescope, LayoutDashboard, BookOpen, Settings, SlidersHorizontal } from 'lucide-react';
-import { useUiStore } from '../../store/uiStore';
+import { Telescope, LayoutDashboard, BookOpen, Settings } from 'lucide-react';
 import { useSettingsStore } from '../../store/settingsStore';
+import { UserMenu } from './UserMenu';
 
 const NAV_LINKS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -52,12 +52,11 @@ function ConnectionDot() {
 }
 
 export function Header() {
-  const { viewMode, setViewMode } = useUiStore();
   const location = useLocation();
 
   return (
-    <header className="h-14 border-b border-space-border bg-space-bg/95 backdrop-blur-md sticky top-0 z-40 flex items-center px-6 gap-6 flex-shrink-0">
-      {/* Logo */}
+    <header className="h-14 border-b border-space-border bg-space-bg/95 backdrop-blur-md sticky top-0 z-40 grid grid-cols-[auto_1fr_auto] items-center px-6 gap-6 flex-shrink-0">
+      {/* Left — Logo */}
       <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
         <div className="w-7 h-7 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
           <Telescope size={14} className="text-primary" />
@@ -67,8 +66,8 @@ export function Header() {
         </span>
       </Link>
 
-      {/* Nav links */}
-      <nav className="flex items-center gap-0.5">
+      {/* Center — Nav links */}
+      <nav className="flex items-center justify-center gap-0.5">
         {NAV_LINKS.map(({ to, label, icon: Icon }) => {
           const isActive =
             to === '/'
@@ -94,37 +93,12 @@ export function Header() {
         })}
       </nav>
 
-      {/* Right section */}
-      <div className="ml-auto flex items-center gap-4">
+      {/* Right — Connection + User menu */}
+      <div className="flex items-center gap-4 justify-end">
         <ConnectionDot />
-
-        {/* View mode toggle */}
-        <div className="flex items-center gap-0.5 bg-space-surface border border-space-border rounded p-0.5">
-          <button
-            type="button"
-            onClick={() => setViewMode('simple')}
-            className={`px-2.5 py-1 text-xs font-medium rounded transition-all duration-150 ${
-              viewMode === 'simple'
-                ? 'bg-white/10 text-text-primary'
-                : 'text-text-muted hover:text-text-secondary'
-            }`}
-          >
-            Simple
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('advanced')}
-            className={`px-2.5 py-1 text-xs font-medium rounded flex items-center gap-1 transition-all duration-150 ${
-              viewMode === 'advanced'
-                ? 'bg-white/10 text-text-primary'
-                : 'text-text-muted hover:text-text-secondary'
-            }`}
-          >
-            <SlidersHorizontal size={11} />
-            <span className="hidden sm:block">Advanced</span>
-          </button>
-        </div>
+        <UserMenu />
       </div>
     </header>
   );
 }
+

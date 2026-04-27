@@ -106,6 +106,7 @@ export function ProfileForm({
 
           <StepSection
             title="Stacking"
+            description="Combines aligned light frames using statistical pixel rejection to suppress noise, satellites and cosmic rays."
             icon={<Layers size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -153,6 +154,7 @@ export function ProfileForm({
 
           <StepSection
             title="Debayer"
+            description="Reconstructs full RGB colour from the Bayer mosaic of OSC / DSLR sensors. Leave on auto unless your camera reports the wrong pattern."
             icon={<Cpu size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -175,6 +177,7 @@ export function ProfileForm({
 
           <StepSection
             title="Drizzle"
+            description="Sub-pixel resampling that increases effective resolution when many dithered sub-frames are available. Costly in time and disk."
             icon={<Droplets size={13} />}
             enabled={c.drizzle_enabled ?? false}
             onEnabledChange={(v) => update({ drizzle_enabled: v })}
@@ -201,6 +204,7 @@ export function ProfileForm({
 
           <StepSection
             title="Plate Solving"
+            description="Astrometric WCS solve via ASTAP. Required for photometric colour calibration and for the target-coordinate hint."
             icon={<MapPin size={13} />}
             enabled={c.plate_solving_enabled ?? true}
             onEnabledChange={(v) => update({ plate_solving_enabled: v })}
@@ -229,6 +233,7 @@ export function ProfileForm({
 
           <StepSection
             title="Gradient Removal"
+            description="Subtracts smooth background gradients caused by light pollution and vignetting. AI mode (GraXpert) is generally safer on heavy nebulosity."
             icon={<Blend size={13} />}
             enabled={c.gradient_removal_enabled ?? true}
             onEnabledChange={(v) => update({ gradient_removal_enabled: v })}
@@ -257,6 +262,7 @@ export function ProfileForm({
 
           <StepSection
             title="Stretch & Color"
+            description="Tone curve and colour balance. Asinh lifts faint nebulosity while preserving stellar cores. Photometric calibration is opt-in for defiltered cameras."
             icon={<Palette size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -286,10 +292,16 @@ export function ProfileForm({
               value={c.color_calibration_enabled ?? true}
               onChange={(v) => update({ color_calibration_enabled: v })}
             />
+            <ToggleField
+              label="Photometric calibration (defiltered cameras)"
+              value={c.photometric_calibration_enabled ?? false}
+              onChange={(v) => update({ photometric_calibration_enabled: v })}
+            />
           </StepSection>
 
           <StepSection
             title="Denoise"
+            description="Cosmic Clarity AI denoise. Reduces shot noise while preserving sharp detail. Higher strength = smoother but softer."
             icon={<Wand2 size={13} />}
             enabled={c.denoise_enabled ?? true}
             onEnabledChange={(v) => update({ denoise_enabled: v })}
@@ -312,6 +324,7 @@ export function ProfileForm({
 
           <StepSection
             title="Sharpen"
+            description="Cosmic Clarity AI deconvolution. Tightens stars (stellar) and recovers nebular structure (non-stellar) independently."
             icon={<Focus size={13} />}
             enabled={c.sharpen_enabled ?? true}
             onEnabledChange={(v) => update({ sharpen_enabled: v })}
@@ -346,6 +359,7 @@ export function ProfileForm({
 
           <StepSection
             title="Super Resolution"
+            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow."
             icon={<Maximize2 size={13} />}
             enabled={c.super_resolution_enabled ?? false}
             onEnabledChange={(v) => update({ super_resolution_enabled: v })}
@@ -363,6 +377,7 @@ export function ProfileForm({
 
           <StepSection
             title="Star Separation"
+            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights."
             icon={<Sparkles size={13} />}
             enabled={c.star_separation_enabled ?? false}
             onEnabledChange={(v) => update({ star_separation_enabled: v })}
@@ -393,6 +408,7 @@ export function ProfileForm({
 
           <StepSection
             title="Retry"
+            description="Automatic retry policy for transient failures (network timeouts, GPU contention)."
             icon={<RefreshCw size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
