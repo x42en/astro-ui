@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Download, FileImage, Database, RotateCcw, Loader2 } from 'lucide-react';
-import { downloadPreview, downloadFits } from '../../services/jobs';
+import { Download, FileImage, Database, Image as ImageIcon, RotateCcw, Loader2 } from 'lucide-react';
+import { downloadPreview, downloadFits, downloadTiff } from '../../services/jobs';
 import { useUiStore } from '../../store/uiStore';
 import type { JobRead } from '../../types';
 
@@ -22,7 +22,7 @@ interface OutputActionsProps {
 
 export function OutputActions({ job, onReprocess }: OutputActionsProps) {
   const addToast = useUiStore((s) => s.addToast);
-  const [downloading, setDownloading] = useState<'preview' | 'fits' | null>(null);
+  const [downloading, setDownloading] = useState<'preview' | 'tiff' | 'fits' | null>(null);
 
   const handleDownloadPreview = async () => {
     setDownloading('preview');
@@ -45,6 +45,19 @@ export function OutputActions({ job, onReprocess }: OutputActionsProps) {
       addToast({ variant: 'success', title: 'FITS downloaded' });
     } catch {
       addToast({ variant: 'error', title: 'Download failed', message: 'Could not download FITS file' });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const handleDownloadTiff = async () => {
+    setDownloading('tiff');
+    try {
+      const blob = await downloadTiff(job.id);
+      triggerDownload(blob, `${job.id}-final.tiff`);
+      addToast({ variant: 'success', title: 'TIFF downloaded' });
+    } catch {
+      addToast({ variant: 'error', title: 'Download failed', message: 'Could not download TIFF file' });
     } finally {
       setDownloading(null);
     }
@@ -95,6 +108,22 @@ export function OutputActions({ job, onReprocess }: OutputActionsProps) {
             JPEG
           </button>
         )}
+        {job.output_tiff_path && (
+          <button
+            type="button"
+            onClick={handleDownloadTiff}
+            disabled={downloading !== null}
+            title="16-bit TIFF — high-quality, universally readable on Linux / Windows / macOS"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-primary border border-primary/30 hover:bg-primary/10 rounded transition-all disabled:opacity-50"
+          >
+            {downloading === 'tiff' ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <ImageIcon size={12} />
+            )}
+            TIFF
+          </button>
+        )}
         {job.output_fits_path && (
           <button
             type="button"
@@ -110,7 +139,7 @@ export function OutputActions({ job, onReprocess }: OutputActionsProps) {
             FITS
           </button>
         )}
-        {!job.output_preview_path && !job.output_fits_path && (
+        {!job.output_preview_path && !job.output_fits_path && !job.output_tiff_path && (
           <button
             type="button"
             disabled

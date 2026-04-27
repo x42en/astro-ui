@@ -30,3 +30,16 @@ export async function downloadFits(jobId: string): Promise<Blob> {
   });
   return response.data as Blob;
 }
+
+/**
+ * Download the 16-bit TIFF rendition (HDR-polished, universal format).
+ *
+ * Readable natively by Photoshop, GIMP, Krita, Affinity Photo, Apple Preview
+ * and Windows Photos.
+ */
+export async function downloadTiff(jobId: string): Promise<Blob> {
+  const response = await api.get(`/jobs/${jobId}/output/tiff`, {
+    responseType: 'blob',
+  });
+  return response.data as Blob;
+}
