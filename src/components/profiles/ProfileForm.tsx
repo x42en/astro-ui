@@ -15,6 +15,7 @@ import {
 import { StepSection, SliderField, SelectField, ToggleField } from './StepSection';
 import type { ProcessingProfileConfig } from '../../types';
 import { DEFAULT_ADVANCED_CONFIG } from '../../lib/presets';
+import { OBJECT_PRESETS } from '../../lib/objectPresets';
 
 interface ProfileFormProps {
   initialConfig?: ProcessingProfileConfig;
@@ -47,6 +48,28 @@ export function ProfileForm({
 
   return (
     <div className="space-y-4">
+
+      {/* ── Object-type templates ── */}
+      <div>
+        <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+          Start from template
+        </p>
+        <div className="flex gap-1.5 flex-wrap">
+          {OBJECT_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              title={preset.description}
+              onClick={() => update(preset.config)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-space-border hover:border-white/20 text-text-muted hover:text-text-secondary text-xs transition-all duration-150"
+            >
+              <span>{preset.emoji}</span>
+              <span className="font-medium">{preset.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-3">
         <div>
           <label className="block text-xs font-medium text-text-secondary mb-1.5">

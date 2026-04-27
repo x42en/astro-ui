@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, Layers, Minus, Clock, Trash2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatusBadge } from '../ui/StatusBadge';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
+import { ConfirmModal } from '../ui/ConfirmModal';
 import { useUiStore } from '../../store/uiStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { getLightPreviewUrl, deleteSession } from '../../services/sessions';
@@ -26,6 +28,8 @@ export function SessionCard({ session }: SessionCardProps) {
   const jobStatusBySession = useUiStore((s) => s.jobStatusBySession);
   const apiBaseUrl = useSettingsStore((s) => s.apiBaseUrl);
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const liveStatus = jobStatusBySession[session.id] ?? session.status;
   const isRendered = session.status === 'completed';
   const isProcessing = liveStatus === 'processing' || liveStatus === 'running';
@@ -41,18 +45,26 @@ export function SessionCard({ session }: SessionCardProps) {
   function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
     if (isProcessing) return;
-    if (!window.confirm(`Delete session "${session.name}"? This cannot be undone.`)) return;
-    deleteMutation.mutate();
+    setShowConfirm(true);
   }
 
   return (
-    <div
-      className="group relative overflow-hidden rounded-lg cursor-pointer bg-black select-none"
-      style={{ aspectRatio: '4/3' }}
-      onClick={() => navigate(`/sessions/${session.id}`)}
-      role="article"
-      aria-label={`Session: ${session.name}`}
-    >
+    <>
+      <ConfirmModal
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Delete session"
+        message={`Delete “${session.name}”? This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => deleteMutation.mutate()}
+      />
+      <div
+        className="group relative overflow-hidden rounded-lg cursor-pointer bg-black select-none"
+        style={{ aspectRatio: '4/3' }}
+        onClick={() => navigate(`/sessions/${session.id}`)}
+        role="article"
+        aria-label={`Session: ${session.name}`}
+      >
       {/* Placeholder always rendered below */}
       <ThumbnailPlaceholder
         sessionId={session.id}
@@ -154,5 +166,6 @@ export function SessionCard({ session }: SessionCardProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }

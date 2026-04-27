@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
@@ -6,6 +7,7 @@ import { getJob } from '../services/jobs';
 import { useUiStore } from '../store/uiStore';
 import { ProcessingPanel } from '../components/processing/ProcessingPanel';
 import { ThumbnailPlaceholder } from '../components/ui/ThumbnailPlaceholder';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 import type { JobRead } from '../types';
 
 export function SessionDetail() {
@@ -14,6 +16,8 @@ export function SessionDetail() {
   const queryClient = useQueryClient();
   const jobsBySession = useUiStore((s) => s.jobsBySession);
   const jobId = sessionId ? jobsBySession[sessionId] : undefined;
+
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ['sessions', sessionId],
@@ -47,8 +51,7 @@ export function SessionDetail() {
       alert('Cancel the running job before deleting this session.');
       return;
     }
-    if (!window.confirm(`Delete session "${session.name}"? This cannot be undone.`)) return;
-    deleteMutation.mutate();
+    setShowConfirm(true);
   }
 
   if (isLoading || !session) {
@@ -72,6 +75,14 @@ export function SessionDetail() {
 
   return (
     <div className="h-[calc(100vh-3.5rem)] relative">
+      <ConfirmModal
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Delete session"
+        message={`Delete “${session.name}”? This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => deleteMutation.mutate()}
+      />
       <ProcessingPanel session={session} activeJob={activeJob ?? null} />
       {/* Delete button — fixed top-right overlay, hidden while processing */}
       {!isProcessing && (

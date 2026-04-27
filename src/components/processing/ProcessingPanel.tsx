@@ -11,6 +11,8 @@ import {
   Loader2,
   SlidersHorizontal,
   RotateCcw,
+  Zap,
+  Star,
 } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { startProcessing, cancelSession, getLightPreviewUrl } from '../../services/sessions';
@@ -22,6 +24,30 @@ import { OutputActions } from './OutputActions';
 import { StatusBadge } from '../ui/StatusBadge';
 import type { SessionRead, JobRead, ProfilePreset } from '../../types';
 
+const PRESET_CONFIG = [
+  {
+    value: 'quick' as const,
+    label: 'Quick',
+    description: 'Fast pipeline — no plate solving, gradient or color calibration',
+    Icon: Zap,
+    features: ['Denoise'],
+  },
+  {
+    value: 'standard' as const,
+    label: 'Standard',
+    description: 'Balanced quality — plate solving, gradient removal, color calibration',
+    Icon: Layers,
+    features: ['Plate solving', 'Gradient', 'Colors', 'Denoise', 'Sharpen'],
+  },
+  {
+    value: 'quality' as const,
+    label: 'Quality',
+    description: 'Maximum quality — Drizzle ×2, super-resolution, star separation',
+    Icon: Star,
+    features: ['Drizzle ×2', 'Plate solving', 'Gradient', 'Colors', 'Denoise', 'Sharpen', 'Super-res', 'Star sep.'],
+  },
+];
+
 interface ProcessingPanelProps {
   session: SessionRead;
   activeJob: JobRead | null;
@@ -30,7 +56,6 @@ interface ProcessingPanelProps {
 export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const queryClient = useQueryClient();
   const {
-    viewMode,
     addToast,
     setSessionJob,
     presetsBySession,
@@ -55,7 +80,6 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const { data: profiles = [] } = useQuery({
     queryKey: ['profiles'],
     queryFn: listProfiles,
-    enabled: viewMode === 'advanced',
   });
 
   const processMutation = useMutation({
@@ -101,7 +125,7 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   });
 
   const handleStart = () => {
-    if (viewMode === 'advanced' && selectedProfileId) {
+    if (selectedProfileId) {
       processMutation.mutate({ preset: 'advanced', profileId: selectedProfileId });
     } else {
       processMutation.mutate({ preset: localPreset });
@@ -122,12 +146,6 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
     isCompleted && activeJob?.output_preview_path
       ? getPreviewUrl(activeJob.id)
       : livePreviewUrl;
-
-  const PRESETS: Array<{ value: Exclude<ProfilePreset, 'advanced'>; label: string }> = [
-    { value: 'quick', label: 'Quick' },
-    { value: 'standard', label: 'Standard' },
-    { value: 'quality', label: 'Quality' },
-  ];
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black">
@@ -153,8 +171,21 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
         <div className="absolute bottom-0 inset-x-0 h-2/5 bg-gradient-to-t from-black/85 to-transparent" />
       </div>
 
+      {/* ── Pending HUD — top right (job queued, worker not yet started) ── */}
+      {activeJob?.status === 'pending' && (
+        <div className="absolute top-4 right-4 z-30 w-72 sm:w-80">
+          <div className="hud-glass rounded-xl p-4 flex items-center gap-3">
+            <Loader2 size={16} className="animate-spin text-white/50 flex-shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-text-primary">Queued</p>
+              <p className="text-[11px] text-text-muted mt-0.5">Waiting for a worker to pick up…</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Processing HUD — top right ── */}
-      {activeJob && isProcessing && (
+      {activeJob?.status === 'running' && (
         <div className="absolute top-4 right-4 z-30 w-72 sm:w-80">
           <ProgressPanel
             jobId={activeJob.id}
@@ -197,62 +228,66 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
               )}
             </div>
 
-            {/* Preset pills */}
+            {/* Unified profile selector */}
             <div>
               <p className="text-[11px] text-text-muted uppercase tracking-wider mb-2 text-center">
                 Processing profile
               </p>
-              <div className="grid grid-cols-3 gap-2">
-                {PRESETS.map((p) => (
-                  <button
-                    key={p.value}
-                    type="button"
-                    onClick={() => {
-                      setLocalPreset(p.value);
-                      setSelectedProfileId('');
-                    }}
-                    className={`py-2 rounded text-xs font-medium capitalize transition-all duration-150 ${
-                      localPreset === p.value && !selectedProfileId
-                        ? 'bg-white/15 text-white ring-1 ring-white/20'
-                        : 'bg-white/5 border border-white/8 text-text-muted hover:text-text-secondary hover:bg-white/8'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Advanced: custom profile picker */}
-            {viewMode === 'advanced' && profiles.length > 0 && (
-              <div>
-                <p className="text-[11px] text-text-muted uppercase tracking-wider mb-2">
-                  <SlidersHorizontal size={10} className="inline mr-1" />
-                  Custom profile
-                </p>
-                <div className="space-y-1 max-h-28 overflow-y-auto">
-                  {profiles.map((p) => (
+              <div className="space-y-1 max-h-60 overflow-y-auto">
+                {PRESET_CONFIG.map((p) => {
+                  const active = localPreset === p.value && !selectedProfileId;
+                  return (
                     <button
-                      key={p.id}
+                      key={p.value}
                       type="button"
-                      onClick={() => setSelectedProfileId(p.id)}
-                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-left text-xs transition-all ${
-                        selectedProfileId === p.id
-                          ? 'bg-primary/20 text-text-primary ring-1 ring-primary/30'
-                          : 'bg-white/4 text-text-muted hover:text-text-secondary hover:bg-white/8'
+                      onClick={() => { setLocalPreset(p.value); setSelectedProfileId(''); }}
+                      className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 ${
+                        active
+                          ? 'bg-white/12 ring-1 ring-white/20 text-text-primary'
+                          : 'bg-white/5 text-text-muted hover:text-text-secondary hover:bg-white/8'
                       }`}
                     >
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                          selectedProfileId === p.id ? 'bg-primary' : 'bg-white/20'
-                        }`}
-                      />
-                      <span className="truncate">{p.name}</span>
+                      <p.Icon size={14} className={`flex-shrink-0 mt-0.5 ${active ? 'text-white' : 'text-white/40'}`} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium">{p.label}</p>
+                        <p className="text-[10px] text-text-muted mt-0.5 leading-relaxed">{p.description}</p>
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {p.features.map((f) => (
+                            <span key={f} className="text-[9px] bg-white/8 text-white/50 rounded px-1.5 py-0.5">{f}</span>
+                          ))}
+                        </div>
+                      </div>
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
+
+                {profiles.length > 0 && (
+                  <>
+                    <div className="pt-2 pb-1 px-1">
+                      <p className="text-[10px] text-text-muted uppercase tracking-wider flex items-center gap-1">
+                        <SlidersHorizontal size={9} />
+                        My profiles
+                      </p>
+                    </div>
+                    {profiles.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setSelectedProfileId(p.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 ${
+                          selectedProfileId === p.id
+                            ? 'bg-primary/15 ring-1 ring-primary/30 text-text-primary'
+                            : 'bg-white/5 text-text-muted hover:text-text-secondary hover:bg-white/8'
+                        }`}
+                      >
+                        <SlidersHorizontal size={14} className={`flex-shrink-0 ${selectedProfileId === p.id ? 'text-primary/80' : 'text-white/30'}`} />
+                        <span className="text-xs font-medium truncate">{p.name}</span>
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Start button */}
             <button
