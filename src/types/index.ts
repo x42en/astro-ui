@@ -21,6 +21,8 @@ export interface SessionRead {
   object_name: string | null;
   ra: number | null;
   dec: number | null;
+  target_ra: number | null;
+  target_dec: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -25,6 +25,10 @@ export interface UploadOptions {
   sessionId?: string;
   sessionName?: string;
   objectName?: string;
+  /** User-supplied right ascension hint, J2000 decimal degrees. */
+  targetRa?: number;
+  /** User-supplied declination hint, J2000 decimal degrees. */
+  targetDec?: number;
   frameType?: FrameType;
   onProgress?: ProgressCallback;
   signal?: AbortSignal;
@@ -34,7 +38,7 @@ export async function uploadFileChunked(
   file: File,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
-  const { sessionId, sessionName, objectName, frameType, onProgress, signal } = options;
+  const { sessionId, sessionName, objectName, targetRa, targetDec, frameType, onProgress, signal } = options;
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
   let uploadId: string | null = null;
 
@@ -59,6 +63,8 @@ export async function uploadFileChunked(
     if (sessionId) headers['X-Session-ID'] = sessionId;
     if (sessionName) headers['X-Session-Name'] = sessionName;
     if (objectName) headers['X-Object-Name'] = objectName;
+    if (typeof targetRa === 'number') headers['X-Target-RA'] = String(targetRa);
+    if (typeof targetDec === 'number') headers['X-Target-Dec'] = String(targetDec);
     if (frameType) headers['X-Frame-Type'] = frameType;
     if (i === 0) headers['Upload-Start'] = 'true';
     if (i === totalChunks - 1) headers['Upload-Finalize'] = 'true';

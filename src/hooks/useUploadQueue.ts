@@ -97,7 +97,12 @@ export function useUploadQueue() {
   }, []);
 
   const startUpload = useCallback(
-    async (sessionName: string, objectName?: string) => {
+    async (
+      sessionName: string,
+      objectName?: string,
+      targetRa?: number,
+      targetDec?: number,
+    ) => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
@@ -146,6 +151,8 @@ export function useUploadQueue() {
               sessionId: resolvedSessionId ?? undefined,
               sessionName: resolvedSessionId ? undefined : sessionName,
               objectName: resolvedSessionId ? undefined : objectName,
+              targetRa: resolvedSessionId ? undefined : targetRa,
+              targetDec: resolvedSessionId ? undefined : targetDec,
               frameType,
               signal: controller.signal,
               onProgress: ({ loaded }) => {
