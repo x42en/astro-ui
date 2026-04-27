@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Telescope, History, Images, BookOpen, Settings } from 'lucide-react';
+import { History, Images, BookOpen, Settings } from 'lucide-react';
+import { Logo } from '../branding/Logo';
 import { useSettingsStore } from '../../store/settingsStore';
 import { UserMenu } from './UserMenu';
 
@@ -58,13 +59,9 @@ export function Header() {
   return (
     <header className="h-14 border-b border-space-border bg-space-bg/95 backdrop-blur-md sticky top-0 z-40 grid grid-cols-[auto_1fr_auto] items-center px-6 gap-6 flex-shrink-0">
       {/* Left — Logo */}
-      <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
-        <div className="w-7 h-7 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
-          <Telescope size={14} className="text-primary" />
-        </div>
-        <span className="font-semibold text-text-primary tracking-tight hidden sm:block">
-          Astro<span className="text-gradient-accent">Stack</span>
-        </span>
+      <Link to="/" className="flex items-center flex-shrink-0" aria-label="AstroStack — home">
+        <Logo variant="wordmark" size={28} className="hidden sm:inline-flex" />
+        <Logo variant="mark" size={28} className="sm:hidden" />
       </Link>
 
       {/* Center — Nav links */}
