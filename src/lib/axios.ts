@@ -17,7 +17,16 @@ api.interceptors.request.use((config) => {
   // Axios 1.x does NOT automatically remove the instance default for FormData
   // in browser environments — this must be done explicitly.
   if (config.data instanceof FormData) {
-    config.headers.delete('Content-Type');
+    // `config.headers` is normally an AxiosHeaders instance, but we guard
+    // against the rare case where it has been replaced with a plain object
+    // by an upstream caller — `.delete` would otherwise throw a TypeError
+    // synchronously inside the interceptor, which axios surfaces as a
+    // generic non-AxiosError, masking the real cause.
+    if (typeof config.headers?.delete === 'function') {
+      config.headers.delete('Content-Type');
+    } else if (config.headers && typeof config.headers === 'object') {
+      delete (config.headers as Record<string, unknown>)['Content-Type'];
+    }
   }
 
   if (authEnabled && apiKey) {
@@ -29,6 +38,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // eslint-disable-next-line no-console
+    console.error('[axios] response interceptor caught', {
+      isAxiosError: axios.isAxiosError(error),
+      message: error?.message,
+      name: error?.name,
+      code: error?.code,
+      stack: error?.stack,
+      raw: error,
+    });
     if (axios.isAxiosError(error)) {
       const message =
         error.response?.data?.message ??
