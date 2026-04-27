@@ -1,6 +1,7 @@
-import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { getSession } from '../services/sessions';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Trash2 } from 'lucide-react';
+import { getSession, deleteSession } from '../services/sessions';
 import { getJob } from '../services/jobs';
 import { useUiStore } from '../store/uiStore';
 import { ProcessingPanel } from '../components/processing/ProcessingPanel';
@@ -9,6 +10,8 @@ import type { JobRead } from '../types';
 
 export function SessionDetail() {
   const { sessionId } = useParams<{ sessionId: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const jobsBySession = useUiStore((s) => s.jobsBySession);
   const jobId = sessionId ? jobsBySession[sessionId] : undefined;
 
@@ -29,6 +32,25 @@ export function SessionDetail() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSession(sessionId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      navigate('/');
+    },
+  });
+
+  function handleDelete() {
+    if (!session) return;
+    const isProcessing = session.status === 'processing';
+    if (isProcessing) {
+      alert('Cancel the running job before deleting this session.');
+      return;
+    }
+    if (!window.confirm(`Delete session "${session.name}"? This cannot be undone.`)) return;
+    deleteMutation.mutate();
+  }
+
   if (isLoading || !session) {
     return (
       <div className="h-[calc(100vh-3.5rem)] bg-black flex items-center justify-center">
@@ -46,9 +68,23 @@ export function SessionDetail() {
     );
   }
 
+  const isProcessing = session.status === 'processing';
+
   return (
-    <div className="h-[calc(100vh-3.5rem)]">
+    <div className="h-[calc(100vh-3.5rem)] relative">
       <ProcessingPanel session={session} activeJob={activeJob ?? null} />
+      {/* Delete button — fixed top-right overlay, hidden while processing */}
+      {!isProcessing && (
+        <button
+          onClick={handleDelete}
+          disabled={deleteMutation.isPending}
+          className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-red-600/80 text-white/50 hover:text-white text-xs font-medium transition-all duration-200 disabled:opacity-40 backdrop-blur-sm"
+          title="Delete session"
+        >
+          <Trash2 size={13} />
+          {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+        </button>
+      )}
     </div>
   );
 }

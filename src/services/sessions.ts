@@ -51,6 +51,10 @@ export async function cancelSession(sessionId: string): Promise<void> {
   await api.post(`/sessions/${sessionId}/cancel`);
 }
 
+export async function deleteSession(sessionId: string): Promise<void> {
+  await api.delete(`/sessions/${sessionId}`);
+}
+
 export function getLightPreviewUrl(sessionId: string): string {
   const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
   return `${base}/sessions/${sessionId}/light-preview`;

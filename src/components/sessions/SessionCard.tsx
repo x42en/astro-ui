@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, Layers, Minus, Clock } from 'lucide-react';
+import { Sun, Moon, Layers, Minus, Clock, Trash2 } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatusBadge } from '../ui/StatusBadge';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { useUiStore } from '../../store/uiStore';
 import { useSettingsStore } from '../../store/settingsStore';
-import { getLightPreviewUrl } from '../../services/sessions';
+import { getLightPreviewUrl, deleteSession } from '../../services/sessions';
 import type { SessionRead } from '../../types';
 
 function formatDate(iso: string): string {
@@ -21,12 +22,28 @@ interface SessionCardProps {
 
 export function SessionCard({ session }: SessionCardProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const jobStatusBySession = useUiStore((s) => s.jobStatusBySession);
   const apiBaseUrl = useSettingsStore((s) => s.apiBaseUrl);
 
   const liveStatus = jobStatusBySession[session.id] ?? session.status;
   const isRendered = session.status === 'completed';
+  const isProcessing = liveStatus === 'processing' || liveStatus === 'running';
   const thumbnailUrl = `${apiBaseUrl}/sessions/${session.id}/step-preview/export`;
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSession(session.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    },
+  });
+
+  function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (isProcessing) return;
+    if (!window.confirm(`Delete session "${session.name}"? This cannot be undone.`)) return;
+    deleteMutation.mutate();
+  }
 
   return (
     <div
@@ -74,15 +91,25 @@ export function SessionCard({ session }: SessionCardProps) {
         <StatusBadge status={liveStatus as Parameters<typeof StatusBadge>[0]['status']} />
       </div>
 
-      {/* Top-right: live pulse when processing */}
-      {(liveStatus === 'processing' || liveStatus === 'running') && (
-        <div className="absolute top-3 right-3 z-10">
+      {/* Top-right: live pulse when processing, trash icon when idle (visible on hover) */}
+      <div className="absolute top-3 right-3 z-10">
+        {isProcessing ? (
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
           </span>
-        </div>
-      )}
+        ) : (
+          <button
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-md bg-black/50 hover:bg-red-600/80 text-white/60 hover:text-white disabled:opacity-40"
+            aria-label="Delete session"
+            title="Delete session"
+          >
+            <Trash2 size={13} />
+          </button>
+        )}
+      </div>
 
       {/* Bottom info */}
       <div className="absolute bottom-0 inset-x-0 z-10 p-4">
