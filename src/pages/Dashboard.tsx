@@ -1,19 +1,16 @@
 import { useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Telescope, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Plus, Telescope, ChevronLeft, ChevronRight } from 'lucide-react';
 import { listSessions } from '../services/sessions';
 import { SessionCard } from '../components/sessions/SessionCard';
 import { SessionFilters } from '../components/sessions/SessionFilters';
 import { CreateSessionModal } from '../components/sessions/CreateSessionModal';
 import { SessionCardSkeleton } from '../components/ui/Skeleton';
-import { useUiStore } from '../store/uiStore';
 import type { SessionStatus } from '../types';
 
 const PAGE_SIZE = 12;
 
 export function Dashboard() {
-  const queryClient = useQueryClient();
-  const { addToast } = useUiStore();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all');
@@ -26,7 +23,7 @@ export function Dashboard() {
     ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
   };
 
-  const { data, isLoading, isFetching, refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['sessions', queryParams],
     queryFn: () => listSessions(queryParams),
   });
@@ -50,22 +47,13 @@ export function Dashboard() {
     <div className="p-6 lg:p-8 max-w-screen-2xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-text-primary tracking-tight">Sessions</h1>
+          <h1 className="text-2xl font-semibold text-text-primary tracking-tight">History</h1>
           <p className="text-sm text-text-muted mt-0.5">
-            {total > 0 ? `${total} session${total !== 1 ? 's' : ''}` : 'Manage your astrophotography sessions'}
+            {total > 0 ? `${total} session${total !== 1 ? 's' : ''}` : 'Browse and manage your past astrophotography sessions'}
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => { queryClient.invalidateQueries({ queryKey: ['sessions'] }); refetch(); }}
-            disabled={isFetching}
-            className="p-2 rounded border border-space-border text-text-muted hover:text-text-secondary hover:bg-space-elevated transition-all duration-150 disabled:opacity-50"
-            aria-label="Refresh"
-          >
-            <RefreshCw size={15} className={isFetching ? 'animate-spin' : ''} />
-          </button>
           <button
             type="button"
             onClick={() => setCreateOpen(true)}

@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatusBadge } from '../ui/StatusBadge';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { ConfirmModal } from '../ui/ConfirmModal';
+import { GalleryStarToggle } from '../gallery/GalleryStarToggle';
 import { useUiStore } from '../../store/uiStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { getLightPreviewUrl, deleteSession } from '../../services/sessions';
@@ -103,8 +104,15 @@ export function SessionCard({ session }: SessionCardProps) {
         <StatusBadge status={liveStatus as Parameters<typeof StatusBadge>[0]['status']} />
       </div>
 
-      {/* Top-right: live pulse when processing, trash icon when idle (visible on hover) */}
-      <div className="absolute top-3 right-3 z-10">
+      {/* Top-right: star (when completed), live pulse (processing), trash (idle hover) */}
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+        {isRendered && (
+          <GalleryStarToggle
+            sessionId={session.id}
+            isPublished={session.is_in_gallery}
+            size="sm"
+          />
+        )}
         {isProcessing ? (
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
@@ -159,9 +167,16 @@ export function SessionCard({ session }: SessionCardProps) {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-white/35">
+          <div
+            className="flex items-center gap-1 text-[11px] text-white/35"
+            title={
+              session.acquired_at
+                ? `Captured ${new Date(session.acquired_at).toLocaleString()}`
+                : `Imported ${new Date(session.created_at).toLocaleString()}`
+            }
+          >
             <Clock size={9} />
-            {formatDate(session.created_at)}
+            {formatDate(session.acquired_at ?? session.created_at)}
           </div>
         </div>
       </div>

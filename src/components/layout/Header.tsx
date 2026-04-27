@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Telescope, LayoutDashboard, BookOpen, Settings } from 'lucide-react';
+import { Telescope, History, Images, BookOpen, Settings } from 'lucide-react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { UserMenu } from './UserMenu';
 
 const NAV_LINKS = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/', label: 'History', icon: History },
+  { to: '/gallery', label: 'Gallery', icon: Images },
   { to: '/profiles', label: 'Profiles', icon: BookOpen },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

@@ -23,6 +23,11 @@ export interface SessionRead {
   dec: number | null;
   target_ra: number | null;
   target_dec: number | null;
+  acquired_at: string | null;
+  is_in_gallery: boolean;
+  gallery_published_at: string | null;
+  gallery_author_name: string | null;
+  gallery_download_count: number;
   created_at: string;
   updated_at: string;
 }

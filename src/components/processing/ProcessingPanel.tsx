@@ -12,6 +12,8 @@ import {
   SlidersHorizontal,
   Zap,
   Star,
+  Image as ImageIcon,
+  Sliders,
 } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { startProcessing, cancelSession, getLightPreviewUrl } from '../../services/sessions';
@@ -22,6 +24,7 @@ import { ProgressPanel } from './ProgressPanel';
 import { OutputActions } from './OutputActions';
 import { SearchableSelect, type SelectGroup } from '../ui/SearchableSelect';
 import { StatusBadge } from '../ui/StatusBadge';
+import { GalleryStarToggle } from '../gallery/GalleryStarToggle';
 import type { SessionRead, JobRead, ProfilePreset } from '../../types';
 
 const PRESET_CONFIG = [
@@ -181,9 +184,19 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
       session.status === 'failed') &&
     !isProcessing;
 
+  // ── View mode toggle (Result ↔ Setup) ──
+  // Only meaningful for completed sessions: when a render is available we
+  // default to showing it (Result), and the user can opt into Setup to
+  // re-launch a new processing run with a different profile.
+  const [viewMode, setViewMode] = useState<'result' | 'setup'>('result');
+  const showLaunchCard =
+    canStart && (!isCompleted || viewMode === 'setup');
+  const showResultStrip = isCompleted && viewMode === 'result' && !!activeJob;
+  const showModeToggle = isCompleted && !isProcessing;
+
   // Determine background image
   const bgUrl =
-    isCompleted && activeJob?.output_preview_path
+    isCompleted && viewMode === 'result' && activeJob?.output_preview_path
       ? getPreviewUrl(activeJob.id)
       : livePreviewUrl;
 
@@ -250,8 +263,62 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
         </div>
       )}
 
+      {/* ── Star toggle — top right (when completed) ── */}
+      {showModeToggle && (
+        <div className="absolute top-4 right-4 z-30">
+          <GalleryStarToggle
+            sessionId={session.id}
+            isPublished={session.is_in_gallery}
+            size="md"
+            stopPropagation={false}
+          />
+        </div>
+      )}
+
+      {/* ── View-mode pill — top center (only on completed sessions) ── */}
+      {showModeToggle && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
+          <div
+            role="tablist"
+            aria-label="Session view mode"
+            className="hud-glass rounded-full p-0.5 flex items-center gap-0.5 shadow-lg"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'result'}
+              onClick={() => setViewMode('result')}
+              className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-150 ${
+                viewMode === 'result'
+                  ? 'bg-white/15 text-white'
+                  : 'text-white/55 hover:text-white/85'
+              }`}
+              title="Show the rendered image"
+            >
+              <ImageIcon size={11} />
+              Result
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'setup'}
+              onClick={() => setViewMode('setup')}
+              className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-150 ${
+                viewMode === 'setup'
+                  ? 'bg-white/15 text-white'
+                  : 'text-white/55 hover:text-white/85'
+              }`}
+              title="Re-launch processing with a new profile"
+            >
+              <Sliders size={11} />
+              Setup
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Start card — centered (when can start, not completed) ── */}
-      {canStart && !isCompleted && (
+      {showLaunchCard && (
         <div className="absolute inset-0 z-20 flex items-center justify-center p-4">
           <div className="hud-glass rounded-xl p-6 sm:p-8 max-w-sm w-full space-y-5 animate-slide-in-up shadow-2xl">
             <div className="text-center space-y-1">
@@ -303,8 +370,8 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
         </div>
       )}
 
-      {/* ── Output actions strip — completed ── */}
-      {isCompleted && activeJob && (
+      {/* ── Output actions strip — completed (Result mode) ── */}
+      {showResultStrip && (
         <div className="absolute bottom-0 inset-x-0 z-20">
           <OutputActions job={activeJob} onReprocess={handleStart} />
         </div>
