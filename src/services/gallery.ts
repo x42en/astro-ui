@@ -1,4 +1,5 @@
 import api from '../lib/axios';
+import type { CaptureMetadata, ProfileSummary } from '../types';
 
 export interface GalleryItem {
   session_id: string;
@@ -10,6 +11,8 @@ export interface GalleryItem {
   acquired_at: string | null;
   download_count: number;
   preview_url: string;
+  capture_metadata: CaptureMetadata | null;
+  profile_summary: ProfileSummary | null;
 }
 
 export interface DownloadRequest {

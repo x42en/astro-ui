@@ -14,6 +14,8 @@ import {
   Star,
   Image as ImageIcon,
   Sliders,
+  Info,
+  X,
 } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { startProcessing, cancelSession, getLightPreviewUrl } from '../../services/sessions';
@@ -22,10 +24,11 @@ import { getPreviewUrl } from '../../services/jobs';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { ProgressPanel } from './ProgressPanel';
 import { OutputActions } from './OutputActions';
+import { MetadataCartouche } from './MetadataCartouche';
 import { SearchableSelect, type SelectGroup } from '../ui/SearchableSelect';
 import { StatusBadge } from '../ui/StatusBadge';
 import { GalleryStarToggle } from '../gallery/GalleryStarToggle';
-import type { SessionRead, JobRead, ProfilePreset } from '../../types';
+import type { SessionRead, JobRead, ProfilePreset, ProfileSummary } from '../../types';
 
 const PRESET_CONFIG = [
   {
@@ -377,6 +380,11 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
         </div>
       )}
 
+      {/* ── Capture + pipeline metadata cartouche (Result mode only) ── */}
+      {showResultStrip && (
+        <MetadataOverlay session={session} job={activeJob} />
+      )}
+
       {/* ── Bottom metadata strip — when not completed and not in start mode ── */}
       {!isCompleted && !canStart && (
         <div className="absolute bottom-0 inset-x-0 z-10 p-5 sm:p-6">
@@ -438,5 +446,84 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Metadata overlay (capture EXIF + pipeline summary) ──────────────────
+//
+// Desktop (md+): rendered as a discrete glass cartouche above the
+// OutputActions strip in the bottom-right corner.  Mobile: collapsed to
+// a single floating Info button at the same location; tapping it slides
+// up a bottom sheet that occupies at most 40 % of the viewport so the
+// image stays the dominant element.
+function deriveProfileSummary(job: JobRead): ProfileSummary {
+  const snap = job.profile_snapshot ?? null;
+  const summary: ProfileSummary = { preset: job.profile_preset };
+  if (snap) {
+    const tools = {
+      drizzle_enabled: !!snap.drizzle_enabled,
+      plate_solving_enabled: !!snap.plate_solving_enabled,
+      gradient_removal_enabled: !!snap.gradient_removal_enabled,
+      color_calibration_enabled: !!snap.color_calibration_enabled,
+      photometric_calibration_enabled: !!snap.photometric_calibration_enabled,
+      denoise_enabled: !!snap.denoise_enabled,
+      sharpen_enabled: !!snap.sharpen_enabled,
+      super_resolution_enabled: !!snap.super_resolution_enabled,
+      star_separation_enabled: !!snap.star_separation_enabled,
+    };
+    summary.tools = tools;
+    if (snap.stretch_method) summary.stretch_method = snap.stretch_method;
+  }
+  return summary;
+}
+
+interface MetadataOverlayProps {
+  session: SessionRead;
+  job: JobRead;
+}
+
+function MetadataOverlay({ session, job }: MetadataOverlayProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const profile = deriveProfileSummary(job);
+  const capture = session.capture_metadata;
+  const hasContent =
+    (capture && Object.keys(capture).some((k) =>
+      k !== 'frame_count' && k !== 'with_metadata' && (capture as Record<string, unknown>)[k] != null,
+    )) ||
+    !!profile.preset;
+
+  if (!hasContent) return null;
+
+  return (
+    <>
+      {/* Desktop cartouche */}
+      <div className="hidden md:block absolute bottom-24 right-4 z-30 max-w-sm">
+        <MetadataCartouche capture={capture} profile={profile} variant="overlay" />
+      </div>
+
+      {/* Mobile: floating Info button */}
+      <div className="md:hidden absolute bottom-20 right-4 z-30">
+        <button
+          type="button"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-expanded={mobileOpen}
+          aria-controls="metadata-sheet"
+          className="hud-glass rounded-full p-2.5 text-white/85 hover:text-white shadow-lg"
+          title={mobileOpen ? 'Hide metadata' : 'Show capture and pipeline metadata'}
+        >
+          {mobileOpen ? <X size={14} /> : <Info size={14} />}
+        </button>
+      </div>
+
+      {/* Mobile: collapsible bottom sheet */}
+      {mobileOpen && (
+        <div
+          id="metadata-sheet"
+          className="md:hidden absolute inset-x-3 bottom-20 z-30 max-h-[40vh] overflow-y-auto animate-slide-in-up"
+        >
+          <MetadataCartouche capture={capture} profile={profile} variant="panel" />
+        </div>
+      )}
+    </>
   );
 }

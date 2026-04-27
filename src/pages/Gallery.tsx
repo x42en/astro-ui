@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Images, Download, Star, Telescope } from 'lucide-react';
 import { listGallery, type GalleryItem } from '../services/gallery';
 import { EmailDownloadModal } from '../components/gallery/EmailDownloadModal';
+import { LightboxModal } from '../components/gallery/LightboxModal';
 
 function formatDate(iso: string | null): string {
   if (!iso) return '';
@@ -15,6 +16,7 @@ function formatDate(iso: string | null): string {
 
 export function Gallery() {
   const [downloadTarget, setDownloadTarget] = useState<GalleryItem | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ['gallery'],
     queryFn: listGallery,
@@ -51,15 +53,24 @@ export function Gallery() {
         <EmptyState />
       ) : (
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 [column-fill:_balance]">
-          {items.map((item) => (
+          {items.map((item, idx) => (
             <GalleryCard
               key={item.session_id}
               item={item}
+              onOpen={() => setLightboxIndex(idx)}
               onDownload={() => setDownloadTarget(item)}
             />
           ))}
         </div>
       )}
+
+      <LightboxModal
+        items={items}
+        index={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onIndexChange={setLightboxIndex}
+        onRequestDownload={(item) => setDownloadTarget(item)}
+      />
 
       <EmailDownloadModal
         sessionId={downloadTarget?.session_id ?? null}
@@ -72,26 +83,34 @@ export function Gallery() {
 
 interface GalleryCardProps {
   item: GalleryItem;
+  onOpen: () => void;
   onDownload: () => void;
 }
 
-function GalleryCard({ item, onDownload }: GalleryCardProps) {
+function GalleryCard({ item, onOpen, onDownload }: GalleryCardProps) {
   return (
     <figure className="break-inside-avoid mb-4 group relative rounded-lg overflow-hidden bg-space-elevated/40 border border-space-border hover:border-space-border-hover transition-all">
-      <img
-        src={item.preview_url}
-        alt={item.name}
-        loading="lazy"
-        className="w-full h-auto block"
-      />
+      <button
+        type="button"
+        onClick={onOpen}
+        className="block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+        aria-label={`Open ${item.name} in full view`}
+      >
+        <img
+          src={item.preview_url}
+          alt={item.name}
+          loading="lazy"
+          className="w-full h-auto block"
+        />
+      </button>
 
       {/* Star badge */}
-      <div className="absolute top-2 right-2 hud-glass rounded-full p-1.5 text-yellow-400">
+      <div className="absolute top-2 right-2 hud-glass rounded-full p-1.5 text-yellow-400 pointer-events-none">
         <Star size={12} className="fill-yellow-400" />
       </div>
 
       {/* Bottom overlay */}
-      <figcaption className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 via-black/55 to-transparent">
+      <figcaption className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 via-black/55 to-transparent pointer-events-none">
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-white truncate">
@@ -114,8 +133,11 @@ function GalleryCard({ item, onDownload }: GalleryCardProps) {
           </div>
           <button
             type="button"
-            onClick={onDownload}
-            className="flex-shrink-0 hud-glass rounded-md p-2 text-white/85 hover:text-white opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownload();
+            }}
+            className="pointer-events-auto flex-shrink-0 hud-glass rounded-md p-2 text-white/85 hover:text-white opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
             title="Request high-resolution download"
             aria-label="Request high-resolution download"
           >

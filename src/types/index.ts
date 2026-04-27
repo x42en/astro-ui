@@ -8,6 +8,47 @@ export type ProfilePreset = 'quick' | 'standard' | 'quality' | 'advanced';
 
 export type InputFormat = 'fits' | 'raw_dslr' | 'mixed';
 
+export interface CaptureMetadata {
+  frame_count?: number;
+  with_metadata?: number;
+  exposure_seconds?: number | null;
+  exposure_seconds_min?: number;
+  exposure_seconds_max?: number;
+  iso?: number | null;
+  iso_min?: number;
+  iso_max?: number;
+  f_number?: number | null;
+  focal_length_mm?: number | null;
+  focal_length_mm_min?: number;
+  focal_length_mm_max?: number;
+  temperature_c?: number | null;
+  gain?: number | null;
+  camera_make?: string;
+  camera_model?: string;
+  lens_model?: string;
+  telescope?: string;
+  filter?: string;
+  total_integration_seconds?: number;
+  [k: string]: unknown;
+}
+
+export interface ProfileSummary {
+  preset?: ProfilePreset;
+  stretch_method?: string;
+  tools?: Partial<Record<
+    | 'drizzle_enabled'
+    | 'plate_solving_enabled'
+    | 'gradient_removal_enabled'
+    | 'color_calibration_enabled'
+    | 'photometric_calibration_enabled'
+    | 'denoise_enabled'
+    | 'sharpen_enabled'
+    | 'super_resolution_enabled'
+    | 'star_separation_enabled',
+    boolean
+  >>;
+}
+
 export interface SessionRead {
   id: string;
   name: string;
@@ -24,6 +65,7 @@ export interface SessionRead {
   target_ra: number | null;
   target_dec: number | null;
   acquired_at: string | null;
+  capture_metadata: CaptureMetadata | null;
   is_in_gallery: boolean;
   gallery_published_at: string | null;
   gallery_author_name: string | null;
@@ -57,6 +99,7 @@ export interface JobRead {
   output_fits_path: string | null;
   output_tiff_path: string | null;
   output_preview_path: string | null;
+  profile_snapshot: ProcessingProfileConfig | null;
   created_at: string;
   steps: JobStepRead[];
 }
