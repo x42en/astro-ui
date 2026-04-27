@@ -27,3 +27,7 @@ dist-ssr
 *.png
 *.fits
 results
+!public/*.jpg
+!public/*.jpeg
+!public/*.png
+!public/*.fits
