@@ -20,7 +20,7 @@ export function Gallery() {
     queryFn: listGallery,
   });
 
-  const items = data ?? [];
+  const items = Array.isArray(data) ? data : [];
 
   return (
     <div className="p-6 lg:p-8 max-w-screen-2xl mx-auto animate-fade-in">

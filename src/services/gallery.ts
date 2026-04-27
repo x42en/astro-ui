@@ -24,7 +24,10 @@ export interface DownloadResponse {
 
 export async function listGallery(): Promise<GalleryItem[]> {
   const res = await api.get<GalleryItem[]>('/gallery');
-  return res.data;
+  // Defensive: if the backend isn't deployed yet, the SPA fallback may
+  // serve index.html as the response body.  axios then returns the HTML
+  // string and `.map` blows up downstream.  Coerce non-arrays to [].
+  return Array.isArray(res.data) ? res.data : [];
 }
 
 export async function publishSession(
