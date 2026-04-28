@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { History, BookOpen, Images, Settings, Calendar } from 'lucide-react';
+import { BookOpen, Images, Settings, Calendar, LayoutDashboard } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Logo } from '../branding/Logo';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -14,9 +14,9 @@ interface NavLink {
 }
 
 const BASE_NAV_LINKS: NavLink[] = [
-  { to: '/history', label: 'History', icon: History },
-  { to: '/prepare', label: 'Plan', icon: Calendar },
   { to: '/gallery', label: 'Gallery', icon: Images },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/prepare', label: 'Plan', icon: Calendar },
   { to: '/profiles', label: 'Profiles', icon: BookOpen },
 ];
 
@@ -74,7 +74,7 @@ export function Header() {
   return (
     <header className="h-14 border-b border-space-border bg-space-bg/95 backdrop-blur-md sticky top-0 z-40 grid grid-cols-[auto_1fr_auto] items-center px-6 gap-6 flex-shrink-0">
       {/* Left — Logo */}
-      <Link to="/history" className="flex items-center flex-shrink-0" aria-label="AstroStack — home">
+      <Link to="/" className="flex items-center flex-shrink-0" aria-label="AstroStack — home">
         <Logo variant="wordmark" size={28} className="hidden sm:inline-flex" />
         <Logo variant="mark" size={28} className="sm:hidden" />
       </Link>

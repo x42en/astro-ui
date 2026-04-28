@@ -36,7 +36,7 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/prepare" element={<SessionPrep />} />
             <Route
-              path="/history"
+              path="/dashboard"
               element={
                 <RequireAuth>
                   <Dashboard />
