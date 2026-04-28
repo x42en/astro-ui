@@ -105,19 +105,23 @@ function Hero() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 max-w-3xl px-6 py-24 text-center space-y-8">
-        <Logo variant="mark" size={72} className="mx-auto" />
-        <div className="space-y-5">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
-            Your night sky,{' '}
+      <div className="relative z-10 max-w-4xl px-6 py-24 space-y-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-7">
+          <Logo
+            variant="mark"
+            size={128}
+            className="text-white text-4xl sm:text-5xl md:text-6xl [&>svg]:!w-auto [&>svg]:!h-[2.1em]"
+          />
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] text-center sm:text-left">
+            Your night sky,<br />
             <span className="text-gradient-accent">processed.</span>
           </h1>
-          <p className="text-base sm:text-lg text-text-secondary max-w-xl mx-auto leading-relaxed">
-            AstroStack ingests your raw frames and runs them through a
-            GPU-accelerated pipeline — calibration, stacking, plate solving and
-            AI enhancement — without leaving your machine.
-          </p>
         </div>
+        <p className="text-base sm:text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed text-center">
+          AstroStack ingests your raw frames and runs them through a
+          GPU-accelerated pipeline — calibration, stacking, plate solving and
+          AI enhancement — without leaving your machine.
+        </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
             to="/login"
