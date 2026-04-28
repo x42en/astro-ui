@@ -128,9 +128,15 @@ export interface ProcessingProfileConfig {
   stretch_strength?: number;
 
   color_calibration_enabled?: boolean;
-  /** Siril photometric colour calibration (`pcc`).  Recommended only for
-   *  defiltered DSLR / dedicated OSC astro cameras: on stock DSLR it tends to
-   *  neutralise residual Hα. */
+  /** Acquisition hardware hint.  `true` (default, the modern astrophoto norm)
+   *  for defiltered DSLR / dedicated OSC astro cameras with broadband R/G/B
+   *  response.  Set `false` for a stock DSLR with full IR-cut filter; the
+   *  display pipeline then softens the per-channel red black-point and adds
+   *  a mild red/saturation boost to preserve the residual Hα signal. */
+  camera_defiltered?: boolean;
+  /** Siril photometric colour calibration (`pcc`).  Independent from
+   *  `camera_defiltered`: requires a successful plate-solve and an internet
+   *  catalogue lookup, which can fail silently on small FOV / sparse fields. */
   photometric_calibration_enabled?: boolean;
 
   denoise_enabled?: boolean;

@@ -268,7 +268,7 @@ export function ProfileForm({
 
           <StepSection
             title="Stretch & Color"
-            description="Tone curve and colour balance. Asinh lifts faint nebulosity while preserving stellar cores. Photometric calibration is opt-in for defiltered cameras."
+            description="Tone curve and colour balance. Asinh lifts faint nebulosity while preserving stellar cores. Toggle 'Defiltered camera' to match your acquisition hardware."
             icon={<Palette size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -299,7 +299,12 @@ export function ProfileForm({
               onChange={(v) => update({ color_calibration_enabled: v })}
             />
             <ToggleField
-              label="Photometric calibration (defiltered cameras)"
+              label="Defiltered camera (OSC / astro-modified DSLR)"
+              value={c.camera_defiltered ?? true}
+              onChange={(v) => update({ camera_defiltered: v })}
+            />
+            <ToggleField
+              label="Photometric calibration (Siril pcc, requires plate-solve)"
               value={c.photometric_calibration_enabled ?? false}
               onChange={(v) => update({ photometric_calibration_enabled: v })}
             />
