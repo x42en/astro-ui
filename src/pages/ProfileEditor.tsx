@@ -8,6 +8,7 @@ import {
   Download,
   Copy as CopyIcon,
   Lock,
+  Globe2,
 } from 'lucide-react';
 import {
   listProfiles,
@@ -19,21 +20,16 @@ import {
 } from '../services/profiles';
 import { ProfileList } from '../components/profiles/ProfileList';
 import { ProfileForm } from '../components/profiles/ProfileForm';
+import { CommunityProfilesModal } from '../components/profiles/CommunityProfilesModal';
 import { useUiStore } from '../store/uiStore';
+import { DEFAULT_ADVANCED_CONFIG } from '../lib/presets';
 import type { ProcessingProfileConfig, ProfileRead } from '../types';
 
-const BLANK_CONFIG: ProcessingProfileConfig = {
-  preprocessing: { enable: true, hot_pixel_threshold: 3, cosmic_ray_rejection: true },
-  raw_conversion: { enable: true, debayer: true, white_balance: 'auto' },
-  star_separation: { enable: true, sensitivity: 5, stars_threshold: 30 },
-  gradient_removal: { enable: true, algorithm: 'automatic', degree: 1 },
-  denoise: { enable: true, method: 'ai', strength: 50 },
-  plate_solving: { enable: true, solver: 'astap', timeout: 120 },
-  stretch_color: { enable: true, algorithm: 'arcsinh', factor: 5 },
-  super_resolution: { enable: false, scale: 2 },
-  sharpen: { enable: false, method: 'Richardson-Lucy', iterations: 10 },
-  export: { enable: true, format: 'fits', quality: 95 },
-};
+// New profiles inherit the standard preset defaults so they immediately
+// reflect the modern backend pipeline (AI gradient removal, asinh stretch,
+// luminance-only denoise, defiltered camera as the norm, …).  Picking an
+// object template afterwards overrides the relevant subset of fields.
+const BLANK_CONFIG: ProcessingProfileConfig = { ...DEFAULT_ADVANCED_CONFIG };
 
 export function ProfileEditor() {
   const queryClient = useQueryClient();
@@ -41,6 +37,7 @@ export function ProfileEditor() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [communityOpen, setCommunityOpen] = useState(false);
 
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -195,6 +192,15 @@ export function ProfileEditor() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCommunityOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary border border-space-border hover:bg-space-elevated rounded transition-all"
+              title="Browse profiles shared by other users"
+            >
+              <Globe2 size={14} />
+              Community
+            </button>
             <button
               type="button"
               onClick={handleImportClick}
@@ -373,6 +379,12 @@ export function ProfileEditor() {
           </div>
         </div>
       </div>
+
+      <CommunityProfilesModal
+        open={communityOpen}
+        onOpenChange={setCommunityOpen}
+        onClone={handleDuplicate}
+      />
     </div>
   );
 }

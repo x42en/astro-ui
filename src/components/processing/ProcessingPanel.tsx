@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Play,
   Square,
@@ -9,9 +9,6 @@ import {
   Minus,
   MapPin,
   Loader2,
-  SlidersHorizontal,
-  Zap,
-  Star,
   Image as ImageIcon,
   Sliders,
   Info,
@@ -19,40 +16,15 @@ import {
 } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { startProcessing, cancelSession, getLightPreviewUrl } from '../../services/sessions';
-import { listProfiles } from '../../services/profiles';
 import { getPreviewUrl } from '../../services/jobs';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { ProgressPanel } from './ProgressPanel';
 import { OutputActions } from './OutputActions';
 import { MetadataCartouche } from './MetadataCartouche';
-import { SearchableSelect, type SelectGroup } from '../ui/SearchableSelect';
+import { ProfileChoiceSelect, type ProfileChoice } from './ProfileChoiceSelect';
 import { StatusBadge } from '../ui/StatusBadge';
 import { GalleryStarToggle } from '../gallery/GalleryStarToggle';
 import type { SessionRead, JobRead, ProfilePreset, ProfileSummary } from '../../types';
-
-const PRESET_CONFIG = [
-  {
-    value: 'quick' as const,
-    label: 'Quick',
-    description: 'Fast pipeline — no plate solving, gradient or color calibration',
-    Icon: Zap,
-    features: ['Denoise'],
-  },
-  {
-    value: 'standard' as const,
-    label: 'Standard',
-    description: 'Balanced quality — plate solving, gradient removal, color calibration',
-    Icon: Layers,
-    features: ['Plate solving', 'Gradient', 'Colors', 'Denoise', 'Sharpen'],
-  },
-  {
-    value: 'quality' as const,
-    label: 'Quality',
-    description: 'Maximum quality — Drizzle ×2, super-resolution, star separation',
-    Icon: Star,
-    features: ['Drizzle ×2', 'Plate solving', 'Gradient', 'Colors', 'Denoise', 'Sharpen', 'Super-res', 'Star sep.'],
-  },
-];
 
 interface ProcessingPanelProps {
   session: SessionRead;
@@ -82,11 +54,6 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const [livePreviewUrl, setLivePreviewUrl] = useState<string | null>(
     () => getLightPreviewUrl(session.id),
   );
-
-  const { data: profiles = [] } = useQuery({
-    queryKey: ['profiles'],
-    queryFn: listProfiles,
-  });
 
   const processMutation = useMutation({
     mutationFn: ({
@@ -138,42 +105,15 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
     }
   };
 
-  // ── Build grouped option list for the SearchableSelect ──
-  // Encoded as `preset:<name>` or `profile:<uuid>` so we can drive both
-  // localPreset and selectedProfileId from a single value.
-  const selectorOptions = useMemo<SelectGroup<string>[]>(() => {
-    const presetOpts = PRESET_CONFIG.map((p) => ({
-      value: `preset:${p.value}`,
-      label: p.label,
-      description: p.description,
-      icon: <p.Icon size={13} />,
-      searchHaystack: `${p.label} ${p.description} ${p.features.join(' ')}`,
-    }));
-    const profileOpts = profiles.map((p) => ({
-      value: `profile:${p.id}`,
-      label: p.name,
-      description: p.description ?? 'Custom profile',
-      icon: <SlidersHorizontal size={13} />,
-      searchHaystack: `${p.name} ${p.description ?? ''}`,
-    }));
-    const groups: SelectGroup<string>[] = [
-      { label: 'Presets', options: presetOpts },
-    ];
-    if (profileOpts.length > 0) {
-      groups.push({ label: 'My profiles', options: profileOpts });
-    }
-    return groups;
-  }, [profiles]);
+  const profileChoice: ProfileChoice = selectedProfileId
+    ? { kind: 'profile', profileId: selectedProfileId }
+    : { kind: 'preset', preset: localPreset as Exclude<ProfilePreset, 'advanced'> };
 
-  const selectedSelectorValue = selectedProfileId
-    ? `profile:${selectedProfileId}`
-    : `preset:${localPreset}`;
-
-  const handleSelectorChange = (value: string) => {
-    if (value.startsWith('profile:')) {
-      setSelectedProfileId(value.slice('profile:'.length));
-    } else if (value.startsWith('preset:')) {
-      setLocalPreset(value.slice('preset:'.length) as ProfilePreset);
+  const handleProfileChoiceChange = (choice: ProfileChoice) => {
+    if (choice.kind === 'profile') {
+      setSelectedProfileId(choice.profileId);
+    } else {
+      setLocalPreset(choice.preset);
       setSelectedProfileId('');
     }
   };
@@ -343,15 +283,10 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
               <p className="text-[11px] text-text-muted uppercase tracking-wider mb-2 text-center">
                 Processing profile
               </p>
-              <SearchableSelect<string>
-                value={selectedSelectorValue}
-                onChange={handleSelectorChange}
-                options={selectorOptions}
-                searchable={profiles.length > 3}
-                searchPlaceholder="Search profiles…"
+              <ProfileChoiceSelect
+                value={profileChoice}
+                onChange={handleProfileChoiceChange}
                 ariaLabel="Processing profile"
-                maxHeight={280}
-                className="w-full bg-white/5 border-white/10 hover:bg-white/8"
               />
             </div>
 

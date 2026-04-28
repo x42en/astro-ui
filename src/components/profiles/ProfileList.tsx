@@ -74,8 +74,11 @@ export function ProfileList({
       <div className="space-y-1.5">
         {sorted.map((profile) => {
           const isSelected = profile.id === selectedId;
-          const stepsEnabled = Object.values(profile.config).filter(
-            (s) => s && typeof s === 'object' && 'enable' in s && s.enable
+          // Count enabled processing steps from the flat ``*_enabled`` flags.
+          // The legacy nested-tools shape (`{enable: true}`) was replaced by
+          // a flat config; this counter follows the new schema.
+          const stepsEnabled = Object.entries(profile.config ?? {}).filter(
+            ([key, value]) => key.endsWith('_enabled') && value === true
           ).length;
 
           return (

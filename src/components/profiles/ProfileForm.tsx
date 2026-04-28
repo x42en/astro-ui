@@ -66,7 +66,15 @@ export function ProfileForm({
               key={preset.id}
               type="button"
               title={preset.description}
-              onClick={() => update(preset.config)}
+              onClick={() => {
+                update(preset.config);
+                // Pre-fill the profile name only when the user hasn't typed
+                // anything yet — never overwrite an existing name so picking
+                // a template at any time stays non-destructive.
+                if (!name.trim()) {
+                  onNameChange(preset.suggestedName);
+                }
+              }}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-space-border hover:border-white/20 text-text-muted hover:text-text-secondary text-xs transition-all duration-150"
             >
               <span>{preset.emoji}</span>
