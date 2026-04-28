@@ -30,7 +30,7 @@ function Mark({ size }: { size: number }) {
       viewBox="0 0 64 64"
       width={size}
       height={size}
-      className="flex-shrink-0"
+      className="flex-shrink-0 mx-auto"
       aria-hidden="true"
     >
       {/* Orbit — tilted ellipse, encircling the sparkle */}
