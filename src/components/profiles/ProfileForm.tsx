@@ -320,12 +320,23 @@ export function ProfileForm({
 
           <StepSection
             title="Denoise"
-            description="Cosmic Clarity AI denoise. Reduces shot noise while preserving sharp detail. Higher strength = smoother but softer."
+            description="AI denoise. Choose between Cosmic Clarity (default; tuned for emission nebulae) and GraXpert (alternative; better on noisy galaxy frames)."
             icon={<Wand2 size={13} />}
             enabled={c.denoise_enabled ?? true}
             onEnabledChange={(v) => update({ denoise_enabled: v })}
             defaultOpen={false}
           >
+            <SelectField
+              label="Engine"
+              value={c.denoise_engine ?? 'cosmic_clarity'}
+              options={[
+                { value: 'cosmic_clarity', label: 'Cosmic Clarity (recommended)' },
+                { value: 'graxpert', label: 'GraXpert' },
+              ]}
+              onChange={(v) =>
+                update({ denoise_engine: v as ProcessingProfileConfig['denoise_engine'] })
+              }
+            />
             <SliderField
               label="Strength"
               value={c.denoise_strength ?? 0.8}
@@ -334,11 +345,30 @@ export function ProfileForm({
               step={0.05}
               onChange={(v) => update({ denoise_strength: v })}
             />
-            <ToggleField
-              label="Luminance only"
-              value={c.denoise_luminance_only ?? false}
-              onChange={(v) => update({ denoise_luminance_only: v })}
-            />
+            {(c.denoise_engine ?? 'cosmic_clarity') === 'cosmic_clarity' ? (
+              <ToggleField
+                label="Luminance only"
+                value={c.denoise_luminance_only ?? false}
+                onChange={(v) => update({ denoise_luminance_only: v })}
+              />
+            ) : (
+              <>
+                <SelectField
+                  label="GraXpert AI model"
+                  value={c.denoise_graxpert_ai_model ?? '3.0.2'}
+                  options={[{ value: '3.0.2', label: '3.0.2 (server-installed)' }]}
+                  onChange={(v) => update({ denoise_graxpert_ai_model: v })}
+                />
+                <SliderField
+                  label="Batch size (lower this if GPU runs out of memory)"
+                  value={c.denoise_graxpert_batch_size ?? 4}
+                  min={1}
+                  max={32}
+                  step={1}
+                  onChange={(v) => update({ denoise_graxpert_batch_size: v })}
+                />
+              </>
+            )}
           </StepSection>
 
           <StepSection

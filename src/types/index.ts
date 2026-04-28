@@ -140,8 +140,11 @@ export interface ProcessingProfileConfig {
   photometric_calibration_enabled?: boolean;
 
   denoise_enabled?: boolean;
+  denoise_engine?: 'cosmic_clarity' | 'graxpert';
   denoise_strength?: number;
   denoise_luminance_only?: boolean;
+  denoise_graxpert_ai_model?: string;
+  denoise_graxpert_batch_size?: number;
 
   sharpen_enabled?: boolean;
   sharpen_stellar_amount?: number;
