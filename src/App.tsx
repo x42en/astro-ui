@@ -13,6 +13,7 @@ import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
 import { UserProfile } from './pages/UserProfile';
 import { SessionPrep } from './pages/SessionPrep';
+import { Learn } from './pages/Learn';
 
 /**
  * `/` renders the public landing page for anonymous visitors and the
@@ -35,6 +36,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/prepare" element={<SessionPrep />} />
+            <Route path="/learn" element={<Learn />} />
             <Route
               path="/dashboard"
               element={

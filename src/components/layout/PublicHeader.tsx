@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Images, LogIn } from 'lucide-react';
+import { Calendar, GraduationCap, Images, LogIn } from 'lucide-react';
 import { Logo } from '../branding/Logo';
 
 /**
@@ -30,6 +30,13 @@ export function PublicHeader() {
         >
           <Calendar size={14} />
           <span className="hidden sm:inline">Plan</span>
+        </Link>
+        <Link
+          to="/learn"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+        >
+          <GraduationCap size={14} />
+          <span className="hidden sm:inline">Learn</span>
         </Link>
         <Link
           to="/gallery"

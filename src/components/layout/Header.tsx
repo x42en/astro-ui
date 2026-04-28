@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Images, Settings, Calendar, LayoutDashboard } from 'lucide-react';
+import { BookOpen, GraduationCap, Images, Settings, Calendar, LayoutDashboard } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Logo } from '../branding/Logo';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -18,6 +18,7 @@ const BASE_NAV_LINKS: NavLink[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/prepare', label: 'Plan', icon: Calendar },
   { to: '/profiles', label: 'Profiles', icon: BookOpen },
+  { to: '/learn', label: 'Learn', icon: GraduationCap },
 ];
 
 const ADMIN_NAV_LINK: NavLink = { to: '/settings', label: 'Settings', icon: Settings };
