@@ -341,3 +341,28 @@ export interface RecommendationBundle {
   } | null;
   recommendations: ObjectVisibility[];
 }
+export interface NightlyForecastEntry {
+  date: string;
+  max_altitude_deg: number;
+  hours_above_min_altitude: number;
+  transit_time: string | null;
+  moon_separation_deg: number;
+  moon_illumination: number;
+  moon_above_horizon_during_window: boolean;
+  darkness_score: number;
+  score: number;
+}
+export interface ObjectForecast {
+  catalog_id: string;
+  name: string;
+  type: CatalogObject['type'];
+  constellation: string;
+  ra_deg: number;
+  dec_deg: number;
+  magnitude: number | null;
+  site_latitude: number;
+  site_longitude: number;
+  site_elevation_m: number;
+  min_altitude_deg: number;
+  nights: NightlyForecastEntry[];
+}

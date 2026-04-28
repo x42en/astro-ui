@@ -1,6 +1,7 @@
 import api from '../lib/axios';
 import type {
   GeoLocation,
+  ObjectForecast,
   ObjectVisibility,
   ObservationWindow,
   RecommendationBundle,
@@ -48,6 +49,28 @@ export async function getObjectVisibility(
   return (
     await api.get<ObjectVisibility>(
       `/planning/object/${encodeURIComponent(catalogId)}/visibility`,
+      { params: p },
+    )
+  ).data;
+}
+
+export interface ObjectForecastParams {
+  lat: number;
+  lon: number;
+  elevation: number;
+  start_date?: string;
+  days?: number;
+  min_altitude?: number;
+  timezone?: string;
+}
+
+export async function getObjectForecast(
+  catalogId: string,
+  p: ObjectForecastParams,
+): Promise<ObjectForecast> {
+  return (
+    await api.get<ObjectForecast>(
+      `/planning/object/${encodeURIComponent(catalogId)}/forecast`,
       { params: p },
     )
   ).data;

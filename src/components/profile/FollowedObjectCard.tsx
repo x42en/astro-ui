@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { BookmarkMinus } from 'lucide-react';
+import { BookmarkMinus, CalendarRange } from 'lucide-react';
+import { useState } from 'react';
 import type { FollowedObject, ObservationSite } from '../../types';
 import { getFollowedVisibility } from '../../services/followedObjects';
+import { Modal } from '../ui/Modal';
+import { ObjectForecastHeatmap } from './ObjectForecastHeatmap';
 
 interface FollowedObjectCardProps {
   followed: FollowedObject;
@@ -42,6 +45,7 @@ export function FollowedObjectCard({
 }: FollowedObjectCardProps) {
   const obj = followed.catalog_object;
   const today = new Date().toISOString().slice(0, 10);
+  const [forecastOpen, setForecastOpen] = useState(false);
 
   const visibilityQuery = useQuery({
     queryKey: ['follow_visibility', followed.catalog_id, primarySite?.id, today],
@@ -58,7 +62,8 @@ export function FollowedObjectCard({
   });
 
   return (
-    <div className="bg-space-surface border border-space-border rounded-xl p-4 flex flex-col gap-2 hover:border-space-border-light transition-colors">
+    <>
+      <div className="bg-space-surface border border-space-border rounded-xl p-4 flex flex-col gap-2 hover:border-space-border-light transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <span
@@ -115,6 +120,29 @@ export function FollowedObjectCard({
           <span>Visibility unavailable for tonight.</span>
         )}
       </div>
-    </div>
+        {primarySite && (
+          <button
+            type="button"
+            onClick={() => setForecastOpen(true)}
+            className="mt-2 flex items-center gap-1.5 text-xs text-primary hover:text-primary-hover transition-colors self-start"
+          >
+            <CalendarRange size={12} />
+            <span>View 90-night forecast</span>
+          </button>
+        )}
+      </div>
+
+      {primarySite && (
+        <Modal
+          open={forecastOpen}
+          onOpenChange={setForecastOpen}
+          title={`When can I observe ${obj?.name ?? followed.catalog_id}?`}
+          description={`90-night observability heatmap from ${primarySite.name}.`}
+          size="lg"
+        >
+          <ObjectForecastHeatmap catalogId={followed.catalog_id} site={primarySite} />
+        </Modal>
+      )}
+    </>
   );
 }
