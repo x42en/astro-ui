@@ -9,6 +9,16 @@ export async function listProfiles(): Promise<ProfileRead[]> {
   return [];
 }
 
+/** List community-shared profiles (i.e. shared by other users).
+ *  Backed by ``GET /profiles?shared_only=true``. */
+export async function listSharedProfiles(): Promise<ProfileRead[]> {
+  const response = await api.get('/profiles', { params: { shared_only: true } });
+  const data = response.data;
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items as ProfileRead[];
+  return [];
+}
+
 export async function getProfile(profileId: string): Promise<ProfileRead> {
   const response = await api.get<ProfileRead>(`/profiles/${profileId}`);
   return response.data;

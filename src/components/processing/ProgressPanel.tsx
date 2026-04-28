@@ -10,9 +10,11 @@ import {
   SkipForward,
   AlertTriangle,
   Minus,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { getJob } from '../../services/jobs';
+import { listStepPreviews } from '../../services/sessions';
 import { useSettingsStore } from '../../store/settingsStore';
 import type { WsEvent } from '../../types/websocket';
 import type { JobRead, StepStatus } from '../../types';
@@ -69,9 +71,19 @@ interface ProgressPanelProps {
   jobId: string;
   sessionId: string;
   onPreviewUpdate?: (url: string) => void;
+  /** When set, rows for steps with an available preview become clickable. */
+  onStepSelect?: (stepName: string | null) => void;
+  /** Currently-browsed step (highlighted in the list). */
+  selectedStep?: string | null;
 }
 
-export function ProgressPanel({ jobId, sessionId, onPreviewUpdate }: ProgressPanelProps) {
+export function ProgressPanel({
+  jobId,
+  sessionId,
+  onPreviewUpdate,
+  onStepSelect,
+  selectedStep,
+}: ProgressPanelProps) {
   const queryClient = useQueryClient();
   const isActive = useRef(true);
   const [collapsed, setCollapsed] = useState(false);
@@ -85,6 +97,18 @@ export function ProgressPanel({ jobId, sessionId, onPreviewUpdate }: ProgressPan
       return false;
     },
   });
+
+  // Fetch the per-step preview availability once browsing is enabled.
+  const browsingEnabled = !!onStepSelect && job?.status === 'completed';
+  const { data: stepPreviews } = useQuery({
+    queryKey: ['sessions', sessionId, 'step-previews'],
+    queryFn: () => listStepPreviews(sessionId),
+    enabled: browsingEnabled,
+    staleTime: 60_000,
+  });
+  const availablePreviews = new Set(
+    (stepPreviews ?? []).filter((p) => p.has_preview).map((p) => p.step_name),
+  );
 
   const elapsed = useElapsed(job?.started_at ?? null);
 
@@ -185,43 +209,74 @@ export function ProgressPanel({ jobId, sessionId, onPreviewUpdate }: ProgressPan
       {/* Step list */}
       {!collapsed && (
         <div className="py-1.5 max-h-72 overflow-y-auto">
-          {job.steps.map((step) => (
-            <div
-              key={step.step_name}
-              className={`flex items-center gap-2 px-3 py-1.5 transition-colors ${
-                step.status === 'running' ? 'bg-primary/8' : ''
-              }`}
-            >
-              <StepIcon status={step.status} />
-              <span
-                className={`text-xs flex-1 truncate ${
-                  step.status === 'pending'
-                    ? 'text-text-muted'
+          {job.steps.map((step) => {
+            const isClickable =
+              !!onStepSelect && availablePreviews.has(step.step_name);
+            const isSelected = selectedStep === step.step_name;
+            return (
+              <div
+                key={step.step_name}
+                role={isClickable ? 'button' : undefined}
+                tabIndex={isClickable ? 0 : undefined}
+                onClick={
+                  isClickable
+                    ? () => onStepSelect?.(isSelected ? null : step.step_name)
+                    : undefined
+                }
+                onKeyDown={
+                  isClickable
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onStepSelect?.(isSelected ? null : step.step_name);
+                        }
+                      }
+                    : undefined
+                }
+                className={`flex items-center gap-2 px-3 py-1.5 transition-colors ${
+                  isSelected
+                    ? 'bg-primary/15'
                     : step.status === 'running'
-                      ? 'text-text-primary font-medium'
-                      : step.status === 'success'
-                        ? 'text-text-secondary'
-                        : step.status === 'skipped'
-                          ? 'text-text-muted line-through'
-                          : 'text-text-secondary'
-                }`}
+                      ? 'bg-primary/8'
+                      : ''
+                } ${isClickable ? 'cursor-pointer hover:bg-white/5' : ''}`}
               >
-                {step.display_name}
-              </span>
-              {(step.status === 'success' || step.status === 'failed') &&
-                step.completed_at &&
-                step.started_at && (
-                  <span className="text-[10px] text-text-muted font-mono flex-shrink-0">
-                    {formatDuration(step.started_at, step.completed_at)}
+                <StepIcon status={step.status} />
+                <span
+                  className={`text-xs flex-1 truncate ${
+                    isSelected
+                      ? 'text-primary font-medium'
+                      : step.status === 'pending'
+                        ? 'text-text-muted'
+                        : step.status === 'running'
+                          ? 'text-text-primary font-medium'
+                          : step.status === 'success'
+                            ? 'text-text-secondary'
+                            : step.status === 'skipped'
+                              ? 'text-text-muted line-through'
+                              : 'text-text-secondary'
+                  }`}
+                >
+                  {step.display_name}
+                </span>
+                {isClickable && !isSelected && (
+                  <ImageIcon size={10} className="text-text-muted/60 flex-shrink-0" />
+                )}
+                {(step.status === 'success' || step.status === 'failed') &&
+                  step.completed_at &&
+                  step.started_at && (
+                    <span className="text-[10px] text-text-muted font-mono flex-shrink-0">
+                      {formatDuration(step.started_at, step.completed_at)}
+                    </span>
+                  )}
+                {step.status === 'retrying' && step.attempt_count > 1 && (
+                  <span className="text-[10px] text-warning font-mono flex-shrink-0">
+                    ×{step.attempt_count}
                   </span>
                 )}
-              {step.status === 'retrying' && step.attempt_count > 1 && (
-                <span className="text-[10px] text-warning font-mono flex-shrink-0">
-                  ×{step.attempt_count}
-                </span>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -128,14 +128,23 @@ export interface ProcessingProfileConfig {
   stretch_strength?: number;
 
   color_calibration_enabled?: boolean;
-  /** Siril photometric colour calibration (`pcc`).  Recommended only for
-   *  defiltered DSLR / dedicated OSC astro cameras: on stock DSLR it tends to
-   *  neutralise residual Hα. */
+  /** Acquisition hardware hint.  `true` (default, the modern astrophoto norm)
+   *  for defiltered DSLR / dedicated OSC astro cameras with broadband R/G/B
+   *  response.  Set `false` for a stock DSLR with full IR-cut filter; the
+   *  display pipeline then softens the per-channel red black-point and adds
+   *  a mild red/saturation boost to preserve the residual Hα signal. */
+  camera_defiltered?: boolean;
+  /** Siril photometric colour calibration (`pcc`).  Independent from
+   *  `camera_defiltered`: requires a successful plate-solve and an internet
+   *  catalogue lookup, which can fail silently on small FOV / sparse fields. */
   photometric_calibration_enabled?: boolean;
 
   denoise_enabled?: boolean;
+  denoise_engine?: 'cosmic_clarity' | 'graxpert';
   denoise_strength?: number;
   denoise_luminance_only?: boolean;
+  denoise_graxpert_ai_model?: string;
+  denoise_graxpert_batch_size?: number;
 
   sharpen_enabled?: boolean;
   sharpen_stellar_amount?: number;
@@ -195,4 +204,165 @@ export interface ApiError {
 export interface ProcessRequest {
   preset: ProfilePreset;
   profile_id?: string;
+}
+
+// ── Observation sites ───────────────────────────────────────────────────────
+export interface ObservationSite {
+  id: string;
+  name: string;
+  description: string | null;
+  latitude: number;
+  longitude: number;
+  elevation_m: number;
+  timezone: string;
+  created_at: string;
+  updated_at: string;
+}
+export interface ObservationSiteCreate {
+  name: string;
+  description?: string | null;
+  latitude: number;
+  longitude: number;
+  elevation_m?: number;
+  timezone?: string;
+}
+export interface ObservationSiteUpdate {
+  name?: string;
+  description?: string | null;
+  latitude?: number;
+  longitude?: number;
+  elevation_m?: number;
+  timezone?: string;
+}
+
+// ── Catalog objects (matches backend CatalogObject) ─────────────────────────
+export interface CatalogObject {
+  id: string;
+  name: string;
+  type: 'galaxy' | 'nebula' | 'cluster' | 'planetary' | 'supernova' | 'other';
+  constellation: string;
+  ra_deg: number;
+  dec_deg: number;
+  magnitude: number | null;
+  source?: string;
+}
+
+// ── Followed objects ────────────────────────────────────────────────────────
+export interface FollowedObject {
+  id: string;
+  catalog_id: string;
+  note: string | null;
+  notify_when_visible: boolean;
+  created_at: string;
+  catalog_object: CatalogObject | null;
+}
+export interface FollowedObjectCreate {
+  catalog_id: string;
+  note?: string | null;
+  notify_when_visible?: boolean;
+}
+
+// ── Planning ────────────────────────────────────────────────────────────────
+export interface GeoLocation {
+  name: string;
+  country: string | null;
+  timezone: string;
+  elevation_m: number;
+  latitude: number;
+  longitude: number;
+}
+export interface HourlyWeather {
+  time: string;
+  cloud_cover_pct: number;
+  cloud_cover_low_pct: number;
+  visibility_m: number;
+  relative_humidity_pct: number;
+  dew_point_c: number;
+  wind_speed_kmh: number;
+}
+export interface DailyWeather {
+  date: string;
+  sunrise: string;
+  sunset: string;
+  moonrise: string | null;
+  moonset: string | null;
+  moon_phase: number;
+}
+export interface WeatherForecast {
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  elevation_m: number;
+  hourly: HourlyWeather[];
+  daily: DailyWeather[];
+}
+export interface ObservationWindow {
+  site_latitude: number;
+  site_longitude: number;
+  site_elevation_m: number;
+  date: string;
+  sunset: string;
+  sunrise_next: string;
+  astronomical_twilight_end: string;
+  astronomical_twilight_start: string;
+  moon_illumination: number;
+  moonrise: string | null;
+  moonset: string | null;
+  moon_above_horizon_during_window: boolean;
+  darkness_score: number;
+}
+export interface AltAzPoint {
+  time: string;
+  altitude_deg: number;
+  azimuth_deg: number;
+}
+export interface ObjectVisibility {
+  catalog_id: string;
+  name: string;
+  type: CatalogObject['type'];
+  constellation: string;
+  ra_deg: number;
+  dec_deg: number;
+  magnitude: number | null;
+  max_altitude_deg: number;
+  transit_time: string | null;
+  rise_time: string | null;
+  set_time: string | null;
+  moon_separation_deg: number;
+  score: number;
+  altitude_curve: AltAzPoint[];
+}
+export interface RecommendationBundle {
+  window: ObservationWindow;
+  weather_summary: {
+    cloud_cover_avg_pct: number;
+    cloud_cover_min_pct: number;
+    visibility_min_m: number;
+  } | null;
+  recommendations: ObjectVisibility[];
+}
+export interface NightlyForecastEntry {
+  date: string;
+  max_altitude_deg: number;
+  hours_above_min_altitude: number;
+  transit_time: string | null;
+  moon_separation_deg: number;
+  moon_illumination: number;
+  moon_above_horizon_during_window: boolean;
+  darkness_score: number;
+  score: number;
+}
+export interface ObjectForecast {
+  catalog_id: string;
+  name: string;
+  type: CatalogObject['type'];
+  constellation: string;
+  ra_deg: number;
+  dec_deg: number;
+  magnitude: number | null;
+  site_latitude: number;
+  site_longitude: number;
+  site_elevation_m: number;
+  min_altitude_deg: number;
+  nights: NightlyForecastEntry[];
 }

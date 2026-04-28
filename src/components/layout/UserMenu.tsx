@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut, User } from 'lucide-react';
 import { useAuthStore, useCurrentUser, useIsAdmin } from '../../store/authStore';
 
 /**
@@ -60,6 +60,18 @@ export function UserMenu() {
             </div>
           </div>
 
+          <DropdownMenu.Item
+            onSelect={() => navigate('/profile')}
+            className="
+              flex items-center gap-2 px-3 py-2 text-sm text-text-secondary
+              cursor-pointer select-none outline-none
+              hover:bg-white/4 focus:bg-white/4
+            "
+          >
+            <User size={13} />
+            <span>Profile</span>
+          </DropdownMenu.Item>
+
           {isAdmin && (
             <DropdownMenu.Item
               onSelect={() => navigate('/settings')}
@@ -74,7 +86,7 @@ export function UserMenu() {
             </DropdownMenu.Item>
           )}
 
-          {isAdmin && <DropdownMenu.Separator className="h-px bg-space-border/60" />}
+          <DropdownMenu.Separator className="h-px bg-space-border/60" />
 
           <DropdownMenu.Item
             onSelect={handleLogout}

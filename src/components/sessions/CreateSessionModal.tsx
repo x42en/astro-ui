@@ -30,9 +30,9 @@ import { useUiStore } from '../../store/uiStore';
 import { startProcessing } from '../../services/sessions';
 import { searchCatalog, resolveObject, type CatalogObject } from '../../services/catalog';
 import { SearchableSelect, type SelectGroup } from '../ui/SearchableSelect';
+import { ProfileChoiceSelect, type ProfileChoice } from '../processing/ProfileChoiceSelect';
 import type { FrameType } from '../../lib/upload';
 import type { QueuedFile } from '../../hooks/useUploadQueue';
-import type { ProfilePreset } from '../../types';
 
 interface FrameCategory {
   type: FrameType;
@@ -80,11 +80,8 @@ const CATEGORIES: FrameCategory[] = [
   },
 ];
 
-const PRESETS: Array<{ value: Exclude<ProfilePreset, 'advanced'>; label: string; desc: string }> = [
-  { value: 'quick', label: 'Quick', desc: '~2 min · Minimal AI' },
-  { value: 'standard', label: 'Standard', desc: '~8 min · Balanced' },
-  { value: 'quality', label: 'Quality', desc: '~20 min · Full AI' },
-];
+// Built-in preset metadata is provided by ProfileChoiceSelect; the modal
+// only needs the discriminated ProfileChoice type to track the user's pick.
 
 function StepIndicator({ current }: { current: number }) {
   const labels = ['Session & profile', 'Upload frames'];
@@ -767,9 +764,11 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
   const [manualNameInput, setManualNameInput] = useState('');
   const [resolving, setResolving] = useState(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
-  const [chosenPreset, setChosenPreset] = useState<Exclude<ProfilePreset, 'advanced'>>(
-    selectedPreset === 'advanced' ? 'standard' : selectedPreset,
-  );
+  const [profileChoice, setProfileChoice] = useState<ProfileChoice>(() => ({
+    kind: 'preset',
+    preset:
+      selectedPreset === 'advanced' ? 'standard' : selectedPreset,
+  }));
 
   const alreadyStarted = useRef(false);
 
@@ -778,7 +777,10 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
 
   // Auto-start mutation
   const startMutation = useMutation({
-    mutationFn: (sessionId: string) => startProcessing(sessionId, chosenPreset),
+    mutationFn: (sessionId: string) =>
+      profileChoice.kind === 'profile'
+        ? startProcessing(sessionId, 'advanced', profileChoice.profileId)
+        : startProcessing(sessionId, profileChoice.preset),
     onSuccess: (data, sessionId) => {
       setSessionJob(sessionId, data.job_id);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -808,7 +810,9 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
   useEffect(() => {
     if (state.phase === 'done' && state.sessionId && !alreadyStarted.current) {
       alreadyStarted.current = true;
-      setSessionPreset(state.sessionId, chosenPreset);
+      const presetForStore =
+        profileChoice.kind === 'profile' ? 'advanced' : profileChoice.preset;
+      setSessionPreset(state.sessionId, presetForStore);
       startMutation.mutate(state.sessionId);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -978,23 +982,11 @@ export function CreateSessionModal({ open, onOpenChange }: CreateSessionModalPro
                   <label className="block text-xs font-medium text-text-secondary mb-2">
                     Processing profile
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {PRESETS.map((p) => (
-                      <button
-                        key={p.value}
-                        type="button"
-                        onClick={() => setChosenPreset(p.value)}
-                        className={`flex flex-col items-center py-3 px-2 rounded-md border text-center transition-all duration-150 ${
-                          chosenPreset === p.value
-                            ? 'border-primary/50 bg-primary-muted text-text-primary'
-                            : 'border-space-border bg-space-surface text-text-muted hover:border-space-border-light hover:text-text-secondary'
-                        }`}
-                      >
-                        <span className="text-sm font-medium">{p.label}</span>
-                        <span className="text-[10px] mt-0.5 opacity-70">{p.desc}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <ProfileChoiceSelect
+                    value={profileChoice}
+                    onChange={setProfileChoice}
+                    ariaLabel="Processing profile"
+                  />
                 </div>
 
                 <div className="flex gap-3 pt-1">

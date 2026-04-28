@@ -402,6 +402,12 @@ function Footer() {
           <span>© {year} AstroStack — preview build</span>
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            to="/learn"
+            className="hover:text-text-secondary transition-colors"
+          >
+            Learn the basics
+          </Link>
           <a
             href="https://astrobackyard.com"
             target="_blank"

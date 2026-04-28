@@ -11,6 +11,9 @@ import { ProfileEditor } from './pages/ProfileEditor';
 import { SettingsPage } from './pages/Settings';
 import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
+import { UserProfile } from './pages/UserProfile';
+import { SessionPrep } from './pages/SessionPrep';
+import { Learn } from './pages/Learn';
 
 /**
  * `/` renders the public landing page for anonymous visitors and the
@@ -32,8 +35,10 @@ function App() {
             <Route path="/welcome" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/gallery" element={<Gallery />} />
+            <Route path="/prepare" element={<SessionPrep />} />
+            <Route path="/learn" element={<Learn />} />
             <Route
-              path="/history"
+              path="/dashboard"
               element={
                 <RequireAuth>
                   <Dashboard />
@@ -53,6 +58,14 @@ function App() {
               element={
                 <RequireAuth>
                   <ProfileEditor />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <RequireAuth>
+                  <UserProfile />
                 </RequireAuth>
               }
             />

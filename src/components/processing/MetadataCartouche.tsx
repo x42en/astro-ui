@@ -37,6 +37,12 @@ interface MetadataCartoucheProps {
   className?: string;
 }
 
+interface MetadataBodyProps {
+  capture?: CaptureMetadata | null;
+  profile?: ProfileSummary | null;
+  className?: string;
+}
+
 const PRESET_LABELS: Record<ProfilePreset, string> = {
   quick: 'Quick',
   standard: 'Standard',
@@ -136,28 +142,11 @@ export function MetadataCartouche({
   const hasProfile = !!profile && (profile.preset || profile.tools);
   if (!hasCapture && !hasProfile) return null;
 
+  // Summary bits used only in the collapsed pill state below.
   const exposure = capture?.exposure_seconds != null
     ? formatExposure(capture.exposure_seconds)
     : formatRange(capture?.exposure_seconds_min, capture?.exposure_seconds_max);
-  const iso = capture?.iso != null
-    ? `ISO ${capture.iso}`
-    : capture?.iso_min && capture?.iso_max
-      ? `ISO ${capture.iso_min}–${capture.iso_max}`
-      : null;
-  const fnum = capture?.f_number != null ? `f/${capture.f_number.toFixed(1)}` : null;
-  const focal = capture?.focal_length_mm != null ? `${Math.round(capture.focal_length_mm)} mm` : null;
-  const camera = capture ? formatCamera(capture) : null;
-  const temp = capture?.temperature_c != null ? `${capture.temperature_c.toFixed(1)} °C` : null;
-  const tele = capture?.telescope ?? null;
-  const filt = capture?.filter ?? null;
-  const integ = formatDuration(capture?.total_integration_seconds);
   const frames = capture?.frame_count ? `${capture.frame_count} × frames` : null;
-
-  const enabledTools = profile?.tools
-    ? (Object.entries(profile.tools)
-        .filter(([, on]) => on)
-        .map(([k]) => TOOL_LABELS[k] ?? k))
-    : [];
 
   const sizeClass = variant === 'overlay'
     ? 'max-w-xs sm:max-w-sm'
@@ -231,77 +220,126 @@ export function MetadataCartouche({
         )}
       </div>
 
-      <div className="px-3.5 py-3 space-y-3">
-        {hasCapture && (
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 text-[9.5px] uppercase tracking-[0.14em] text-white/45 font-semibold">
-              <Camera size={10} />
-              Acquisition
-            </div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-              <Field icon={Timer} label="Exposure" value={exposure} />
-              <Field icon={Camera} label="ISO" value={iso} />
-              <Field icon={Aperture} label="Aperture" value={fnum} />
-              <Field icon={Focus} label="Focal length" value={focal} />
-              <Field icon={Thermometer} label="Sensor temp" value={temp} />
-              <Field icon={Layers} label="Frames" value={frames} />
-            </div>
-            {(camera || tele || filt || integ) && (
-              <div className="pt-1.5 mt-1.5 border-t border-white/[0.06] space-y-1">
-                {camera && (
-                  <div className="flex items-center gap-1.5 min-w-0" title={camera}>
-                    <Camera size={11} className="text-white/40 flex-shrink-0" />
-                    <span className="text-[11px] text-white/85 truncate">{camera}</span>
-                  </div>
-                )}
-                {tele && (
-                  <div className="flex items-center gap-1.5 min-w-0" title={tele}>
-                    <Telescope size={11} className="text-white/40 flex-shrink-0" />
-                    <span className="text-[11px] text-white/85 truncate">{tele}</span>
-                  </div>
-                )}
-                {(filt || integ) && (
-                  <div className="flex items-center gap-3 text-[11px] text-white/65 font-mono">
-                    {filt && <span>{filt}</span>}
-                    {integ && <span title="Total integration">∑ {integ}</span>}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+      <div className="px-3.5 py-3">
+        <MetadataBody capture={capture} profile={profile} />
+      </div>
+    </div>
+  );
+}
 
-        {hasProfile && (
-          <div
-            className={`${hasCapture ? 'pt-2.5 border-t border-white/[0.06]' : ''} space-y-1.5`}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-[9.5px] uppercase tracking-[0.14em] text-white/45 font-semibold">
-                <Wand2 size={10} />
-                Pipeline
-              </div>
-              {profile?.preset && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/10 border border-accent/25 text-[9.5px] uppercase tracking-[0.10em] text-accent font-semibold">
-                  {PRESET_LABELS[profile.preset]}
-                </span>
+/**
+ * Content-only renderer: sections (Acquisition + Pipeline) without the outer
+ * surface, header bar or collapse control.  Use this when embedding the
+ * metadata inside another card that already carries chrome (header, border,
+ * background) — for example the gallery identification card.
+ *
+ * Renders nothing when both inputs are empty.
+ */
+export function MetadataBody({
+  capture,
+  profile,
+  className = '',
+}: MetadataBodyProps) {
+  const hasCapture = !!capture && Object.keys(capture).some(
+    (k) => k !== 'frame_count' && k !== 'with_metadata' && capture[k] != null,
+  );
+  const hasProfile = !!profile && (profile.preset || profile.tools);
+  if (!hasCapture && !hasProfile) return null;
+
+  const exposure = capture?.exposure_seconds != null
+    ? formatExposure(capture.exposure_seconds)
+    : formatRange(capture?.exposure_seconds_min, capture?.exposure_seconds_max);
+  const iso = capture?.iso != null
+    ? `ISO ${capture.iso}`
+    : capture?.iso_min && capture?.iso_max
+      ? `ISO ${capture.iso_min}–${capture.iso_max}`
+      : null;
+  const fnum = capture?.f_number != null ? `f/${capture.f_number.toFixed(1)}` : null;
+  const focal = capture?.focal_length_mm != null ? `${Math.round(capture.focal_length_mm)} mm` : null;
+  const camera = capture ? formatCamera(capture) : null;
+  const temp = capture?.temperature_c != null ? `${capture.temperature_c.toFixed(1)} °C` : null;
+  const tele = capture?.telescope ?? null;
+  const filt = capture?.filter ?? null;
+  const integ = formatDuration(capture?.total_integration_seconds);
+  const frames = capture?.frame_count ? `${capture.frame_count} × frames` : null;
+
+  const enabledTools = profile?.tools
+    ? (Object.entries(profile.tools)
+        .filter(([, on]) => on)
+        .map(([k]) => TOOL_LABELS[k] ?? k))
+    : [];
+
+  return (
+    <div className={`space-y-3 ${className}`}>
+      {hasCapture && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[9.5px] uppercase tracking-[0.16em] text-white/45 font-semibold font-mono">
+            <Camera size={10} />
+            Acquisition
+          </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+            <Field icon={Timer} label="Exposure" value={exposure} />
+            <Field icon={Camera} label="ISO" value={iso} />
+            <Field icon={Aperture} label="Aperture" value={fnum} />
+            <Field icon={Focus} label="Focal length" value={focal} />
+            <Field icon={Thermometer} label="Sensor temp" value={temp} />
+            <Field icon={Layers} label="Frames" value={frames} />
+          </div>
+          {(camera || tele || filt || integ) && (
+            <div className="pt-1.5 mt-1.5 border-t border-white/[0.06] space-y-1">
+              {camera && (
+                <div className="flex items-center gap-1.5 min-w-0" title={camera}>
+                  <Camera size={11} className="text-white/40 flex-shrink-0" />
+                  <span className="text-[11px] text-white/85 font-mono truncate">{camera}</span>
+                </div>
+              )}
+              {tele && (
+                <div className="flex items-center gap-1.5 min-w-0" title={tele}>
+                  <Telescope size={11} className="text-white/40 flex-shrink-0" />
+                  <span className="text-[11px] text-white/85 font-mono truncate">{tele}</span>
+                </div>
+              )}
+              {(filt || integ) && (
+                <div className="flex items-center gap-3 text-[11px] text-white/65 font-mono">
+                  {filt && <span>{filt}</span>}
+                  {integ && <span title="Total integration">∑ {integ}</span>}
+                </div>
               )}
             </div>
-            {enabledTools.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {enabledTools.map((label) => (
-                  <span
-                    key={label}
-                    className="inline-flex items-center gap-1 px-2 py-[3px] rounded-md bg-white/[0.03] border border-white/[0.08] text-[9.5px] uppercase tracking-[0.08em] text-white/75 font-medium leading-tight"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-accent/70" />
-                    {label}
-                  </span>
-                ))}
-              </div>
+          )}
+        </div>
+      )}
+
+      {hasProfile && (
+        <div
+          className={`${hasCapture ? 'pt-2.5 border-t border-white/[0.06]' : ''} space-y-2`}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-[9.5px] uppercase tracking-[0.16em] text-white/45 font-semibold font-mono">
+              <Wand2 size={10} />
+              Pipeline
+            </div>
+            {profile?.preset && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/10 border border-accent/25 text-[9.5px] uppercase tracking-[0.12em] text-accent font-semibold font-mono">
+                {PRESET_LABELS[profile.preset]}
+              </span>
             )}
           </div>
-        )}
-      </div>
+          {enabledTools.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {enabledTools.map((label) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.025] border border-white/[0.08] text-[10px] tracking-[0.04em] text-white/80 font-mono leading-none hover:border-white/[0.16] hover:text-white transition-colors"
+                >
+                  <span className="w-1 h-1 rounded-full bg-accent/70" />
+                  {label}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

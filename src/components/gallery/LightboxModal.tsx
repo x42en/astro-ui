@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ChevronLeft, ChevronRight, Download, Star, X } from 'lucide-react';
-import { MetadataCartouche } from '../processing/MetadataCartouche';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { IdentificationCard } from './IdentificationCard';
 import type { GalleryItem } from '../../services/gallery';
 
 interface LightboxModalProps {
@@ -10,15 +10,6 @@ interface LightboxModalProps {
   onClose: () => void;
   onIndexChange: (next: number) => void;
   onRequestDownload: (item: GalleryItem) => void;
-}
-
-function formatDate(iso: string | null): string | null {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 export function LightboxModal({
@@ -30,13 +21,6 @@ export function LightboxModal({
 }: LightboxModalProps) {
   const open = index !== null;
   const item = open ? items[index] ?? null : null;
-
-  // Mobile bottom-sheet expand state.  Reset whenever the visible item
-  // changes so each new image starts with the metadata collapsed.
-  const [sheetExpanded, setSheetExpanded] = useState(false);
-  useEffect(() => {
-    setSheetExpanded(false);
-  }, [index]);
 
   // Keyboard navigation (arrows).  Esc is handled natively by Radix.
   useEffect(() => {
@@ -117,93 +101,22 @@ export function LightboxModal({
                 )}
               </div>
 
-              {/* Desktop: floating metadata cartouche bottom-left + download bottom-right */}
-              <div className="hidden md:block absolute bottom-4 left-4 z-20 max-w-sm">
-                <MetadataCartouche
-                  capture={item.capture_metadata}
-                  profile={item.profile_summary}
-                  variant="overlay"
+              {/* Desktop: unified identification + metadata card, anchored bottom-right */}
+              <div className="hidden md:block absolute bottom-4 right-4 z-20 w-[22rem] max-w-[calc(100%-2rem)]">
+                <IdentificationCard
+                  item={item}
+                  onDownload={() => onRequestDownload(item)}
+                  layout="floating"
                 />
               </div>
 
-              {/* Desktop: title strip + download CTA bottom-right */}
-              <div className="hidden md:flex absolute bottom-4 right-4 z-20 hud-glass rounded-xl px-4 py-3 items-center gap-4 max-w-md">
-                <div className="min-w-0">
-                  <h2 className="text-sm font-semibold text-white truncate">
-                    {item.name}
-                  </h2>
-                  {item.object_name && (
-                    <p className="text-xs text-accent font-mono truncate">
-                      {item.object_name}
-                    </p>
-                  )}
-                  <p className="text-[11px] text-white/55 truncate flex items-center gap-1.5 mt-0.5">
-                    <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                    {item.author_name ?? 'Astronomer'}
-                    {item.acquired_at && (
-                      <>
-                        <span className="opacity-50">·</span>
-                        {formatDate(item.acquired_at)}
-                      </>
-                    )}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onRequestDownload(item)}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-black bg-white hover:bg-white/90 rounded-md transition-colors"
-                >
-                  <Download size={13} />
-                  Download
-                </button>
-              </div>
-
-              {/* Mobile bottom sheet */}
+              {/* Mobile: same card as a bottom sheet */}
               <div className="md:hidden absolute inset-x-0 bottom-0 z-20">
-                {/* Always-visible header */}
-                <div className="hud-glass rounded-t-2xl border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setSheetExpanded((v) => !v)}
-                    className="w-full px-4 pt-2 pb-1 flex flex-col items-center"
-                    aria-expanded={sheetExpanded}
-                  >
-                    <span className="w-10 h-1 rounded-full bg-white/25" />
-                  </button>
-                  <div className="px-4 pb-3 flex items-center gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-sm font-semibold text-white truncate">
-                        {item.name}
-                      </h2>
-                      {item.object_name && (
-                        <p className="text-xs text-accent font-mono truncate">
-                          {item.object_name}
-                        </p>
-                      )}
-                      <p className="text-[11px] text-white/55 truncate">
-                        by {item.author_name ?? 'Astronomer'}
-                        {item.acquired_at && ` · ${formatDate(item.acquired_at)}`}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => onRequestDownload(item)}
-                      className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-black bg-white hover:bg-white/90 rounded-md transition-colors"
-                    >
-                      <Download size={13} />
-                      Get
-                    </button>
-                  </div>
-                  {sheetExpanded && (
-                    <div className="px-3 pb-3 max-h-[40vh] overflow-y-auto">
-                      <MetadataCartouche
-                        capture={item.capture_metadata}
-                        profile={item.profile_summary}
-                        variant="panel"
-                      />
-                    </div>
-                  )}
-                </div>
+                <IdentificationCard
+                  item={item}
+                  onDownload={() => onRequestDownload(item)}
+                  layout="sheet"
+                />
               </div>
             </>
           )}
@@ -212,3 +125,4 @@ export function LightboxModal({
     </Dialog.Root>
   );
 }
+

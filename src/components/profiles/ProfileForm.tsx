@@ -66,7 +66,15 @@ export function ProfileForm({
               key={preset.id}
               type="button"
               title={preset.description}
-              onClick={() => update(preset.config)}
+              onClick={() => {
+                update(preset.config);
+                // Pre-fill the profile name only when the user hasn't typed
+                // anything yet — never overwrite an existing name so picking
+                // a template at any time stays non-destructive.
+                if (!name.trim()) {
+                  onNameChange(preset.suggestedName);
+                }
+              }}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-space-border hover:border-white/20 text-text-muted hover:text-text-secondary text-xs transition-all duration-150"
             >
               <span>{preset.emoji}</span>
@@ -257,9 +265,9 @@ export function ProfileForm({
             {(c.gradient_removal_method ?? 'ai') === 'ai' && (
               <SelectField
                 label="AI model"
-                value={c.gradient_removal_ai_model ?? 'GraXpert-AI-1.0.0'}
+                value={c.gradient_removal_ai_model ?? '1.0.1'}
                 options={[
-                  { value: 'GraXpert-AI-1.0.0', label: 'GraXpert AI 1.0.0' },
+                  { value: '1.0.1', label: 'GraXpert BGE 1.0.1 (recommended)' },
                 ]}
                 onChange={(v) => update({ gradient_removal_ai_model: v })}
               />
@@ -268,7 +276,7 @@ export function ProfileForm({
 
           <StepSection
             title="Stretch & Color"
-            description="Tone curve and colour balance. Asinh lifts faint nebulosity while preserving stellar cores. Photometric calibration is opt-in for defiltered cameras."
+            description="Tone curve and colour balance. Asinh lifts faint nebulosity while preserving stellar cores. Toggle 'Defiltered camera' to match your acquisition hardware."
             icon={<Palette size={13} />}
             enabled={true}
             onEnabledChange={() => {}}
@@ -299,7 +307,12 @@ export function ProfileForm({
               onChange={(v) => update({ color_calibration_enabled: v })}
             />
             <ToggleField
-              label="Photometric calibration (defiltered cameras)"
+              label="Defiltered camera (OSC / astro-modified DSLR)"
+              value={c.camera_defiltered ?? true}
+              onChange={(v) => update({ camera_defiltered: v })}
+            />
+            <ToggleField
+              label="Photometric calibration (Siril pcc, requires plate-solve)"
               value={c.photometric_calibration_enabled ?? false}
               onChange={(v) => update({ photometric_calibration_enabled: v })}
             />
@@ -307,12 +320,23 @@ export function ProfileForm({
 
           <StepSection
             title="Denoise"
-            description="Cosmic Clarity AI denoise. Reduces shot noise while preserving sharp detail. Higher strength = smoother but softer."
+            description="AI denoise. Choose between Cosmic Clarity (default; tuned for emission nebulae) and GraXpert (alternative; better on noisy galaxy frames)."
             icon={<Wand2 size={13} />}
             enabled={c.denoise_enabled ?? true}
             onEnabledChange={(v) => update({ denoise_enabled: v })}
             defaultOpen={false}
           >
+            <SelectField
+              label="Engine"
+              value={c.denoise_engine ?? 'cosmic_clarity'}
+              options={[
+                { value: 'cosmic_clarity', label: 'Cosmic Clarity (recommended)' },
+                { value: 'graxpert', label: 'GraXpert' },
+              ]}
+              onChange={(v) =>
+                update({ denoise_engine: v as ProcessingProfileConfig['denoise_engine'] })
+              }
+            />
             <SliderField
               label="Strength"
               value={c.denoise_strength ?? 0.8}
@@ -321,11 +345,30 @@ export function ProfileForm({
               step={0.05}
               onChange={(v) => update({ denoise_strength: v })}
             />
-            <ToggleField
-              label="Luminance only"
-              value={c.denoise_luminance_only ?? false}
-              onChange={(v) => update({ denoise_luminance_only: v })}
-            />
+            {(c.denoise_engine ?? 'cosmic_clarity') === 'cosmic_clarity' ? (
+              <ToggleField
+                label="Luminance only"
+                value={c.denoise_luminance_only ?? false}
+                onChange={(v) => update({ denoise_luminance_only: v })}
+              />
+            ) : (
+              <>
+                <SelectField
+                  label="GraXpert AI model"
+                  value={c.denoise_graxpert_ai_model ?? '3.0.2'}
+                  options={[{ value: '3.0.2', label: '3.0.2 (server-installed)' }]}
+                  onChange={(v) => update({ denoise_graxpert_ai_model: v })}
+                />
+                <SliderField
+                  label="Batch size (lower this if GPU runs out of memory)"
+                  value={c.denoise_graxpert_batch_size ?? 4}
+                  min={1}
+                  max={32}
+                  step={1}
+                  onChange={(v) => update({ denoise_graxpert_batch_size: v })}
+                />
+              </>
+            )}
           </StepSection>
 
           <StepSection
