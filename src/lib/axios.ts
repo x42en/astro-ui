@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useSettingsStore } from '../store/settingsStore';
+import { useAuthStore } from '../store/authStore';
 
 export const api = axios.create({
   headers: {
@@ -31,6 +32,15 @@ api.interceptors.request.use((config) => {
 
   if (authEnabled && apiKey) {
     config.headers.Authorization = `Bearer ${apiKey}`;
+  } else {
+    // Mock-auth bridge: when real JWT auth isn't configured, identify the
+    // caller via a deterministic header so backend /me/* endpoints can
+    // persist per-user data. The backend maps this header to
+    // uuid5(namespace, value).
+    const authUser = useAuthStore.getState().user;
+    if (authUser?.username) {
+      config.headers['X-Mock-User'] = authUser.username;
+    }
   }
   return config;
 });

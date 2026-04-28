@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { History, BookOpen, Images, Settings } from 'lucide-react';
+import { History, BookOpen, Images, Settings, Calendar } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Logo } from '../branding/Logo';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -15,6 +15,7 @@ interface NavLink {
 
 const BASE_NAV_LINKS: NavLink[] = [
   { to: '/history', label: 'History', icon: History },
+  { to: '/prepare', label: 'Plan', icon: Calendar },
   { to: '/gallery', label: 'Gallery', icon: Images },
   { to: '/profiles', label: 'Profiles', icon: BookOpen },
 ];
