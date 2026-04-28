@@ -265,9 +265,9 @@ export function ProfileForm({
             {(c.gradient_removal_method ?? 'ai') === 'ai' && (
               <SelectField
                 label="AI model"
-                value={c.gradient_removal_ai_model ?? 'GraXpert-AI-1.0.0'}
+                value={c.gradient_removal_ai_model ?? '1.0.1'}
                 options={[
-                  { value: 'GraXpert-AI-1.0.0', label: 'GraXpert AI 1.0.0' },
+                  { value: '1.0.1', label: 'GraXpert BGE 1.0.1 (recommended)' },
                 ]}
                 onChange={(v) => update({ gradient_removal_ai_model: v })}
               />

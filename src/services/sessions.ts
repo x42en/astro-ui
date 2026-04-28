@@ -64,3 +64,21 @@ export function getLightPreviewUrl(sessionId: string): string {
   const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
   return `${base}/sessions/${sessionId}/light-preview`;
 }
+
+export function getStepPreviewUrl(sessionId: string, stepName: string): string {
+  const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
+  return `${base}/sessions/${sessionId}/step-preview/${stepName}`;
+}
+
+export interface StepPreviewInfo {
+  step_name: string;
+  display_name: string;
+  has_preview: boolean;
+}
+
+export async function listStepPreviews(sessionId: string): Promise<StepPreviewInfo[]> {
+  const response = await api.get<StepPreviewInfo[]>(
+    `/sessions/${sessionId}/step-previews`,
+  );
+  return response.data;
+}

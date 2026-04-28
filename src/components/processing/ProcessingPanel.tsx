@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
-import { startProcessing, cancelSession, getLightPreviewUrl } from '../../services/sessions';
+import { startProcessing, cancelSession, getLightPreviewUrl, getStepPreviewUrl } from '../../services/sessions';
 import { getPreviewUrl } from '../../services/jobs';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { ProgressPanel } from './ProgressPanel';
@@ -54,6 +54,9 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const [livePreviewUrl, setLivePreviewUrl] = useState<string | null>(
     () => getLightPreviewUrl(session.id),
   );
+  // Per-step preview override: when set, the background switches to the JPEG
+  // produced after that pipeline step (browsable on completed sessions).
+  const [selectedStep, setSelectedStep] = useState<string | null>(null);
 
   const processMutation = useMutation({
     mutationFn: ({
@@ -139,9 +142,11 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
 
   // Determine background image
   const bgUrl =
-    isCompleted && viewMode === 'result' && activeJob?.output_preview_path
-      ? getPreviewUrl(activeJob.id)
-      : livePreviewUrl;
+    selectedStep
+      ? getStepPreviewUrl(session.id, selectedStep)
+      : isCompleted && viewMode === 'result' && activeJob?.output_preview_path
+        ? getPreviewUrl(activeJob.id)
+        : livePreviewUrl;
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black">
@@ -188,6 +193,32 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
             sessionId={session.id}
             onPreviewUpdate={setLivePreviewUrl}
           />
+        </div>
+      )}
+
+      {/* ── Step browser — completed sessions, when in result view ── */}
+      {isCompleted && activeJob && viewMode === 'result' && (
+        <div className="absolute top-16 right-4 z-30 w-72 sm:w-80">
+          <ProgressPanel
+            jobId={activeJob.id}
+            sessionId={session.id}
+            selectedStep={selectedStep}
+            onStepSelect={setSelectedStep}
+          />
+        </div>
+      )}
+
+      {/* ── Back-to-final-render chip — when browsing a step preview ── */}
+      {selectedStep && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
+          <button
+            type="button"
+            onClick={() => setSelectedStep(null)}
+            className="hud-glass rounded-full px-3 py-1.5 text-xs text-text-primary hover:text-white flex items-center gap-1.5 transition-colors"
+          >
+            <X size={11} />
+            Retour au rendu final
+          </button>
         </div>
       )}
 
