@@ -2,11 +2,14 @@ import { Link } from 'react-router-dom';
 import {
   Activity,
   ArrowRight,
+  CalendarClock,
   Cpu,
   Github,
   Images,
   Layers,
+  Radio,
   Share2,
+  Sliders,
   Telescope,
   type LucideIcon,
 } from 'lucide-react';
@@ -30,6 +33,24 @@ const CAPABILITIES: Capability[] = [
       'Calibration, stacking, plate solving, gradient removal, stretching, denoising, sharpening, super-resolution and star separation in a single run.',
   },
   {
+    icon: Radio,
+    title: 'Live stacking with coaching',
+    description:
+      'Drop frames as they come off the sensor and watch the stack build live. A recommender reads exposure, white balance, FWHM and clipping in real time and tells you what to fix at the rig.',
+  },
+  {
+    icon: CalendarClock,
+    title: 'Plan by weather window',
+    description:
+      'Pick an observation site, browse curated targets and pick the night by forecasted seeing, cloud cover and Moon phase — then jump straight to the live session.',
+  },
+  {
+    icon: Sliders,
+    title: 'Detailed, customizable pipelines',
+    description:
+      'Every step — calibration, registration, stacking, GraXpert, denoising, sharpening, super-resolution — is exposed as a tunable parameter, with sensible presets and per-session overrides.',
+  },
+  {
     icon: Cpu,
     title: 'Multi-GPU acceleration',
     description:
@@ -37,9 +58,9 @@ const CAPABILITIES: Capability[] = [
   },
   {
     icon: Layers,
-    title: 'Profile presets',
+    title: 'Profile presets & calibration libraries',
     description:
-      'Quick, Standard, Quality and Advanced presets give you sensible defaults; tweak any parameter when you need control.',
+      'Quick, Standard, Quality and Advanced presets ship with sensible defaults; per-session calibration dropzones manage your darks, flats and dark-flats libraries.',
   },
   {
     icon: Share2,
@@ -62,13 +83,12 @@ const CAPABILITIES: Capability[] = [
 ];
 
 const ROADMAP: string[] = [
-  'Authentication via auth-service',
   'Planet-dedicated processing pipeline',
-  'Observation time-slot suggestions per target & location',
-  'AI-driven session scheduling (weather · location · target)',
+  'Mosaic & multi-night session merging',
   'Pipeline tools and steps exposed as MCP servers',
   'AI-driven pipeline auto-selection & auto-improve agents',
   'Observation alerts (cancel reminders, target visibility, …)',
+  'Mobile companion app for live monitoring',
 ];
 
 export function Landing() {
