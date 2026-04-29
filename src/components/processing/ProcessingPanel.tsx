@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Play,
   Square,
@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
-import { startProcessing, cancelSession, getLightPreviewUrl, getStepPreviewUrl } from '../../services/sessions';
+import { startProcessing, cancelSession, getLightPreviewUrl, getStepPreviewUrl, listStepPreviews } from '../../services/sessions';
 import { getPreviewUrl } from '../../services/jobs';
 import { ThumbnailPlaceholder } from '../ui/ThumbnailPlaceholder';
 import { ProgressPanel } from './ProgressPanel';
@@ -51,9 +51,7 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const [selectedProfileId, setSelectedProfileId] = useState<string>(
     profileIdsBySession[session.id] ?? '',
   );
-  const [livePreviewUrl, setLivePreviewUrl] = useState<string | null>(
-    () => getLightPreviewUrl(session.id),
-  );
+  const [livePreviewUrl, setLivePreviewUrl] = useState<string | null>(null);
   // Per-step preview override: when set, the background switches to the JPEG
   // produced after that pipeline step (browsable on completed sessions).
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
@@ -130,6 +128,30 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
       session.status === 'failed') &&
     !isProcessing;
 
+  // ── Step-preview availability ──
+  // Drives the "best available" fallback shown when the user revisits the
+  // page mid-processing or after a server restart: we prefer the latest
+  // step preview over the raw light-frame thumbnail (which otherwise leaks
+  // through and looks like the pipeline is stuck on the very first stage).
+  const { data: stepPreviews } = useQuery({
+    queryKey: ['sessions', session.id, 'step-previews'],
+    queryFn: () => listStepPreviews(session.id),
+    enabled: isProcessing || isCompleted,
+    refetchInterval: isProcessing ? 5000 : false,
+    staleTime: isProcessing ? 0 : 60_000,
+  });
+  const latestStepPreviewUrl = useMemo(() => {
+    const list = stepPreviews ?? [];
+    // step-previews are returned in pipeline-execution order; the last
+    // entry with ``has_preview=true`` is the most recent rendered step.
+    for (let i = list.length - 1; i >= 0; i--) {
+      if (list[i].has_preview) {
+        return getStepPreviewUrl(session.id, list[i].step_name);
+      }
+    }
+    return null;
+  }, [stepPreviews, session.id]);
+
   // ── View mode toggle (Result ↔ Setup) ──
   // Only meaningful for completed sessions: when a render is available we
   // default to showing it (Result), and the user can opt into Setup to
@@ -140,13 +162,19 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const showResultStrip = isCompleted && viewMode === 'result' && !!activeJob;
   const showModeToggle = isCompleted && !isProcessing;
 
-  // Determine background image
+  // Determine background image.  Priority order:
+  //   1. user-selected step (browser),
+  //   2. final render of a completed job,
+  //   3. live preview pushed by the WS during the current run,
+  //   4. latest available per-step preview (recovered after navigation /
+  //      restart),
+  //   5. raw light-frame thumbnail as a last resort.
   const bgUrl =
     selectedStep
       ? getStepPreviewUrl(session.id, selectedStep)
       : isCompleted && viewMode === 'result' && activeJob?.output_preview_path
         ? getPreviewUrl(activeJob.id)
-        : livePreviewUrl;
+        : livePreviewUrl ?? latestStepPreviewUrl ?? getLightPreviewUrl(session.id);
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black">

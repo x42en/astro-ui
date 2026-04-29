@@ -1,6 +1,6 @@
 import api from '../lib/axios';
 import { useSettingsStore } from '../store/settingsStore';
-import type { SessionRead, PaginatedResponse, ProfilePreset } from '../types';
+import type { SessionRead, PaginatedResponse, ProfilePreset, JobRead } from '../types';
 
 export interface SessionCreate {
   name: string;
@@ -30,6 +30,31 @@ export async function listSessions(
 export async function getSession(sessionId: string): Promise<SessionRead> {
   const response = await api.get<SessionRead>(`/sessions/${sessionId}`);
   return response.data;
+}
+
+/**
+ * Fetch the most recent job for ``sessionId`` regardless of its status.
+ * Used to recover the rendered preview after a server restart or when the
+ * client-side session→job mapping has been cleared.  Resolves to ``null``
+ * when no job has ever been started for that session.
+ */
+export async function getLatestJobForSession(
+  sessionId: string,
+): Promise<JobRead | null> {
+  try {
+    const response = await api.get<JobRead>(`/sessions/${sessionId}/latest-job`);
+    return response.data;
+  } catch (err: unknown) {
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'response' in err &&
+      (err as { response?: { status?: number } }).response?.status === 404
+    ) {
+      return null;
+    }
+    throw err;
+  }
 }
 
 export async function startProcessing(
