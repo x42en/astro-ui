@@ -116,6 +116,17 @@ export interface ProcessingProfileConfig {
 
   debayer_pattern?: 'auto' | 'RGGB' | 'BGGR' | 'GRBG' | 'GBRG';
 
+  /** Star detection (`findstar`) — drives Siril's `register` (frame
+   *  alignment).  When disabled, Siril's built-in defaults are used and
+   *  no `setfindstar` command is emitted.  Enable only for faint /
+   *  wide-field rigs where the defaults reject too many true stars;
+   *  relaxed values smear nebular chrominance during the stack. */
+  findstar_override_enabled?: boolean;
+  findstar_radius?: number;
+  findstar_sigma?: number;
+  findstar_roundness?: number;
+  findstar_relax?: boolean;
+
   plate_solving_enabled?: boolean;
   plate_solving_radius_deg?: number;
   plate_solving_speed?: 'auto' | 'slow' | 'fast';

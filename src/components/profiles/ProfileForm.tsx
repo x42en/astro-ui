@@ -11,6 +11,7 @@ import {
   Maximize2,
   Sparkles,
   RefreshCw,
+  Crosshair,
 } from 'lucide-react';
 import { StepSection, SliderField, SelectField, ToggleField } from './StepSection';
 import type { ProcessingProfileConfig } from '../../types';
@@ -186,6 +187,46 @@ export function ProfileForm({
                 { value: 'GBRG', label: 'GBRG' },
               ]}
               onChange={(v) => update({ debayer_pattern: v as ProcessingProfileConfig['debayer_pattern'] })}
+            />
+          </StepSection>
+
+          <StepSection
+            title="Star Detection (advanced)"
+            description="Tunes Siril's findstar detector used by frame registration (alignment before stacking). Leave OFF unless your subs fail to align: relaxed values let non-stellar structures (nebula edges, hot pixels) become alignment anchors, which causes micro-jitter between frames and smears fine chrominance on bright nebula cores (e.g. M42)."
+            icon={<Crosshair size={13} />}
+            enabled={c.findstar_override_enabled ?? false}
+            onEnabledChange={(v) => update({ findstar_override_enabled: v })}
+            defaultOpen={false}
+          >
+            <SliderField
+              label="Detection radius (px)"
+              value={c.findstar_radius ?? 10}
+              min={3}
+              max={30}
+              step={1}
+              unit="px"
+              onChange={(v) => update({ findstar_radius: v })}
+            />
+            <SliderField
+              label="Sigma threshold"
+              value={c.findstar_sigma ?? 1.0}
+              min={0.3}
+              max={3.0}
+              step={0.1}
+              onChange={(v) => update({ findstar_sigma: v })}
+            />
+            <SliderField
+              label="Roundness threshold"
+              value={c.findstar_roundness ?? 0.5}
+              min={0.1}
+              max={0.9}
+              step={0.05}
+              onChange={(v) => update({ findstar_roundness: v })}
+            />
+            <ToggleField
+              label="Relax mode (accept marginal candidates)"
+              value={c.findstar_relax ?? false}
+              onChange={(v) => update({ findstar_relax: v })}
             />
           </StepSection>
 
