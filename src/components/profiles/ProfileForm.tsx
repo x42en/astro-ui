@@ -288,7 +288,7 @@ export function ProfileForm({
 
           <StepSection
             title="Gradient Removal"
-            description="Subtracts smooth background gradients caused by light pollution and vignetting. AI mode (GraXpert) is generally safer on heavy nebulosity."
+            description="Subtracts smooth background gradients caused by light pollution and vignetting. AI mode (GraXpert) is generally safer on heavy nebulosity. The pipeline auto-switches to chained Object + Stars deconvolution on galaxies and clusters via the object-type catalogue."
             icon={<Blend size={13} />}
             enabled={c.gradient_removal_enabled ?? true}
             onEnabledChange={(v) => update({ gradient_removal_enabled: v })}
@@ -308,7 +308,10 @@ export function ProfileForm({
                 label="AI model"
                 value={c.gradient_removal_ai_model ?? '1.0.1'}
                 options={[
-                  { value: '1.0.1', label: 'GraXpert BGE 1.0.1 (recommended)' },
+                  { value: '1.0.1', label: 'GraXpert BGE 1.0.1 (background extraction, recommended for nebulae)' },
+                  { value: 'deconv-obj-1.0.1', label: 'GraXpert Object Only 1.0.1 (deconvolve nebula / galaxy)' },
+                  { value: 'deconv-stars-1.0.0', label: 'GraXpert Star Only 1.0.0 (tighten stellar PSFs)' },
+                  { value: 'deconv-both-1.0.1', label: 'GraXpert Object + Star 1.0.1 (chained, default for galaxies)' },
                 ]}
                 onChange={(v) => update({ gradient_removal_ai_model: v })}
               />

@@ -133,7 +133,19 @@ export interface ProcessingProfileConfig {
 
   gradient_removal_enabled?: boolean;
   gradient_removal_method?: 'ai' | 'polynomial';
+  /** GraXpert AI selector; doubles as `mode + version`:
+   *  - `1.0.1`              Background Extraction (default).
+   *  - `deconv-obj-1.0.1`   Object-only deconvolution.
+   *  - `deconv-stars-1.0.0` Stars-only deconvolution.
+   *  - `deconv-both-1.0.1`  Object + stars chained (auto-selected on
+   *    galaxies / clusters by the object-type catalogue).
+   */
   gradient_removal_ai_model?: string;
+  gradient_removal_correction?: 'Subtraction' | 'Division';
+  gradient_removal_smoothing?: number;
+  gradient_removal_deconv_strength?: number;
+  gradient_removal_deconv_psfsize?: number;
+  gradient_removal_deconv_batch_size?: number;
 
   stretch_method?: 'asinh' | 'auto' | 'linear';
   stretch_strength?: number;
