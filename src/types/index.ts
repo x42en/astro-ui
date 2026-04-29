@@ -419,3 +419,15 @@ export interface ObjectForecast {
   min_altitude_deg: number;
   nights: NightlyForecastEntry[];
 }
+
+export interface AppSettingsRemote {
+  inbox_path: string;
+  ollama_url: string;
+  ollama_model: string;
+  pipeline_max_retries: number;
+  session_stability_delay: number;
+  updated_at: string;
+  updated_by_user_id: string | null;
+}
+
+export type AppSettingsUpdate = Partial<Omit<AppSettingsRemote, 'updated_at' | 'updated_by_user_id'>>;
