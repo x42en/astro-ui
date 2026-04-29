@@ -131,7 +131,7 @@ export function useUploadQueue() {
         }));
       };
 
-      const ORDER: FrameType[] = ['lights', 'darks', 'flats', 'bias'];
+      const ORDER: FrameType[] = ['lights', 'darks', 'flats', 'dark_flats', 'bias'];
 
       for (const frameType of ORDER) {
         const group = currentFiles.filter((f) => f.frameType === frameType);

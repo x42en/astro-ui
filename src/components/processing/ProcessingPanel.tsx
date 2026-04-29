@@ -420,6 +420,12 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
                     {session.frame_count_flats}F
                   </span>
                 )}
+                {session.frame_count_dark_flats > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Layers size={10} className="text-warning/60" />
+                    {session.frame_count_dark_flats}DF
+                  </span>
+                )}
                 {session.frame_count_bias > 0 && (
                   <span className="flex items-center gap-1">
                     <Minus size={10} />

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Header } from './Header';
 import { PublicHeader } from './PublicHeader';
 import { ToastContainer } from '../ui/Toast';
+import { ActiveLiveBanner } from '../livestack/ActiveLiveBanner';
 import { useUiStore } from '../../store/uiStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useIsAuthenticated } from '../../store/authStore';
@@ -67,6 +68,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="min-h-screen bg-space-bg flex flex-col">
       {!chromeless && (usePublicHeader ? <PublicHeader /> : <Header />)}
+      {!chromeless && isAuthenticated && <ActiveLiveBanner />}
       <main className="flex-1 min-w-0 overflow-y-auto">
         {children}
       </main>

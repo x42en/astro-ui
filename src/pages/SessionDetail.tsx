@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2, RotateCcw } from 'lucide-react';
+import { Trash2, RotateCcw, Layers } from 'lucide-react';
 import { getSession, deleteSession, resetSession, getLatestJobForSession } from '../services/sessions';
 import { getJob } from '../services/jobs';
 import { useUiStore } from '../store/uiStore';
 import { ProcessingPanel } from '../components/processing/ProcessingPanel';
 import { ThumbnailPlaceholder } from '../components/ui/ThumbnailPlaceholder';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { CalibrationFramesModal } from '../components/sessions/CalibrationFramesModal';
 import type { JobRead } from '../types';
 
 export function SessionDetail() {
@@ -20,6 +21,7 @@ export function SessionDetail() {
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showCalibration, setShowCalibration] = useState(false);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ['sessions', sessionId],
@@ -126,6 +128,23 @@ export function SessionDetail() {
         onConfirm={() => resetMutation.mutate()}
       />
       <ProcessingPanel session={session} activeJob={effectiveJob} />
+
+      <CalibrationFramesModal
+        open={showCalibration}
+        onOpenChange={setShowCalibration}
+        session={session}
+      />
+
+      {/* Calibration button — always available, lets the user complete
+          the darks / flats / dark-flats libraries after acquisition. */}
+      <button
+        onClick={() => setShowCalibration(true)}
+        className="absolute top-4 right-44 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-accent/70 text-white/60 hover:text-white text-xs font-medium transition-all duration-200 backdrop-blur-sm"
+        title="Ajouter darks / flats / dark-flats"
+      >
+        <Layers size={13} />
+        Calibration
+      </button>
 
       {/* Reset button — only shown when stuck in processing */}
       {isProcessing && (

@@ -74,6 +74,24 @@ export function RecommendationCard({ visibility, minAltitudeDeg, timezone }: Rec
       navigate(`/sessions/${session.id}/live`);
     },
     onError: (err: unknown) => {
+      if (isAxiosError(err) && err.response?.status === 409) {
+        const data = err.response.data as
+          | { details?: { active_session_id?: string }; active_session_id?: string }
+          | undefined;
+        const activeId = data?.details?.active_session_id ?? data?.active_session_id;
+        addToast({
+          variant: 'warning',
+          title: 'Une session live est déjà en cours',
+          message: activeId
+            ? 'Terminez-la ou reprenez-la avant d\u2019en démarrer une nouvelle.'
+            : 'Terminez la session active avant d\u2019en démarrer une nouvelle.',
+        });
+        if (activeId) {
+          queryClient.invalidateQueries({ queryKey: ['live-active'] });
+          navigate(`/sessions/${activeId}/live`);
+        }
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Unexpected error.';
       addToast({ variant: 'error', title: 'Could not start session', message });
     },

@@ -76,7 +76,9 @@ export interface SessionRead {
   frame_count_lights: number;
   frame_count_darks: number;
   frame_count_flats: number;
+  frame_count_dark_flats: number;
   frame_count_bias: number;
+  owner_id: string | null;
   object_name: string | null;
   ra: number | null;
   dec: number | null;

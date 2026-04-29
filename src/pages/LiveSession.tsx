@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Play, StopCircle, Upload } from 'lucide-react';
+import { CheckCircle2, Loader2, Play, StopCircle, Upload } from 'lucide-react';
+import { CalibrationPromptModal } from '../components/livestack/CalibrationPromptModal';
 import {
   getLivePreviewUrl,
   getLiveState,
@@ -17,6 +18,7 @@ import type { LiveLevels } from '../components/livestack/LiveCanvas';
 import { LevelsPanel } from '../components/livestack/LevelsPanel';
 import { RGBBalancePanel } from '../components/livestack/RGBBalancePanel';
 import { HistogramPanel } from '../components/livestack/HistogramPanel';
+import { RecommendationsPanel } from '../components/livestack/RecommendationsPanel';
 import type { WsEvent } from '../types/websocket';
 
 /**
@@ -29,6 +31,7 @@ import type { WsEvent } from '../types/websocket';
  */
 export function LiveSession() {
   const { sessionId } = useParams<{ sessionId: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addToast } = useUiStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +39,7 @@ export function LiveSession() {
   const [levels, setLevels] = useState<LiveLevels>(DEFAULT_LEVELS);
   const [previewGeneration, setPreviewGeneration] = useState(0);
   const [logLines, setLogLines] = useState<string[]>([]);
+  const [calibrationOpen, setCalibrationOpen] = useState(false);
 
   const sessionQuery = useQuery({
     queryKey: ['session', sessionId],
@@ -152,6 +156,16 @@ export function LiveSession() {
               <span>Pause</span>
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setCalibrationOpen(true)}
+            disabled={!sessionQuery.data}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-success-muted text-success hover:opacity-90 disabled:opacity-50"
+            title="Clôturer la session et envoyer les darks / flats"
+          >
+            <CheckCircle2 size={12} />
+            <span>Terminer</span>
+          </button>
           <label className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-primary cursor-pointer">
             <Upload size={12} />
             <span>Push frame{uploadMutation.isPending ? ` (${uploadMutation.variables?.name})` : ''}</span>
@@ -206,6 +220,12 @@ export function LiveSession() {
           <LevelsPanel levels={levels} onChange={setLevels} />
           <RGBBalancePanel levels={levels} onChange={setLevels} />
           <HistogramPanel imageUrl={previewUrl} />
+          {sessionId && (
+            <RecommendationsPanel
+              sessionId={sessionId}
+              previewGeneration={previewGeneration}
+            />
+          )}
 
           <div className="bg-space-surface border border-space-border rounded-xl p-4 flex flex-col gap-1 text-[11px] font-mono text-text-secondary max-h-48 overflow-y-auto">
             <h3 className="text-xs font-semibold text-text-primary not-italic mb-1">Activity</h3>
@@ -216,6 +236,15 @@ export function LiveSession() {
           </div>
         </aside>
       </div>
+
+      {sessionQuery.data && (
+        <CalibrationPromptModal
+          open={calibrationOpen}
+          session={sessionQuery.data}
+          onClose={() => setCalibrationOpen(false)}
+          onTerminated={() => navigate(`/sessions/${sessionQuery.data!.id}`)}
+        />
+      )}
     </div>
   );
 }

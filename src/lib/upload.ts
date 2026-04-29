@@ -4,7 +4,7 @@ import api from './axios';
 // Increasing beyond the file size has no drawback — the last chunk is always smaller.
 const CHUNK_SIZE = 10 * 1024 * 1024;
 
-export type FrameType = 'lights' | 'darks' | 'flats' | 'bias';
+export type FrameType = 'lights' | 'darks' | 'flats' | 'dark_flats' | 'bias';
 
 export interface UploadProgress {
   loaded: number;

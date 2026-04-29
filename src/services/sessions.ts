@@ -29,6 +29,7 @@ export interface SessionListParams {
   page_size?: number;
   status?: string;
   search?: string;
+  mine?: boolean;
 }
 
 export async function listSessions(
@@ -179,4 +180,64 @@ export async function pushLiveFrame(
 export function getLivePreviewUrl(sessionId: string, generation: number = 0): string {
   const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
   return `${base}/sessions/${sessionId}/live/preview?g=${generation}`;
+}
+
+/**
+ * Return the current user's active live session, or ``null`` when no
+ * such session exists (or the user is anonymous).  Used to surface a
+ * "Reprendre la session" banner across the app.
+ */
+export async function getActiveLiveSession(): Promise<SessionRead | null> {
+  const response = await api.get<SessionRead | null>('/sessions/live/active');
+  return response.data ?? null;
+}
+
+/**
+ * Mark a session as ``COMPLETED`` and free the user's "active live"
+ * slot.  Called from the dedicated "Terminer" button in the live view.
+ */
+export async function terminateSession(sessionId: string): Promise<SessionRead> {
+  const response = await api.post<SessionRead>(`/sessions/${sessionId}/terminate`);
+  return response.data;
+}
+
+// ── Recommendations ────────────────────────────────────────────────────────
+
+export type RecommendationSeverity = 'info' | 'warn' | 'critical';
+export type RecommendationCategory =
+  | 'exposure'
+  | 'iso'
+  | 'white_balance'
+  | 'focus'
+  | 'general';
+
+export interface HistogramStats {
+  median_r: number;
+  median_g: number;
+  median_b: number;
+  clip_low_pct: number;
+  clip_high_pct: number;
+  last_fwhm: number | null;
+  is_monochrome: boolean;
+}
+
+export interface Recommendation {
+  severity: RecommendationSeverity;
+  category: RecommendationCategory;
+  message: string;
+  action: string;
+}
+
+export interface RecommendationReport {
+  stats: HistogramStats;
+  recommendations: Recommendation[];
+}
+
+export async function getLiveRecommendations(
+  sessionId: string,
+): Promise<RecommendationReport> {
+  const response = await api.get<RecommendationReport>(
+    `/sessions/${sessionId}/live/recommendations`,
+  );
+  return response.data;
 }
