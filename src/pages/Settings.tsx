@@ -8,12 +8,9 @@ import {
   Loader2,
   Save,
   RotateCcw,
-  Eye,
-  EyeOff,
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
-import * as Switch from '@radix-ui/react-switch';
 import { useSettingsStore } from '../store/settingsStore';
 import { useUiStore } from '../store/uiStore';
 import api from '../lib/axios';
@@ -113,24 +110,6 @@ function NumberInput({
   );
 }
 
-function SwitchField({
-  checked,
-  onCheckedChange,
-}: {
-  checked: boolean;
-  onCheckedChange: (v: boolean) => void;
-}) {
-  return (
-    <Switch.Root
-      checked={checked}
-      onCheckedChange={onCheckedChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${checked ? 'bg-primary' : 'bg-space-border'}`}
-    >
-      <Switch.Thumb className="block w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 translate-x-1 data-[state=checked]:translate-x-6" />
-    </Switch.Root>
-  );
-}
-
 type ConnectionState = 'idle' | 'checking' | 'ok' | 'error';
 
 export function SettingsPage() {
@@ -140,14 +119,11 @@ export function SettingsPage() {
   const [form, setForm] = useState<AppSettings>({
     apiBaseUrl: store.apiBaseUrl,
     wsBaseUrl: store.wsBaseUrl,
-    apiKey: store.apiKey,
-    authEnabled: store.authEnabled,
     inboxPath: store.inboxPath,
     ollamaUrl: store.ollamaUrl,
     pipelineMaxRetries: store.pipelineMaxRetries,
     sessionStabilityDelay: store.sessionStabilityDelay,
   });
-  const [showKey, setShowKey] = useState(false);
   const [connectionState, setConnectionState] = useState<ConnectionState>('idle');
   const [connectionMessage, setConnectionMessage] = useState('');
   const [dirty, setDirty] = useState(false);
@@ -156,8 +132,6 @@ export function SettingsPage() {
     setDirty(
       form.apiBaseUrl !== store.apiBaseUrl ||
       form.wsBaseUrl !== store.wsBaseUrl ||
-      form.apiKey !== store.apiKey ||
-      form.authEnabled !== store.authEnabled ||
       form.inboxPath !== store.inboxPath ||
       form.ollamaUrl !== store.ollamaUrl ||
       form.pipelineMaxRetries !== store.pipelineMaxRetries ||
@@ -180,8 +154,6 @@ export function SettingsPage() {
     setForm({
       apiBaseUrl: s.apiBaseUrl,
       wsBaseUrl: s.wsBaseUrl,
-      apiKey: s.apiKey,
-      authEnabled: s.authEnabled,
       inboxPath: s.inboxPath,
       ollamaUrl: s.ollamaUrl,
       pipelineMaxRetries: s.pipelineMaxRetries,
@@ -194,7 +166,7 @@ export function SettingsPage() {
   const handleTestConnection = async () => {
     setConnectionState('checking');
     setConnectionMessage('');
-    store.update({ apiBaseUrl: form.apiBaseUrl, apiKey: form.apiKey, authEnabled: form.authEnabled });
+    store.update({ apiBaseUrl: form.apiBaseUrl });
     try {
       await api.get('/health', { timeout: 5000 });
       setConnectionState('ok');
@@ -299,46 +271,6 @@ export function SettingsPage() {
           />
         </FieldRow>
 
-        <div className="h-px bg-space-border/60" />
-
-        <FieldRow
-          label="Authentication"
-          hint="Enable Bearer token authentication for all API requests"
-        >
-          <div className="flex items-center gap-3">
-            <SwitchField
-              checked={form.authEnabled}
-              onCheckedChange={(v) => patch({ authEnabled: v })}
-            />
-            <span className="text-sm text-text-secondary">
-              {form.authEnabled ? 'Enabled' : 'Disabled'}
-            </span>
-          </div>
-        </FieldRow>
-
-        {form.authEnabled && (
-          <FieldRow
-            label="API Key"
-            hint="Bearer token sent in the Authorization header"
-          >
-            <div className="relative">
-              <input
-                type={showKey ? 'text' : 'password'}
-                value={form.apiKey}
-                onChange={(e) => patch({ apiKey: e.target.value })}
-                placeholder="your-secret-api-key"
-                className="w-full px-3 py-2 pr-10 bg-space-bg border border-space-border rounded text-sm text-text-primary font-mono placeholder:text-text-muted focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowKey((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-              >
-                {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
-          </FieldRow>
-        )}
       </SettingsSection>
 
       <SettingsSection

@@ -4,8 +4,6 @@ import { persist } from 'zustand/middleware';
 export interface AppSettings {
   apiBaseUrl: string;
   wsBaseUrl: string;
-  apiKey: string;
-  authEnabled: boolean;
   inboxPath: string;
   ollamaUrl: string;
   pipelineMaxRetries: number;
@@ -36,8 +34,6 @@ const DEFAULTS: AppSettings = {
   // Use || rather than ?? so that an empty-string build arg falls through to the default.
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   wsBaseUrl: import.meta.env.VITE_WS_BASE_URL || getDefaultWsUrl(),
-  apiKey: '',
-  authEnabled: false,
   inboxPath: '/data/inbox',
   ollamaUrl: 'http://localhost:11434',
   pipelineMaxRetries: 3,
@@ -54,7 +50,7 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       // Version bump clears stale localStorage entries that held the old
       // hardcoded localhost:8080 defaults. Users will get the new defaults.
-      name: 'astrostack-settings-v2',
+      name: 'astrostack-settings-v3',
     }
   )
 );
