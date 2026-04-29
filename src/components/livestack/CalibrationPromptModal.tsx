@@ -16,7 +16,7 @@ interface CalibrationPromptModalProps {
 }
 
 /**
- * Modal shown when the user clicks "Terminer la session" in the live
+ * Modal shown when the user clicks "Terminate session" in the live
  * view. We strongly suggest pushing dark / flat / dark-flat libraries
  * before closing the session, but the user can always skip — we only
  * call ``terminateSession`` once they confirm.
@@ -37,7 +37,7 @@ export function CalibrationPromptModal({
       setIsFinalising(true);
     },
     onSuccess: () => {
-      addToast({ variant: 'success', title: 'Session terminée' });
+      addToast({ variant: 'success', title: 'Session terminated' });
       queryClient.invalidateQueries({ queryKey: ['live-active'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['session', session.id] });
@@ -47,7 +47,7 @@ export function CalibrationPromptModal({
     onError: (err: unknown) => {
       addToast({
         variant: 'error',
-        title: 'Impossible de terminer la session',
+        title: 'Could not terminate the session',
         message: err instanceof Error ? err.message : String(err),
       });
     },
@@ -66,8 +66,8 @@ export function CalibrationPromptModal({
     <Modal
       open={open}
       onOpenChange={(o) => !o && !isFinalising && onClose()}
-      title="Terminer la session live"
-      description="Profitez-en pour ajouter vos darks, flats et dark-flats — la calibration sera meilleure. Vous pouvez aussi tout sauter."
+      title="Terminate live session"
+      description="Take a moment to upload your darks, flats and dark-flats — calibration will improve significantly. You can also skip everything."
       size="lg"
     >
       <div className="space-y-4">
@@ -78,9 +78,9 @@ export function CalibrationPromptModal({
         />
 
         <div className="text-xs text-text-muted bg-space-bg/40 border border-space-border rounded-md px-3 py-2">
-          Astuce&nbsp;: les bias seront pris en charge prochainement.
-          Les fichiers sont envoyés au fur et à mesure — vous pouvez fermer
-          la session dès qu'une famille est complète.
+          Tip: bias frames will be supported in a future iteration. Files are
+          uploaded as soon as you add them — you can close this dialog the
+          moment a library is complete.
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-space-border">
@@ -90,7 +90,7 @@ export function CalibrationPromptModal({
             disabled={isFinalising}
             className="px-4 py-2 text-sm rounded-md bg-white/5 text-text-secondary hover:bg-white/10 disabled:opacity-50"
           >
-            Passer et terminer
+            Skip and terminate
           </button>
           <button
             type="button"
@@ -99,7 +99,7 @@ export function CalibrationPromptModal({
             className="px-4 py-2 text-sm rounded-md bg-primary text-white hover:bg-primary-hover flex items-center gap-2 disabled:opacity-50"
           >
             {isFinalising && <Loader2 size={14} className="animate-spin" />}
-            Terminer la session
+            Terminate session
           </button>
         </div>
       </div>

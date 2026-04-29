@@ -81,10 +81,10 @@ export function RecommendationCard({ visibility, minAltitudeDeg, timezone }: Rec
         const activeId = data?.details?.active_session_id ?? data?.active_session_id;
         addToast({
           variant: 'warning',
-          title: 'Une session live est déjà en cours',
+          title: 'A live session is already running',
           message: activeId
-            ? 'Terminez-la ou reprenez-la avant d\u2019en démarrer une nouvelle.'
-            : 'Terminez la session active avant d\u2019en démarrer une nouvelle.',
+            ? 'Terminate it or resume it before starting a new one.'
+            : 'Terminate the active session before starting a new one.',
         });
         if (activeId) {
           queryClient.invalidateQueries({ queryKey: ['live-active'] });

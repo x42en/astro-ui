@@ -140,7 +140,7 @@ export function SessionDetail() {
       <button
         onClick={() => setShowCalibration(true)}
         className="absolute top-4 right-44 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-accent/70 text-white/60 hover:text-white text-xs font-medium transition-all duration-200 backdrop-blur-sm"
-        title="Ajouter darks / flats / dark-flats"
+        title="Add darks / flats / dark-flats"
       >
         <Layers size={13} />
         Calibration

@@ -185,7 +185,7 @@ export function getLivePreviewUrl(sessionId: string, generation: number = 0): st
 /**
  * Return the current user's active live session, or ``null`` when no
  * such session exists (or the user is anonymous).  Used to surface a
- * "Reprendre la session" banner across the app.
+ * "Resume session" banner across the app.
  */
 export async function getActiveLiveSession(): Promise<SessionRead | null> {
   const response = await api.get<SessionRead | null>('/sessions/live/active');
@@ -194,7 +194,7 @@ export async function getActiveLiveSession(): Promise<SessionRead | null> {
 
 /**
  * Mark a session as ``COMPLETED`` and free the user's "active live"
- * slot.  Called from the dedicated "Terminer" button in the live view.
+ * slot.  Called from the dedicated "Terminate" button in the live view.
  */
 export async function terminateSession(sessionId: string): Promise<SessionRead> {
   const response = await api.post<SessionRead>(`/sessions/${sessionId}/terminate`);

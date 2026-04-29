@@ -3,7 +3,7 @@ import { useActiveLiveSession } from '../../hooks/useActiveLiveSession';
 
 /**
  * Sticky banner shown right under the header when the current user has
- * a live session that hasn't been terminated. Clicking "Reprendre"
+ * a live session that hasn't been terminated. Clicking "Resume"
  * navigates to the live view. The banner self-hides on the live view
  * itself to avoid the obvious self-reference.
  */
@@ -25,14 +25,14 @@ export function ActiveLiveBanner() {
         aria-hidden
       />
       <span className="text-sm flex-1 truncate">
-        Session live en cours : <strong>{label}</strong>
+        Live session running: <strong>{label}</strong>
       </span>
       <button
         type="button"
         onClick={() => navigate(`/sessions/${session.id}/live`)}
         className="px-3 py-1 text-xs font-medium rounded-md bg-amber-500 text-space-bg hover:bg-amber-400 transition-colors"
       >
-        Reprendre
+        Resume
       </button>
     </div>
   );

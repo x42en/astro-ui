@@ -161,10 +161,10 @@ export function LiveSession() {
             onClick={() => setCalibrationOpen(true)}
             disabled={!sessionQuery.data}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-success-muted text-success hover:opacity-90 disabled:opacity-50"
-            title="Clôturer la session et envoyer les darks / flats"
+            title="Close the session and upload darks / flats"
           >
             <CheckCircle2 size={12} />
-            <span>Terminer</span>
+            <span>Terminate</span>
           </button>
           <label className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-primary cursor-pointer">
             <Upload size={12} />

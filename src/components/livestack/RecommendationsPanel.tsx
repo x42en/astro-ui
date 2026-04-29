@@ -21,11 +21,11 @@ const SEVERITY_STYLES: Record<RecommendationSeverity, { tint: string; Icon: type
 };
 
 const CATEGORY_LABEL: Record<Recommendation['category'], string> = {
-  exposure: 'Exposition',
+  exposure: 'Exposure',
   iso: 'ISO',
-  white_balance: 'Balance des blancs',
-  focus: 'Focus / suivi',
-  general: 'Général',
+  white_balance: 'White balance',
+  focus: 'Focus / tracking',
+  general: 'General',
 };
 
 /**
@@ -58,31 +58,31 @@ export function RecommendationsPanel({ sessionId, previewGeneration }: Recommend
     <div className="bg-space-surface border border-space-border rounded-xl p-4 flex flex-col gap-3 min-h-0">
       <header className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wide">
-          Recommandations
+          Recommendations
         </h3>
         {query.isFetching && <Loader2 size={12} className="animate-spin text-text-muted" />}
       </header>
 
       {noStackYet && (
         <p className="text-xs text-text-muted">
-          Empilez au moins une frame pour obtenir des recommandations.
+          Stack at least one frame to get recommendations.
         </p>
       )}
 
       {!noStackYet && query.error && (
         <p className="text-xs text-error">
-          Impossible de charger les recommandations.
+          Could not load recommendations.
         </p>
       )}
 
       {query.data && (
         <>
           <div className="grid grid-cols-3 gap-2 text-[11px] text-text-secondary font-mono">
-            <Stat label="Médiane R" value={query.data.stats.median_r} />
-            <Stat label="Médiane V" value={query.data.stats.median_g} />
-            <Stat label="Médiane B" value={query.data.stats.median_b} />
-            <Stat label="Saturé %" value={query.data.stats.clip_high_pct} digits={2} />
-            <Stat label="Plancher %" value={query.data.stats.clip_low_pct} digits={2} />
+            <Stat label="Median R" value={query.data.stats.median_r} />
+            <Stat label="Median G" value={query.data.stats.median_g} />
+            <Stat label="Median B" value={query.data.stats.median_b} />
+            <Stat label="Clip high %" value={query.data.stats.clip_high_pct} digits={2} />
+            <Stat label="Clip low %" value={query.data.stats.clip_low_pct} digits={2} />
             <Stat
               label="FWHM"
               value={query.data.stats.last_fwhm ?? null}

@@ -23,8 +23,8 @@ export function CalibrationFramesModal({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title="Frames de calibration"
-      description="Ajouter ou compléter les bibliothèques darks, flats et dark-flats de cette session."
+      title="Calibration frames"
+      description="Add or top up the darks, flats and dark-flats libraries for this session."
       size="lg"
     >
       <div className="space-y-3">
@@ -37,11 +37,12 @@ export function CalibrationFramesModal({
           }}
         />
         <p className="text-xs text-text-muted bg-space-bg/40 border border-space-border rounded-md px-3 py-2">
-          Les fichiers sont déposés dans les sous-dossiers
+          Files are stored under the
           <code className="mx-1 text-text-secondary">darks/</code>,
-          <code className="mx-1 text-text-secondary">flats/</code> et
-          <code className="mx-1 text-text-secondary">dark_flats/</code> de la session.
-          Les bias seront pris en charge prochainement.
+          <code className="mx-1 text-text-secondary">flats/</code> and
+          <code className="mx-1 text-text-secondary">dark_flats/</code>
+          sub-folders of this session. Bias frames will be supported in a
+          future iteration.
         </p>
         <div className="flex justify-end pt-2 border-t border-space-border">
           <button
@@ -49,7 +50,7 @@ export function CalibrationFramesModal({
             onClick={() => onOpenChange(false)}
             className="px-4 py-2 text-sm rounded-md bg-primary text-white hover:bg-primary-hover"
           >
-            Fermer
+            Close
           </button>
         </div>
       </div>

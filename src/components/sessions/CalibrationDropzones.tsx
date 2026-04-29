@@ -20,21 +20,21 @@ const KINDS: CalibrationKindMeta[] = [
   {
     type: 'darks',
     label: 'Darks',
-    description: 'Same exposure, ISO et température, bouchon sur l\u2019objectif.',
+    description: 'Same exposure, ISO and temperature, lens cap on.',
     color: 'text-text-secondary',
     borderColor: 'border-space-border-light',
   },
   {
     type: 'flats',
     label: 'Flats',
-    description: 'Plage uniforme à l\u2019ouverture, médiane ~50 % de la dynamique.',
+    description: 'Uniform light source at working aperture, median ~50% of the dynamic range.',
     color: 'text-accent',
     borderColor: 'border-accent/30',
   },
   {
     type: 'dark_flats',
     label: 'Dark-flats',
-    description: 'Mêmes ISO et exposition que les flats, capteur obscurci.',
+    description: 'Same ISO and exposure as the flats, sensor in the dark.',
     color: 'text-warning',
     borderColor: 'border-warning/40',
   },
@@ -93,14 +93,14 @@ export function CalibrationDropzones({
         }
         addToast({
           variant: 'success',
-          title: `${list.length} fichier${list.length > 1 ? 's' : ''} ${kind} ajouté${list.length > 1 ? 's' : ''}`,
+          title: `${list.length} ${kind} file${list.length > 1 ? 's' : ''} uploaded`,
         });
         queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
         onUploaded?.(kind, uploaded);
       } catch (err) {
         addToast({
           variant: 'error',
-          title: `Échec de l\u2019envoi (${kind})`,
+          title: `Upload failed (${kind})`,
           message: err instanceof Error ? err.message : String(err),
         });
         setProgress((prev) => ({
@@ -152,14 +152,14 @@ export function CalibrationDropzones({
                 <span className="text-sm font-medium text-text-primary">{meta.label}</span>
                 {existing > 0 && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-success-muted text-success">
-                    {existing} déjà reçus
+                    {existing} already received
                   </span>
                 )}
               </div>
               <p className="text-xs text-text-muted">{meta.description}</p>
               {prog && (
                 <p className="text-[11px] text-text-secondary font-mono mt-1">
-                  {isPending ? 'Envoi en cours… ' : 'Terminé · '}
+                  {isPending ? 'Uploading… ' : 'Done · '}
                   {prog.uploaded}/{prog.total}
                 </p>
               )}
@@ -170,7 +170,7 @@ export function CalibrationDropzones({
               ) : (
                 <Upload size={12} />
               )}
-              <span>Cliquer pour ajouter</span>
+              <span>Click to add</span>
             </div>
           </div>
         );
