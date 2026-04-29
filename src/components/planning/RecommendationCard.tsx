@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
-import { BookmarkPlus, ExternalLink, Info, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BookmarkPlus, ExternalLink, Info, Loader2, Telescope } from 'lucide-react';
 import { AltitudeSparkline } from './AltitudeSparkline';
 import { Modal } from '../ui/Modal';
 import { useIsAuthenticated } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
 import { followObject } from '../../services/followedObjects';
+import { createLiveSession } from '../../services/sessions';
 import type { ObjectVisibility } from '../../types';
 
 const TYPE_PILL: Record<string, string> = {
@@ -51,6 +53,31 @@ export function RecommendationCard({ visibility, minAltitudeDeg, timezone }: Rec
   const isAuth = useIsAuthenticated();
   const { addToast } = useUiStore();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const startLiveMutation = useMutation({
+    mutationFn: () =>
+      createLiveSession({
+        name: `${visibility.catalog_id} — ${new Date().toISOString().slice(0, 10)}`,
+        object_name: visibility.name,
+        target_ra: visibility.ra_deg ?? undefined,
+        target_dec: visibility.dec_deg ?? undefined,
+        acquired_at: new Date().toISOString(),
+      }),
+    onSuccess: (session) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      addToast({
+        variant: 'success',
+        title: 'Live session ready',
+        message: `Streaming preview for ${visibility.catalog_id}.`,
+      });
+      navigate(`/sessions/${session.id}/live`);
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Unexpected error.';
+      addToast({ variant: 'error', title: 'Could not start session', message });
+    },
+  });
 
   const followMutation = useMutation({
     mutationFn: () =>
@@ -161,11 +188,35 @@ export function RecommendationCard({ visibility, minAltitudeDeg, timezone }: Rec
           <button
             type="button"
             onClick={() => setDetailOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-primary hover:bg-primary-hover text-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-primary transition-colors"
           >
             <Info size={12} />
             <span>Details</span>
           </button>
+          {isAuth ? (
+            <button
+              type="button"
+              onClick={() => startLiveMutation.mutate()}
+              disabled={startLiveMutation.isPending}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-primary hover:bg-primary-hover text-white disabled:opacity-50 transition-colors"
+              title="Create a live-stacking session pre-filled with this target"
+            >
+              {startLiveMutation.isPending ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Telescope size={12} />
+              )}
+              <span>Start session</span>
+            </button>
+          ) : (
+            <span
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-white/[0.02] text-text-muted cursor-not-allowed"
+              title="Sign in to start a live session"
+            >
+              <Telescope size={12} />
+              <span>Start session</span>
+            </span>
+          )}
         </div>
       </div>
 

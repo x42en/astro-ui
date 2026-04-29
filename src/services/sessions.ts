@@ -1,11 +1,22 @@
 import api from '../lib/axios';
 import { useSettingsStore } from '../store/settingsStore';
-import type { SessionRead, PaginatedResponse, ProfilePreset, JobRead } from '../types';
+import type {
+  SessionRead,
+  PaginatedResponse,
+  ProfilePreset,
+  JobRead,
+  SessionMode,
+  LiveStackState,
+} from '../types';
 
 export interface SessionCreate {
   name: string;
   object_name?: string;
   inbox_path?: string;
+  mode?: SessionMode;
+  target_ra?: number;
+  target_dec?: number;
+  acquired_at?: string;
 }
 
 export async function createSession(data: SessionCreate): Promise<SessionRead> {
@@ -106,4 +117,66 @@ export async function listStepPreviews(sessionId: string): Promise<StepPreviewIn
     `/sessions/${sessionId}/step-previews`,
   );
   return response.data;
+}
+
+// ── Live-stacking API ───────────────────────────────────────────────────────
+
+/**
+ * Create a new live-stacking session pre-filled with the planner pick.
+ * The backend allocates the inbox path automatically.
+ */
+export async function createLiveSession(data: {
+  name: string;
+  object_name?: string;
+  target_ra?: number;
+  target_dec?: number;
+  acquired_at?: string;
+}): Promise<SessionRead> {
+  const response = await api.post<SessionRead>('/sessions', { ...data, mode: 'live' });
+  return response.data;
+}
+
+export async function startLive(sessionId: string): Promise<{ is_running: boolean }> {
+  const response = await api.post<{ session_id: string; is_running: boolean }>(
+    `/sessions/${sessionId}/live/start`,
+  );
+  return { is_running: response.data.is_running };
+}
+
+export async function stopLive(sessionId: string): Promise<{ is_running: boolean }> {
+  const response = await api.post<{ session_id: string; is_running: boolean }>(
+    `/sessions/${sessionId}/live/stop`,
+  );
+  return { is_running: response.data.is_running };
+}
+
+export async function getLiveState(sessionId: string): Promise<LiveStackState> {
+  const response = await api.get<LiveStackState>(`/sessions/${sessionId}/live/state`);
+  return response.data;
+}
+
+/**
+ * Push a single frame to the live-stack pipeline.
+ * Returns the queued task receipt (HTTP 202).
+ */
+export async function pushLiveFrame(
+  sessionId: string,
+  file: File,
+): Promise<{ session_id: string; frame_path: string; queued: boolean }> {
+  const form = new FormData();
+  form.append('file', file);
+  const response = await api.post(`/sessions/${sessionId}/live-frames`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+}
+
+/**
+ * Build a cache-busted URL for the live preview JPEG.
+ * Pass ``preview_generation`` from the websocket event so the browser
+ * actually refetches when the worker regenerates the file.
+ */
+export function getLivePreviewUrl(sessionId: string, generation: number = 0): string {
+  const base = useSettingsStore.getState().apiBaseUrl.replace(/\/$/, '');
+  return `${base}/sessions/${sessionId}/live/preview?g=${generation}`;
 }

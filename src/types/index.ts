@@ -1,5 +1,21 @@
 export type SessionStatus = 'pending' | 'ready' | 'processing' | 'completed' | 'failed' | 'cancelled';
 
+export type SessionMode = 'batch' | 'live';
+
+export interface LiveStackState {
+  session_id: string;
+  is_running: boolean;
+  frame_count: number;
+  rejected_count: number;
+  accumulator_path: string | null;
+  reference_path: string | null;
+  shape: number[] | null;
+  preview_generation: number;
+  last_fwhm: number | null;
+  total_integration_seconds: number | null;
+  last_stretch: Record<string, number>;
+}
+
 export type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'paused';
 
 export type StepStatus = 'pending' | 'running' | 'success' | 'failed' | 'skipped' | 'retrying';
@@ -55,6 +71,8 @@ export interface SessionRead {
   inbox_path: string;
   status: SessionStatus;
   input_format: InputFormat | null;
+  mode: SessionMode;
+  live_frame_count: number;
   frame_count_lights: number;
   frame_count_darks: number;
   frame_count_flats: number;

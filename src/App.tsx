@@ -14,6 +14,7 @@ import { Login } from './pages/Login';
 import { UserProfile } from './pages/UserProfile';
 import { SessionPrep } from './pages/SessionPrep';
 import { Learn } from './pages/Learn';
+import { LiveSession } from './pages/LiveSession';
 
 /**
  * `/` renders the public landing page for anonymous visitors and the
@@ -50,6 +51,14 @@ function App() {
               element={
                 <RequireAuth>
                   <SessionDetail />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/sessions/:sessionId/live"
+              element={
+                <RequireAuth>
+                  <LiveSession />
                 </RequireAuth>
               }
             />

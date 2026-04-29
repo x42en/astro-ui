@@ -74,6 +74,30 @@ export interface WsSessionStatusEvent extends WsBaseEvent {
   job_status: string | null;
 }
 
+export interface WsLiveStackFrameAcceptedEvent extends WsBaseEvent {
+  type: 'livestack_frame_accepted';
+  frame_index: number;
+  frame_count: number;
+  total_integration_seconds: number | null;
+  fwhm: number | null;
+  message: string | null;
+}
+
+export interface WsLiveStackFrameRejectedEvent extends WsBaseEvent {
+  type: 'livestack_frame_rejected';
+  frame_index: number;
+  reason: string;
+  message: string;
+}
+
+export interface WsLiveStackPreviewUpdatedEvent extends WsBaseEvent {
+  type: 'livestack_preview_updated';
+  preview_generation: number;
+  frame_count: number;
+  width: number;
+  height: number;
+}
+
 export type WsEvent =
   | WsProgressEvent
   | WsLogEvent
@@ -83,4 +107,7 @@ export type WsEvent =
   | WsCancelledEvent
   | WsSessionDetectedEvent
   | WsSessionReadyEvent
-  | WsSessionStatusEvent;
+  | WsSessionStatusEvent
+  | WsLiveStackFrameAcceptedEvent
+  | WsLiveStackFrameRejectedEvent
+  | WsLiveStackPreviewUpdatedEvent;
