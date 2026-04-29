@@ -183,11 +183,12 @@ export function ProfileEditor() {
       />
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-6">
           <div>
-            <h1 className="text-2xl font-semibold text-text-primary tracking-tight">Profiles</h1>
-            <p className="text-sm text-text-muted mt-0.5">
-              Custom processing pipelines for advanced mode
+            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Profiles</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Processing Profiles</h1>
+            <p className="text-base text-text-secondary mt-2 leading-relaxed">
+              Custom processing pipelines — build, share, and import recipes for any target.
             </p>
           </div>
 

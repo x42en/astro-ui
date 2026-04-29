@@ -146,11 +146,6 @@ function MockLoginForm() {
         Sign in (mock)
         <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
       </button>
-
-      <p className="text-xs text-text-muted text-center pt-1">
-        Development mock — any credentials accepted. Username{' '}
-        <code className="font-mono">admin</code> unlocks Settings.
-      </p>
     </form>
   );
 }

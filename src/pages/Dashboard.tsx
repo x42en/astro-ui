@@ -45,24 +45,28 @@ export function Dashboard() {
 
   return (
     <div className="p-6 lg:p-8 max-w-screen-2xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-text-primary tracking-tight">History</h1>
-          <p className="text-sm text-text-muted mt-0.5">
-            {total > 0 ? `${total} session${total !== 1 ? 's' : ''}` : 'Browse and manage your past astrophotography sessions'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded transition-all duration-150"
-          >
-            <Plus size={15} />
-            <span className="hidden sm:inline">New Session</span>
-            <span className="sm:hidden">New</span>
-          </button>
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Sessions</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">History</h1>
+            <p className="text-base text-text-secondary mt-2 leading-relaxed">
+              {total > 0
+                ? `${total} session${total !== 1 ? 's' : ''} — browse and manage your astrophotography runs.`
+                : 'Browse and manage your past astrophotography sessions.'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+            <button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded transition-all duration-150"
+            >
+              <Plus size={15} />
+              <span className="hidden sm:inline">New Session</span>
+              <span className="sm:hidden">New</span>
+            </button>
+          </div>
         </div>
       </div>
 

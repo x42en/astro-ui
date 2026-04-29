@@ -180,11 +180,12 @@ export function SettingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-6">
         <div>
-          <h1 className="text-xl font-bold text-text-primary">Settings</h1>
-          <p className="text-sm text-text-muted mt-0.5">
-            Configure connection parameters and processing defaults
+          <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Config</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Settings</h1>
+          <p className="text-base text-text-secondary mt-2 leading-relaxed">
+            Configure connection parameters and processing defaults.
           </p>
         </div>
         <div className="flex items-center gap-2">

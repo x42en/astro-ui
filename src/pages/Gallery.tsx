@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Images, Download, Star, Telescope, LogIn } from 'lucide-react';
+import { Download, Star, Telescope, LogIn } from 'lucide-react';
 import { listGallery, type GalleryItem } from '../services/gallery';
 import { EmailDownloadModal } from '../components/gallery/EmailDownloadModal';
 import { LightboxModal } from '../components/gallery/LightboxModal';
@@ -29,27 +29,27 @@ export function Gallery() {
 
   return (
     <div className="p-6 lg:p-8 max-w-screen-2xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-text-primary tracking-tight flex items-center gap-2">
-            <Images size={20} className="text-primary" />
-            Gallery
-          </h1>
-          <p className="text-sm text-text-muted mt-0.5">
-            {items.length > 0
-              ? `${items.length} published image${items.length !== 1 ? 's' : ''}`
-              : 'A curated selection of community astrophotography results.'}
-          </p>
+      <div className="mb-8">
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Gallery</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Community Gallery</h1>
+            <p className="text-base text-text-secondary mt-2 leading-relaxed">
+              {items.length > 0
+                ? `${items.length} published image${items.length !== 1 ? 's' : ''} from the community.`
+                : 'A curated selection of community astrophotography results.'}
+            </p>
+          </div>
+          {!isAuthenticated && (
+            <Link
+              to="/login?redirect=%2Fhistory"
+              className="flex-shrink-0 mt-1 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-medium bg-primary/15 border border-primary/30 text-primary hover:bg-primary/20 transition-colors"
+            >
+              <LogIn size={14} />
+              <span>Sign in to publish</span>
+            </Link>
+          )}
         </div>
-        {!isAuthenticated && (
-          <Link
-            to="/login?redirect=%2Fhistory"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-medium bg-primary/15 border border-primary/30 text-primary hover:bg-primary/20 transition-colors"
-          >
-            <LogIn size={14} />
-            <span>Sign in to publish</span>
-          </Link>
-        )}
       </div>
 
       {isLoading ? (

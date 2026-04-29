@@ -94,9 +94,9 @@ export function UserMenu() {
           <DropdownMenu.Item
             onSelect={handleLogout}
             className="
-              flex items-center gap-2 px-3 py-2 text-sm text-text-secondary
+              flex items-center gap-2 px-3 py-2 text-sm text-error
               cursor-pointer select-none outline-none
-              hover:bg-white/4 focus:bg-white/4
+              hover:bg-error/10 focus:bg-error/10
             "
           >
             <LogOut size={13} />

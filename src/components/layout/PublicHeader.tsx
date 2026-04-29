@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Calendar, GraduationCap, Images, LogIn } from 'lucide-react';
+import { Calendar, GraduationCap, Images, LogIn, Moon, Sun } from 'lucide-react';
 import { Logo } from '../branding/Logo';
+import { useUiStore } from '../../store/uiStore';
 
 /**
  * Slim header for anonymous routes (Landing, Gallery, Login).
@@ -10,6 +11,8 @@ import { Logo } from '../branding/Logo';
  * and sign in.
  */
 export function PublicHeader() {
+  const nightMode = useUiStore((s) => s.nightMode);
+  const toggleNightMode = useUiStore((s) => s.toggleNightMode);
   return (
     <header className="h-14 border-b border-space-border bg-space-bg/95 backdrop-blur-md sticky top-0 z-40 flex items-center px-6 gap-6 flex-shrink-0">
       <Link
@@ -45,6 +48,22 @@ export function PublicHeader() {
           <Images size={14} />
           <span className="hidden sm:inline">Gallery</span>
         </Link>
+        <button
+          type="button"
+          onClick={toggleNightMode}
+          aria-label={nightMode ? 'Disable night mode' : 'Enable night mode'}
+          title={nightMode ? 'Disable night mode' : 'Enable night mode'}
+          className={`
+            flex items-center justify-center w-7 h-7 rounded-md
+            transition-colors duration-150
+            ${nightMode
+              ? 'text-error hover:text-error/80 hover:bg-error/10'
+              : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
+            }
+          `}
+        >
+          {nightMode ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
         <Link
           to="/login"
           className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-sm font-medium bg-primary/15 border border-primary/30 text-primary hover:bg-primary/20 transition-colors"
