@@ -23,6 +23,7 @@ import { OutputActions } from './OutputActions';
 import { MetadataCartouche } from './MetadataCartouche';
 import { ProfileChoiceSelect, type ProfileChoice } from './ProfileChoiceSelect';
 import { StatusBadge } from '../ui/StatusBadge';
+import { AdaptiveOverridesPanel } from '../sessions/AdaptiveOverridesPanel';
 import { GalleryStarToggle } from '../gallery/GalleryStarToggle';
 import type { SessionRead, JobRead, ProfilePreset, ProfileSummary } from '../../types';
 
@@ -377,6 +378,11 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
       {/* ── Capture + pipeline metadata cartouche (Result mode only) ── */}
       {showResultStrip && (
         <MetadataOverlay session={session} job={activeJob} />
+      )}
+
+      {/* ── Adaptive overrides applied at job start (Result mode only) ── */}
+      {showResultStrip && (
+        <AdaptiveOverridesPanel job={activeJob} />
       )}
 
       {/* ── Bottom metadata strip — when not completed and not in start mode ── */}

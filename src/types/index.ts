@@ -135,6 +135,10 @@ export interface ProcessingProfileConfig {
   gradient_removal_method?: 'ai' | 'polynomial';
   /** GraXpert AI selector; doubles as `mode + version`:
    *  - `1.0.1`              Background Extraction (default).
+   *  - `auto`               Default. Catalogue-driven: BGE for nebulae,
+   *    chained `deconv-both` for galaxies / clusters. The orchestrator
+   *    resolves the placeholder at job start.
+   *  - `1.0.1`              GraXpert BGE (legacy default).
    *  - `deconv-obj-1.0.1`   Object-only deconvolution.
    *  - `deconv-stars-1.0.0` Stars-only deconvolution.
    *  - `deconv-both-1.0.1`  Object + stars chained (auto-selected on
@@ -176,11 +180,17 @@ export interface ProcessingProfileConfig {
 
   super_resolution_enabled?: boolean;
   super_resolution_scale?: number;
+  /** Tri-state user policy: `auto` honours the catalogue (skip on bright
+   *  nebulae); `on` / `off` force the step regardless of object type. */
+  super_resolution_mode?: 'auto' | 'on' | 'off';
 
   star_separation_enabled?: boolean;
   star_separation_recombine?: boolean;
   star_separation_nebula_weight?: number;
   star_separation_star_weight?: number;
+  /** Tri-state user policy: `auto` honours the catalogue (skip on
+   *  galaxies / clusters); `on` / `off` force the step regardless. */
+  star_separation_mode?: 'auto' | 'on' | 'off';
 
   max_retries?: number;
 }

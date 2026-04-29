@@ -306,8 +306,9 @@ export function ProfileForm({
             {(c.gradient_removal_method ?? 'ai') === 'ai' && (
               <SelectField
                 label="AI model"
-                value={c.gradient_removal_ai_model ?? '1.0.1'}
+                value={c.gradient_removal_ai_model ?? 'auto'}
                 options={[
+                  { value: 'auto', label: 'Auto (catalogue: BGE for nebulae, Object + Star for galaxies / clusters)' },
                   { value: '1.0.1', label: 'GraXpert BGE 1.0.1 (background extraction, recommended for nebulae)' },
                   { value: 'deconv-obj-1.0.1', label: 'GraXpert Object Only 1.0.1 (deconvolve nebula / galaxy)' },
                   { value: 'deconv-stars-1.0.0', label: 'GraXpert Star Only 1.0.0 (tighten stellar PSFs)' },
@@ -452,12 +453,32 @@ export function ProfileForm({
 
           <StepSection
             title="Super Resolution"
-            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow. Auto-skipped on bright emission nebulae (M42-class) where the model amplifies clipped cores into reconstruction artefacts."
+            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow. In Auto mode the pipeline skips it on bright emission nebulae (M42-class) where the model amplifies clipped cores into reconstruction artefacts. Force ON / Force OFF override the catalogue."
             icon={<Maximize2 size={13} />}
-            enabled={c.super_resolution_enabled ?? false}
-            onEnabledChange={(v) => update({ super_resolution_enabled: v })}
+            enabled={(c.super_resolution_mode ?? 'auto') !== 'off' && (c.super_resolution_enabled ?? false)}
+            onEnabledChange={() => {}}
+            hideToggle
             defaultOpen={false}
           >
+            <SelectField
+              label="Mode"
+              value={c.super_resolution_mode ?? 'auto'}
+              options={[
+                { value: 'auto', label: 'Auto (catalogue: skip on bright nebulae)' },
+                { value: 'on', label: 'Force ON (always run)' },
+                { value: 'off', label: 'Force OFF (always skip)' },
+              ]}
+              onChange={(v) => {
+                const mode = v as 'auto' | 'on' | 'off';
+                if (mode === 'on') {
+                  update({ super_resolution_mode: mode, super_resolution_enabled: true });
+                } else if (mode === 'off') {
+                  update({ super_resolution_mode: mode, super_resolution_enabled: false });
+                } else {
+                  update({ super_resolution_mode: mode });
+                }
+              }}
+            />
             <SelectField
               label="Scale factor"
               value={String(c.super_resolution_scale ?? 2)}
@@ -470,12 +491,32 @@ export function ProfileForm({
 
           <StepSection
             title="Star Separation"
-            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights. Auto-skipped on galaxies and clusters where it destroys the subject (HII regions on galaxies, the stars themselves on clusters)."
+            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights. In Auto mode the pipeline skips it on galaxies and clusters (HII regions on galaxies, the stars themselves on clusters). Force ON / Force OFF override the catalogue."
             icon={<Sparkles size={13} />}
-            enabled={c.star_separation_enabled ?? false}
-            onEnabledChange={(v) => update({ star_separation_enabled: v })}
+            enabled={(c.star_separation_mode ?? 'auto') !== 'off' && (c.star_separation_enabled ?? false)}
+            onEnabledChange={() => {}}
+            hideToggle
             defaultOpen={false}
           >
+            <SelectField
+              label="Mode"
+              value={c.star_separation_mode ?? 'auto'}
+              options={[
+                { value: 'auto', label: 'Auto (catalogue: skip on galaxies / clusters)' },
+                { value: 'on', label: 'Force ON (always run)' },
+                { value: 'off', label: 'Force OFF (always skip)' },
+              ]}
+              onChange={(v) => {
+                const mode = v as 'auto' | 'on' | 'off';
+                if (mode === 'on') {
+                  update({ star_separation_mode: mode, star_separation_enabled: true });
+                } else if (mode === 'off') {
+                  update({ star_separation_mode: mode, star_separation_enabled: false });
+                } else {
+                  update({ star_separation_mode: mode });
+                }
+              }}
+            />
             <ToggleField
               label="Recombine stars"
               value={c.star_separation_recombine ?? true}
