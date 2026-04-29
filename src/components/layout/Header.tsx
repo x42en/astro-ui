@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, GraduationCap, Images, Settings, Calendar, LayoutDashboard, Moon, Sun } from 'lucide-react';
+import { BookOpen, BarChart2, GraduationCap, Images, Settings, Calendar, LayoutDashboard, Moon, Sun } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Logo } from '../branding/Logo';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -22,7 +22,10 @@ const BASE_NAV_LINKS: NavLink[] = [
   { to: '/learn', label: 'Learn', icon: GraduationCap },
 ];
 
-const ADMIN_NAV_LINK: NavLink = { to: '/settings', label: 'Settings', icon: Settings };
+const ADMIN_NAV_LINKS: NavLink[] = [
+  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/admin/gallery', label: 'Analytics', icon: BarChart2 },
+];
 
 function ConnectionDot() {
   const apiBaseUrl = useSettingsStore((s) => s.apiBaseUrl);
@@ -71,7 +74,7 @@ export function Header() {
   const nightMode = useUiStore((s) => s.nightMode);
   const toggleNightMode = useUiStore((s) => s.toggleNightMode);
   const navLinks = useMemo<NavLink[]>(
-    () => (isAdmin ? [...BASE_NAV_LINKS, ADMIN_NAV_LINK] : BASE_NAV_LINKS),
+    () => (isAdmin ? [...BASE_NAV_LINKS, ...ADMIN_NAV_LINKS] : BASE_NAV_LINKS),
     [isAdmin],
   );
 

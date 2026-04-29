@@ -431,3 +431,59 @@ export interface AppSettingsRemote {
 }
 
 export type AppSettingsUpdate = Partial<Omit<AppSettingsRemote, 'updated_at' | 'updated_by_user_id'>>;
+
+// ── Admin: Gallery analytics ─────────────────────────────────────────────────
+
+/** Single data point for the downloads-over-time line chart. */
+export interface DailyCount {
+  date: string;
+  count: number;
+}
+
+/** Entry in the top-sessions bar chart. */
+export interface TopSession {
+  session_id: string;
+  name: string;
+  download_count: number;
+}
+
+/** Aggregated KPIs returned by GET /admin/gallery/stats. */
+export interface GalleryStats {
+  total_downloads: number;
+  unique_emails: number;
+  tiff_count: number;
+  fits_count: number;
+  downloads_by_day: DailyCount[];
+  top_sessions: TopSession[];
+}
+
+/** Single row in the admin download log. */
+export interface GalleryDownloadRow {
+  id: string;
+  session_id: string;
+  session_name: string | null;
+  email: string;
+  format: string;
+  requester_ip: string | null;
+  requested_at: string;
+}
+
+/** Paginated response from GET /admin/gallery/downloads. */
+export interface PaginatedGalleryDownloads {
+  items: GalleryDownloadRow[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+/** Query parameters for the download listing endpoint. */
+export interface GalleryDownloadsQuery {
+  page?: number;
+  page_size?: number;
+  email?: string;
+  format?: 'tiff' | 'fits';
+  session_id?: string;
+  sort_by?: 'requested_at' | 'email' | 'format';
+  sort_dir?: 'asc' | 'desc';
+}
+

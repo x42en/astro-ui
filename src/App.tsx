@@ -17,6 +17,7 @@ import { UserProfile } from './pages/UserProfile';
 import { SessionPrep } from './pages/SessionPrep';
 import { Learn } from './pages/Learn';
 import { LiveSession } from './pages/LiveSession';
+import { AdminGallery } from './pages/AdminGallery';
 
 /**
  * `/` renders the public landing page for anonymous visitors and the
@@ -90,6 +91,14 @@ function App() {
               element={
                 <RequireAdmin>
                   <SettingsPage />
+                </RequireAdmin>
+              }
+            />
+            <Route
+              path="/admin/gallery"
+              element={
+                <RequireAdmin>
+                  <AdminGallery />
                 </RequireAdmin>
               }
             />
