@@ -8,10 +8,11 @@ import {
   RefreshCw,
   Pause,
   Zap,
+  Radio,
 } from 'lucide-react';
 import type { SessionStatus, JobStatus, StepStatus } from '../../types';
 
-type AnyStatus = SessionStatus | JobStatus | StepStatus;
+type AnyStatus = SessionStatus | JobStatus | StepStatus | 'live';
 
 interface StatusConfig {
   label: string;
@@ -75,6 +76,11 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
     icon: RefreshCw,
     className: 'bg-warning-muted text-warning border-warning/30',
   },
+  live: {
+    label: 'Live',
+    icon: Radio,
+    className: 'bg-error-muted text-error border-error/40',
+  },
 };
 
 interface StatusBadgeProps {
@@ -86,6 +92,7 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   const Icon = config.icon;
   const isSpinning = status === 'running' || status === 'processing' || status === 'retrying';
+  const isPulsing = status === 'live';
 
   const sizeClasses = size === 'sm'
     ? 'text-xs px-2 py-0.5 gap-1'
@@ -99,7 +106,7 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
     >
       <Icon
         size={iconSize}
-        className={isSpinning ? 'animate-spin' : ''}
+        className={isSpinning ? 'animate-spin' : isPulsing ? 'animate-pulse' : ''}
       />
       {config.label}
     </span>

@@ -11,6 +11,7 @@ import {
   Maximize2,
   Sparkles,
   RefreshCw,
+  Crosshair,
 } from 'lucide-react';
 import { StepSection, SliderField, SelectField, ToggleField } from './StepSection';
 import type { ProcessingProfileConfig } from '../../types';
@@ -190,6 +191,46 @@ export function ProfileForm({
           </StepSection>
 
           <StepSection
+            title="Star Detection (advanced)"
+            description="Tunes Siril's findstar detector used by frame registration (alignment before stacking). Leave OFF unless your subs fail to align: relaxed values let non-stellar structures (nebula edges, hot pixels) become alignment anchors, which causes micro-jitter between frames and smears fine chrominance on bright nebula cores (e.g. M42)."
+            icon={<Crosshair size={13} />}
+            enabled={c.findstar_override_enabled ?? false}
+            onEnabledChange={(v) => update({ findstar_override_enabled: v })}
+            defaultOpen={false}
+          >
+            <SliderField
+              label="Detection radius (px)"
+              value={c.findstar_radius ?? 10}
+              min={3}
+              max={30}
+              step={1}
+              unit="px"
+              onChange={(v) => update({ findstar_radius: v })}
+            />
+            <SliderField
+              label="Sigma threshold"
+              value={c.findstar_sigma ?? 1.0}
+              min={0.3}
+              max={3.0}
+              step={0.1}
+              onChange={(v) => update({ findstar_sigma: v })}
+            />
+            <SliderField
+              label="Roundness threshold"
+              value={c.findstar_roundness ?? 0.5}
+              min={0.1}
+              max={0.9}
+              step={0.05}
+              onChange={(v) => update({ findstar_roundness: v })}
+            />
+            <ToggleField
+              label="Relax mode (accept marginal candidates)"
+              value={c.findstar_relax ?? false}
+              onChange={(v) => update({ findstar_relax: v })}
+            />
+          </StepSection>
+
+          <StepSection
             title="Drizzle"
             description="Sub-pixel resampling that increases effective resolution when many dithered sub-frames are available. Costly in time and disk."
             icon={<Droplets size={13} />}
@@ -247,7 +288,7 @@ export function ProfileForm({
 
           <StepSection
             title="Gradient Removal"
-            description="Subtracts smooth background gradients caused by light pollution and vignetting. AI mode (GraXpert) is generally safer on heavy nebulosity."
+            description="Subtracts smooth background gradients caused by light pollution and vignetting. AI mode (GraXpert) is generally safer on heavy nebulosity. The pipeline auto-switches to chained Object + Stars deconvolution on galaxies and clusters via the object-type catalogue."
             icon={<Blend size={13} />}
             enabled={c.gradient_removal_enabled ?? true}
             onEnabledChange={(v) => update({ gradient_removal_enabled: v })}
@@ -265,9 +306,13 @@ export function ProfileForm({
             {(c.gradient_removal_method ?? 'ai') === 'ai' && (
               <SelectField
                 label="AI model"
-                value={c.gradient_removal_ai_model ?? '1.0.1'}
+                value={c.gradient_removal_ai_model ?? 'auto'}
                 options={[
-                  { value: '1.0.1', label: 'GraXpert BGE 1.0.1 (recommended)' },
+                  { value: 'auto', label: 'Auto (catalogue: BGE for nebulae, Object + Star for galaxies / clusters)' },
+                  { value: '1.0.1', label: 'GraXpert BGE 1.0.1 (background extraction, recommended for nebulae)' },
+                  { value: 'deconv-obj-1.0.1', label: 'GraXpert Object Only 1.0.1 (deconvolve nebula / galaxy)' },
+                  { value: 'deconv-stars-1.0.0', label: 'GraXpert Star Only 1.0.0 (tighten stellar PSFs)' },
+                  { value: 'deconv-both-1.0.1', label: 'GraXpert Object + Star 1.0.1 (chained, default for galaxies)' },
                 ]}
                 onChange={(v) => update({ gradient_removal_ai_model: v })}
               />
@@ -408,12 +453,32 @@ export function ProfileForm({
 
           <StepSection
             title="Super Resolution"
-            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow."
+            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow. In Auto mode the pipeline skips it on bright emission nebulae (M42-class) where the model amplifies clipped cores into reconstruction artefacts. Force ON / Force OFF override the catalogue."
             icon={<Maximize2 size={13} />}
-            enabled={c.super_resolution_enabled ?? false}
-            onEnabledChange={(v) => update({ super_resolution_enabled: v })}
+            enabled={(c.super_resolution_mode ?? 'auto') !== 'off' && (c.super_resolution_enabled ?? false)}
+            onEnabledChange={() => {}}
+            hideToggle
             defaultOpen={false}
           >
+            <SelectField
+              label="Mode"
+              value={c.super_resolution_mode ?? 'auto'}
+              options={[
+                { value: 'auto', label: 'Auto (catalogue: skip on bright nebulae)' },
+                { value: 'on', label: 'Force ON (always run)' },
+                { value: 'off', label: 'Force OFF (always skip)' },
+              ]}
+              onChange={(v) => {
+                const mode = v as 'auto' | 'on' | 'off';
+                if (mode === 'on') {
+                  update({ super_resolution_mode: mode, super_resolution_enabled: true });
+                } else if (mode === 'off') {
+                  update({ super_resolution_mode: mode, super_resolution_enabled: false });
+                } else {
+                  update({ super_resolution_mode: mode });
+                }
+              }}
+            />
             <SelectField
               label="Scale factor"
               value={String(c.super_resolution_scale ?? 2)}
@@ -426,12 +491,32 @@ export function ProfileForm({
 
           <StepSection
             title="Star Separation"
-            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights."
+            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights. In Auto mode the pipeline skips it on galaxies and clusters (HII regions on galaxies, the stars themselves on clusters). Force ON / Force OFF override the catalogue."
             icon={<Sparkles size={13} />}
-            enabled={c.star_separation_enabled ?? false}
-            onEnabledChange={(v) => update({ star_separation_enabled: v })}
+            enabled={(c.star_separation_mode ?? 'auto') !== 'off' && (c.star_separation_enabled ?? false)}
+            onEnabledChange={() => {}}
+            hideToggle
             defaultOpen={false}
           >
+            <SelectField
+              label="Mode"
+              value={c.star_separation_mode ?? 'auto'}
+              options={[
+                { value: 'auto', label: 'Auto (catalogue: skip on galaxies / clusters)' },
+                { value: 'on', label: 'Force ON (always run)' },
+                { value: 'off', label: 'Force OFF (always skip)' },
+              ]}
+              onChange={(v) => {
+                const mode = v as 'auto' | 'on' | 'off';
+                if (mode === 'on') {
+                  update({ star_separation_mode: mode, star_separation_enabled: true });
+                } else if (mode === 'off') {
+                  update({ star_separation_mode: mode, star_separation_enabled: false });
+                } else {
+                  update({ star_separation_mode: mode });
+                }
+              }}
+            />
             <ToggleField
               label="Recombine stars"
               value={c.star_separation_recombine ?? true}

@@ -1,5 +1,21 @@
 export type SessionStatus = 'pending' | 'ready' | 'processing' | 'completed' | 'failed' | 'cancelled';
 
+export type SessionMode = 'batch' | 'live';
+
+export interface LiveStackState {
+  session_id: string;
+  is_running: boolean;
+  frame_count: number;
+  rejected_count: number;
+  accumulator_path: string | null;
+  reference_path: string | null;
+  shape: number[] | null;
+  preview_generation: number;
+  last_fwhm: number | null;
+  total_integration_seconds: number | null;
+  last_stretch: Record<string, number>;
+}
+
 export type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'paused';
 
 export type StepStatus = 'pending' | 'running' | 'success' | 'failed' | 'skipped' | 'retrying';
@@ -55,10 +71,14 @@ export interface SessionRead {
   inbox_path: string;
   status: SessionStatus;
   input_format: InputFormat | null;
+  mode: SessionMode;
+  live_frame_count: number;
   frame_count_lights: number;
   frame_count_darks: number;
   frame_count_flats: number;
+  frame_count_dark_flats: number;
   frame_count_bias: number;
+  owner_id: string | null;
   object_name: string | null;
   ra: number | null;
   dec: number | null;
@@ -116,13 +136,40 @@ export interface ProcessingProfileConfig {
 
   debayer_pattern?: 'auto' | 'RGGB' | 'BGGR' | 'GRBG' | 'GBRG';
 
+  /** Star detection (`findstar`) — drives Siril's `register` (frame
+   *  alignment).  When disabled, Siril's built-in defaults are used and
+   *  no `setfindstar` command is emitted.  Enable only for faint /
+   *  wide-field rigs where the defaults reject too many true stars;
+   *  relaxed values smear nebular chrominance during the stack. */
+  findstar_override_enabled?: boolean;
+  findstar_radius?: number;
+  findstar_sigma?: number;
+  findstar_roundness?: number;
+  findstar_relax?: boolean;
+
   plate_solving_enabled?: boolean;
   plate_solving_radius_deg?: number;
   plate_solving_speed?: 'auto' | 'slow' | 'fast';
 
   gradient_removal_enabled?: boolean;
   gradient_removal_method?: 'ai' | 'polynomial';
+  /** GraXpert AI selector; doubles as `mode + version`:
+   *  - `1.0.1`              Background Extraction (default).
+   *  - `auto`               Default. Catalogue-driven: BGE for nebulae,
+   *    chained `deconv-both` for galaxies / clusters. The orchestrator
+   *    resolves the placeholder at job start.
+   *  - `1.0.1`              GraXpert BGE (legacy default).
+   *  - `deconv-obj-1.0.1`   Object-only deconvolution.
+   *  - `deconv-stars-1.0.0` Stars-only deconvolution.
+   *  - `deconv-both-1.0.1`  Object + stars chained (auto-selected on
+   *    galaxies / clusters by the object-type catalogue).
+   */
   gradient_removal_ai_model?: string;
+  gradient_removal_correction?: 'Subtraction' | 'Division';
+  gradient_removal_smoothing?: number;
+  gradient_removal_deconv_strength?: number;
+  gradient_removal_deconv_psfsize?: number;
+  gradient_removal_deconv_batch_size?: number;
 
   stretch_method?: 'asinh' | 'auto' | 'linear';
   stretch_strength?: number;
@@ -153,11 +200,17 @@ export interface ProcessingProfileConfig {
 
   super_resolution_enabled?: boolean;
   super_resolution_scale?: number;
+  /** Tri-state user policy: `auto` honours the catalogue (skip on bright
+   *  nebulae); `on` / `off` force the step regardless of object type. */
+  super_resolution_mode?: 'auto' | 'on' | 'off';
 
   star_separation_enabled?: boolean;
   star_separation_recombine?: boolean;
   star_separation_nebula_weight?: number;
   star_separation_star_weight?: number;
+  /** Tri-state user policy: `auto` honours the catalogue (skip on
+   *  galaxies / clusters); `on` / `off` force the step regardless. */
+  star_separation_mode?: 'auto' | 'on' | 'off';
 
   max_retries?: number;
 }

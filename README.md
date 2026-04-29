@@ -38,11 +38,25 @@ with the community.
   succeed; the username `admin` unlocks the Settings area. Real authentication
   is on the roadmap.
 - **Sessions dashboard** — create sessions, drag-and-drop calibration frames,
-  pick a preset, launch the pipeline.
+  pick a preset, launch the pipeline. Live sessions are flagged with a
+  pulsing **Live** badge and clicking one jumps straight back into the
+  real-time view.
+- **Live session view** — real-time stack preview, per-frame statistics
+  (median R/G/B, FWHM, clipping) and a **recommendations panel** that surfaces
+  prioritised exposure, white-balance and focus advice while you are still at
+  the telescope. A persistent banner lets you resume the active live session
+  from any page.
+- **Calibration dropzones** — dedicated upload areas for darks, flats and
+  dark-flats with progress, current counts and contextual hints; reachable
+  from the live-session terminate flow and from any session detail page.
+- **Session preparation** — pick an observation site, browse curated celestial
+  objects, score upcoming nights by weather window (cloud cover, seeing, Moon
+  phase) and create a session pre-wired to a target.
 - **Real-time progress** — WebSocket-powered step-by-step view with logs,
   percentages, and per-step status.
-- **Profile editor** with object presets (Orion, M31, Galactic Center, …) and
-  granular control over every pipeline parameter.
+- **Detailed, customizable pipelines** — profile editor with object presets
+  (Orion, M31, Galactic Center, …) and granular control over every pipeline
+  parameter, including denoise engine, sharpening and super-resolution.
 - **Profile import / export / sharing** — JSON round-trip, one-click import,
   one-toggle publication.
 - **Metadata cartouche** — discreet, collapsible overlay showing EXIF
@@ -76,6 +90,8 @@ Browser
 | `/gallery` | Public | Community gallery + lightbox. |
 | `/history` | Authed | Personal sessions dashboard. |
 | `/sessions/:id` | Authed | Session detail, processing, output. |
+| `/sessions/:id/live` | Authed | Live stacking view with stats and recommendations. |
+| `/prepare` | Authed | Session prep — weather window + target picker. |
 | `/profiles` | Authed | Profile editor + import/export. |
 | `/settings` | Admin | Runtime configuration (admin-only). |
 

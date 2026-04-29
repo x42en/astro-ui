@@ -34,6 +34,11 @@ export function SessionCard({ session }: SessionCardProps) {
   const liveStatus = jobStatusBySession[session.id] ?? session.status;
   const isRendered = session.status === 'completed';
   const isProcessing = liveStatus === 'processing' || liveStatus === 'running';
+  const isLive =
+    session.mode === 'live' &&
+    session.status !== 'completed' &&
+    session.status !== 'failed' &&
+    session.status !== 'cancelled';
   const thumbnailUrl = `${apiBaseUrl}/sessions/${session.id}/step-preview/export`;
 
   const deleteMutation = useMutation({
@@ -62,7 +67,7 @@ export function SessionCard({ session }: SessionCardProps) {
       <div
         className="group relative overflow-hidden rounded-lg cursor-pointer bg-black select-none"
         style={{ aspectRatio: '4/3' }}
-        onClick={() => navigate(`/sessions/${session.id}`)}
+        onClick={() => navigate(isLive ? `/sessions/${session.id}/live` : `/sessions/${session.id}`)}
         role="article"
         aria-label={`Session: ${session.name}`}
       >
@@ -101,7 +106,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
       {/* Top-left: status badge */}
       <div className="absolute top-3 left-3 z-10">
-        <StatusBadge status={liveStatus as Parameters<typeof StatusBadge>[0]['status']} />
+        <StatusBadge status={isLive ? 'live' : (liveStatus as Parameters<typeof StatusBadge>[0]['status'])} />
       </div>
 
       {/* Top-right: star (when completed), live pulse (processing), trash (idle hover) */}
