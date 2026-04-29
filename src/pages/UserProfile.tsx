@@ -97,15 +97,38 @@ export function UserProfile() {
           <SectionTitle kicker="Account" title="Your profile" />
           <div className="bg-space-surface border border-space-border rounded-xl p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-primary-muted flex items-center justify-center text-primary font-semibold uppercase">
-              {user?.username.slice(0, 2) ?? '??'}
+              {(user?.name ?? user?.email ?? user?.id ?? '??').slice(0, 2)}
             </div>
-            <div className="min-w-0">
-              <div className="text-text-primary font-semibold truncate">{user?.username}</div>
-              <div className="text-xs text-text-muted">
-                Mock identity — your data is keyed to a deterministic UUID derived from this
-                username.
+            <div className="min-w-0 flex-1">
+              <div className="text-text-primary font-semibold truncate">
+                {user?.name ?? user?.email ?? user?.id}
               </div>
+              {user?.email && user?.name && (
+                <div className="text-xs text-text-muted truncate">{user.email}</div>
+              )}
+              {user?.roles && user.roles.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {user.roles.map((role) => (
+                    <span
+                      key={role}
+                      className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-primary/10 text-primary border border-primary/20"
+                    >
+                      {role}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
+            {import.meta.env.VITE_OIDC_AUTHORITY && (
+              <a
+                href={`${import.meta.env.VITE_OIDC_AUTHORITY}/account`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 text-xs text-text-muted hover:text-text-secondary underline underline-offset-2 transition-colors"
+              >
+                Manage account
+              </a>
+            )}
           </div>
         </section>
 

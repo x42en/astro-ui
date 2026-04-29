@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Settings as SettingsIcon, LogOut, User } from 'lucide-react';
 import { useAuthStore, useCurrentUser, useIsAdmin } from '../../store/authStore';
+import { queryClient } from '../../lib/queryClient';
 
 /**
  * Top-right account menu.
@@ -13,14 +14,16 @@ export function UserMenu() {
   const navigate = useNavigate();
   const user = useCurrentUser();
   const isAdmin = useIsAdmin();
-  const logout = useAuthStore((s) => s.logout);
 
   if (!user) return null;
 
-  const initials = user.username.slice(0, 2).toUpperCase();
+  const displayName = user.name ?? user.email ?? user.id;
+  const initials = displayName.slice(0, 2).toUpperCase();
   const handleLogout = () => {
-    logout();
-    navigate('/', { replace: true });
+    queryClient.clear();
+    useAuthStore.getState().logout().catch(() => {
+      navigate('/', { replace: true });
+    });
   };
 
   return (
@@ -53,7 +56,7 @@ export function UserMenu() {
         >
           <div className="px-3 py-2 border-b border-space-border/60">
             <div className="text-sm font-medium text-text-primary truncate">
-              {user.username}
+              {displayName}
             </div>
             <div className="text-[11px] text-text-muted">
               {isAdmin ? 'Administrator' : 'Astronomer'}

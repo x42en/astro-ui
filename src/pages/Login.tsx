@@ -1,20 +1,72 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Lock, User } from 'lucide-react';
+import { ArrowRight, Lock, User, type LucideIcon } from 'lucide-react';
 import { Logo } from '../components/branding/Logo';
+import { AUTH_MODE, userManager } from '../lib/oidc';
 import { useAuthStore } from '../store/authStore';
 
-/**
- * Preview-only sign-in page.
- *
- * No backend authentication is wired yet (tracked on the roadmap as
- * auth-service integration).  Any non-empty username / password pair
- * succeeds; the special username ``admin`` unlocks the Settings area.
- */
-export function Login() {
+// ---------------------------------------------------------------------------
+// Field sub-component (shared by mock form)
+// ---------------------------------------------------------------------------
+
+interface FieldProps {
+  icon: LucideIcon;
+  label: string;
+  id: string;
+  type: 'text' | 'password';
+  autoComplete: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}
+
+function Field({
+  icon: Icon,
+  label,
+  id,
+  type,
+  autoComplete,
+  value,
+  onChange,
+  placeholder,
+}: FieldProps) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-xs font-medium text-text-secondary">
+        {label}
+      </label>
+      <div className="relative">
+        <Icon
+          size={13}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+        />
+        <input
+          id={id}
+          type={type}
+          autoComplete={autoComplete}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="
+            w-full pl-9 pr-3 py-2.5
+            bg-space-bg border border-space-border rounded-md
+            text-sm text-text-primary placeholder:text-text-muted
+            focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30
+            transition-all
+          "
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Mock-mode login form (only rendered when VITE_AUTH_MODE=mock)
+// ---------------------------------------------------------------------------
+
+function MockLoginForm() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const login = useAuthStore((s) => s.login);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +77,22 @@ export function Login() {
     setError(null);
     setSubmitting(true);
     try {
-      login(username, password);
+      const u = username.trim();
+      if (!u) throw new Error('Username is required.');
+      if (!password) throw new Error('Password is required.');
+      // Persist mock user to the legacy localStorage key so the auth store
+      // picks it up on next bootstrap() call.
+      localStorage.setItem(
+        'astrostack-auth',
+        JSON.stringify({ state: { user: { username: u } } }),
+      );
+      // Update the in-memory store
+      useAuthStore.getState().bootstrap().catch(() => undefined);
       const redirect = params.get('redirect');
       const safe =
         redirect && redirect.startsWith('/') && !redirect.startsWith('//')
           ? decodeURIComponent(redirect)
-          : '/history';
+          : '/dashboard';
       navigate(safe, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign-in failed.');
@@ -38,6 +100,113 @@ export function Login() {
     }
   };
 
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <Field
+        icon={User}
+        label="Username"
+        id="login-username"
+        type="text"
+        autoComplete="username"
+        value={username}
+        onChange={setUsername}
+        placeholder="astronomer"
+      />
+      <Field
+        icon={Lock}
+        label="Password"
+        id="login-password"
+        type="password"
+        autoComplete="current-password"
+        value={password}
+        onChange={setPassword}
+        placeholder="••••••••"
+      />
+
+      {error && (
+        <div
+          role="alert"
+          className="rounded-md border border-error/30 bg-error/10 px-3 py-2 text-xs text-error"
+        >
+          {error}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="
+          group inline-flex items-center justify-center gap-2 w-full
+          rounded-md bg-primary text-white font-medium px-4 py-2.5
+          hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50
+          disabled:opacity-50 disabled:cursor-not-allowed
+          transition-colors duration-150
+        "
+      >
+        Sign in (mock)
+        <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+      </button>
+
+      <p className="text-xs text-text-muted text-center pt-1">
+        Development mock — any credentials accepted. Username{' '}
+        <code className="font-mono">admin</code> unlocks Settings.
+      </p>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// OIDC-mode redirect button (rendered when VITE_AUTH_MODE=oidc, the default)
+// ---------------------------------------------------------------------------
+
+function OidcLoginButton() {
+  const [params] = useSearchParams();
+  const [loading, setLoading] = useState(false);
+  const returnUrl = params.get('redirect') ?? '/dashboard';
+
+  const handleSignIn = async () => {
+    if (!userManager) return;
+    setLoading(true);
+    try {
+      await userManager.signinRedirect({ state: returnUrl });
+    } catch {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <button
+        type="button"
+        onClick={handleSignIn}
+        disabled={loading}
+        className="
+          group inline-flex items-center justify-center gap-2 w-full
+          rounded-md bg-primary text-white font-medium px-4 py-2.5
+          hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50
+          disabled:opacity-50 disabled:cursor-not-allowed
+          transition-colors duration-150
+        "
+      >
+        {loading ? 'Redirecting\u2026' : 'Continuer avec Astromote'}
+        {!loading && (
+          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+        )}
+      </button>
+
+      <p className="text-xs text-text-muted text-center">
+        Vous serez redirigé vers{' '}
+        <span className="text-text-secondary">auth.astromote.com</span> pour vous authentifier.
+      </p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Login page
+// ---------------------------------------------------------------------------
+
+export function Login() {
   return (
     <div className="min-h-screen w-full grid md:grid-cols-2 bg-space-bg text-text-primary">
       {/* Brand panel */}
@@ -64,7 +233,7 @@ export function Login() {
         </div>
       </aside>
 
-      {/* Form panel */}
+      {/* Form / OIDC panel */}
       <main className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm space-y-8">
           <div className="md:hidden flex flex-col items-center gap-3 text-center">
@@ -81,126 +250,22 @@ export function Login() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <Field
-              icon={User}
-              label="Username"
-              id="login-username"
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={setUsername}
-              placeholder="astronomer"
-            />
-            <Field
-              icon={Lock}
-              label="Password"
-              id="login-password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={setPassword}
-              placeholder="••••••••"
-            />
+          {AUTH_MODE === 'mock' ? <MockLoginForm /> : <OidcLoginButton />}
 
-            {error && (
-              <div
-                role="alert"
-                className="rounded-md border border-error/30 bg-error/10 px-3 py-2 text-xs text-error"
+          {AUTH_MODE === 'oidc' && (
+            <div className="text-center">
+              <Link
+                to={`${import.meta.env.VITE_OIDC_AUTHORITY ?? ''}/register`}
+                className="text-xs text-text-muted hover:text-text-secondary transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="
-                group inline-flex items-center justify-center gap-2 w-full
-                rounded-md bg-primary text-white font-medium px-4 py-2.5
-                hover:bg-primary-hover transition-colors
-                disabled:opacity-60 disabled:cursor-not-allowed
-                focus:outline-none focus:ring-2 focus:ring-primary/40
-              "
-            >
-              <span>Continue</span>
-              <ArrowRight
-                size={15}
-                className="transition-transform group-hover:translate-x-0.5"
-              />
-            </button>
-          </form>
-
-          <div className="rounded-lg border border-space-border bg-space-elevated/50 px-3 py-2.5 text-[11px] leading-relaxed text-text-muted">
-            <span className="text-text-secondary font-medium">
-              Preview build —
-            </span>{' '}
-            authentication is a stub: any credentials are accepted. Sign in as{' '}
-            <code className="text-accent font-mono">admin</code> to access the
-            Settings area.
-          </div>
-
-          <div className="text-center text-xs text-text-muted">
-            <Link to="/" className="hover:text-text-secondary transition-colors">
-              ← Back to home
-            </Link>
-          </div>
+                Pas encore de compte ? Créer un compte
+              </Link>
+            </div>
+          )}
         </div>
       </main>
-    </div>
-  );
-}
-
-interface FieldProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  id: string;
-  type: 'text' | 'password';
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  autoComplete?: string;
-}
-
-function Field({
-  icon: Icon,
-  label,
-  id,
-  type,
-  value,
-  onChange,
-  placeholder,
-  autoComplete,
-}: FieldProps) {
-  return (
-    <div className="space-y-1.5">
-      <label
-        htmlFor={id}
-        className="block text-[11px] uppercase tracking-[0.12em] text-text-muted font-medium"
-      >
-        {label}
-      </label>
-      <div className="relative">
-        <Icon
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
-        />
-        <input
-          id={id}
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          required
-          className="
-            w-full rounded-md bg-space-elevated/70 border border-space-border
-            pl-9 pr-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted/60
-            focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30
-            transition-colors
-          "
-        />
-      </div>
     </div>
   );
 }
