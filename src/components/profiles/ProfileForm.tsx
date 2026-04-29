@@ -449,7 +449,7 @@ export function ProfileForm({
 
           <StepSection
             title="Super Resolution"
-            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow."
+            description="Neural 2× upscaling for final delivery. GPU-intensive; only meaningful when seeing and sampling allow. Auto-skipped on bright emission nebulae (M42-class) where the model amplifies clipped cores into reconstruction artefacts."
             icon={<Maximize2 size={13} />}
             enabled={c.super_resolution_enabled ?? false}
             onEnabledChange={(v) => update({ super_resolution_enabled: v })}
@@ -467,7 +467,7 @@ export function ProfileForm({
 
           <StepSection
             title="Star Separation"
-            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights."
+            description="Splits stars from nebulosity for independent processing, then recombines them with adjustable weights. Auto-skipped on galaxies and clusters where it destroys the subject (HII regions on galaxies, the stars themselves on clusters)."
             icon={<Sparkles size={13} />}
             enabled={c.star_separation_enabled ?? false}
             onEnabledChange={(v) => update({ star_separation_enabled: v })}
