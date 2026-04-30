@@ -21,6 +21,12 @@ import { useIsAuthenticated } from '../store/authStore';
 import { useUiStore } from '../store/uiStore';
 import { getRecommendations, getWeather } from '../services/planning';
 
+/** Minimum baseline altitude used for the backend fetch (°).
+ *  All objects above this threshold are fetched once per site+date.
+ *  Type and altitude filters are then applied client-side so that the
+ *  night-conditions stats never re-fetch on a filter change. */
+const FETCH_MIN_ALT = 5;
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -73,8 +79,6 @@ export function SessionPrep() {
       resolvedSite?.longitude,
       resolvedSite?.elevation_m,
       date,
-      minAltitude,
-      selectedTypes.join(','),
     ],
     queryFn: () =>
       getRecommendations({
@@ -83,9 +87,8 @@ export function SessionPrep() {
         elevation: resolvedSite!.elevation_m,
         date,
         timezone: resolvedSite!.timezone,
-        min_altitude: minAltitude,
-        limit: 12,
-        type: selectedTypes.length > 0 ? selectedTypes : undefined,
+        min_altitude: FETCH_MIN_ALT,
+        limit: 50,
       }),
     enabled: hasSite && hasDate,
     retry: 1,
@@ -108,7 +111,14 @@ export function SessionPrep() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weatherQuery.error]);
 
-  const recs = recsQuery.data?.recommendations ?? [];
+  const recs = useMemo(() => {
+    const all = recsQuery.data?.recommendations ?? [];
+    return all.filter(
+      r =>
+        r.max_altitude_deg >= minAltitude &&
+        (selectedTypes.length === 0 || selectedTypes.includes(r.type)),
+    );
+  }, [recsQuery.data, minAltitude, selectedTypes]);
   const window = recsQuery.data?.window;
   const weatherSummary = recsQuery.data?.weather_summary ?? null;
   const timezone = resolvedSite?.timezone ?? 'UTC';

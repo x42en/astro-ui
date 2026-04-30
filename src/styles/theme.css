@@ -1,0 +1,71 @@
+/**
+ * Design tokens — all color values are expressed as raw RGB channels
+ * (space-separated, no `rgb()` wrapper) so Tailwind's opacity modifier
+ * syntax `bg-primary/15` resolves to `rgb(var(--color-primary) / 0.15)`.
+ *
+ * To add a new theme, override the relevant variables under a body-level
+ * class (e.g. `.night-mode`) and toggle that class on `<html>` at runtime.
+ */
+
+/* ── Default theme (dark space) ──────────────────────────────────────── */
+:root {
+  /* Backgrounds & surfaces */
+  --color-space-bg:           8   8   8;
+  --color-space-surface:     17  17  17;
+  --color-space-elevated:    26  26  26;
+  --color-space-border:      37  37  37;
+  --color-space-border-light: 51  51  51;
+
+  /* Brand — primary (indigo) */
+  --color-primary:           99 102 241;
+  --color-primary-hover:    129 140 248;
+
+  /* Brand — accent (cyan) */
+  --color-accent:            34 211 238;
+  --color-accent-hover:     103 232 249;
+
+  /* Semantic */
+  --color-success:           16 185 129;
+  --color-warning:          245 158  11;
+  --color-error:            239  68  68;
+
+  /* Text */
+  --color-text-primary:     239 239 239;
+  --color-text-secondary:   136 136 136;
+  --color-text-muted:        85  85  85;
+}
+
+/* ── Night mode — red observation palette ────────────────────────────
+ *
+ * Preserves dark adaptation during telescope sessions.
+ * Every hue is shifted into the red/orange spectrum so the screen emits
+ * minimal blue light while remaining readable.
+ *
+ * Applied by toggling the `night-mode` class on <html> at runtime.
+ */
+.night-mode {
+  /* Backgrounds — near-black with a warm red tint */
+  --color-space-bg:           10   0   0;
+  --color-space-surface:      18   0   0;
+  --color-space-elevated:     28   2   2;
+  --color-space-border:       44   4   4;
+  --color-space-border-light: 60   8   8;
+
+  /* Primary → vivid red */
+  --color-primary:           220  38  38;
+  --color-primary-hover:     239  68  68;
+
+  /* Accent → muted rose */
+  --color-accent:            248 113 113;
+  --color-accent-hover:      252 165 165;
+
+  /* Semantic → red tones */
+  --color-success:           185  28  28;
+  --color-warning:           220  80  80;
+  --color-error:             239  68  68;
+
+  /* Text — soft red spectrum */
+  --color-text-primary:      255 180 180;
+  --color-text-secondary:    200  80  80;
+  --color-text-muted:        120  40  40;
+}

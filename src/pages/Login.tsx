@@ -146,11 +146,6 @@ function MockLoginForm() {
         Sign in (mock)
         <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
       </button>
-
-      <p className="text-xs text-text-muted text-center pt-1">
-        Development mock — any credentials accepted. Username{' '}
-        <code className="font-mono">admin</code> unlocks Settings.
-      </p>
     </form>
   );
 }
@@ -188,15 +183,15 @@ function OidcLoginButton() {
           transition-colors duration-150
         "
       >
-        {loading ? 'Redirecting\u2026' : 'Continuer avec Astromote'}
+        {loading ? 'Redirecting…' : 'Sign in with Astromote'}
         {!loading && (
           <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
         )}
       </button>
 
       <p className="text-xs text-text-muted text-center">
-        Vous serez redirigé vers{' '}
-        <span className="text-text-secondary">auth.astromote.com</span> pour vous authentifier.
+        You will be redirected to{' '}
+        <span className="text-text-secondary">auth.astromote.com</span> to authenticate.
       </p>
     </div>
   );
@@ -260,7 +255,7 @@ export function Login() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Pas encore de compte ? Créer un compte
+                No account yet? Create one
               </Link>
             </div>
           )}

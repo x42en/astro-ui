@@ -21,9 +21,16 @@ const PUBLIC_CHROME_ROUTES = new Set<string>(['/welcome']);
 
 export function AppShell({ children }: AppShellProps) {
   const setJobStatus = useUiStore((s) => s.setJobStatus);
+  const nightMode = useUiStore((s) => s.nightMode);
   const queryClient = useQueryClient();
   const location = useLocation();
   const isAuthenticated = useIsAuthenticated();
+
+  // Sync night-mode theme class to <html> so CSS variables cascade globally,
+  // including scrollbar pseudo-elements and ::selection.
+  useEffect(() => {
+    document.documentElement.classList.toggle('night-mode', nightMode);
+  }, [nightMode]);
 
   useEffect(() => {
     const wsBase = useSettingsStore.getState().wsBaseUrl;
@@ -62,8 +69,9 @@ export function AppShell({ children }: AppShellProps) {
   const path = location.pathname;
   const chromeless = CHROMELESS_ROUTES.has(path);
   const forcePublic = PUBLIC_CHROME_ROUTES.has(path);
-  // Anonymous visitors browsing the public gallery get the public header too.
-  const usePublicHeader = forcePublic || (!isAuthenticated && path === '/gallery');
+  // Non-authenticated users always get the public header; the gallery and
+  // other public pages share the same topbar as the authenticated layout.
+  const usePublicHeader = forcePublic || !isAuthenticated;
 
   return (
     <div className="min-h-screen bg-space-bg flex flex-col">

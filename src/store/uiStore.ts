@@ -28,6 +28,10 @@ interface UiStore {
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
 
+  /** Observation night mode — shifts the entire colour palette to red tones. */
+  nightMode: boolean;
+  toggleNightMode: () => void;
+
   toasts: Toast[];
   addToast: (toast: Omit<Toast, 'id'>) => void;
   removeToast: (id: string) => void;
@@ -59,6 +63,9 @@ export const useUiStore = create<UiStore>()(
       sidebarOpen: true,
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+
+      nightMode: false,
+      toggleNightMode: () => set((s) => ({ nightMode: !s.nightMode })),
 
       toasts: [],
       addToast: (toast) =>
@@ -103,6 +110,7 @@ export const useUiStore = create<UiStore>()(
       partialize: (s) => ({
         selectedPreset: s.selectedPreset,
         sidebarOpen: s.sidebarOpen,
+        nightMode: s.nightMode,
         presetsBySession: s.presetsBySession,
         profileIdsBySession: s.profileIdsBySession,
       }),

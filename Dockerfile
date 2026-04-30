@@ -9,15 +9,22 @@ RUN npm ci --ignore-scripts
 COPY . .
 
 # Build-time variables injected by docker build --build-arg or GitHub Actions.
-# Defaults are intentionally empty so that the runtime fallback in settingsStore.ts
-# (relative /api/v1 URL) takes effect when no explicit value is passed at build time.
+# VITE_API_BASE_URL and VITE_WS_BASE_URL default to empty strings so that the
+# runtime fallback in settingsStore.ts (relative /api/v1 URL) takes effect when
+# no explicit value is passed at build time.
 ARG VITE_API_BASE_URL=
 ARG VITE_WS_BASE_URL=
+ARG VITE_AUTH_MODE=oidc
+ARG VITE_OIDC_AUTHORITY=https://auth.astromote.com
+ARG VITE_OIDC_CLIENT_ID=astrostack
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_WS_BASE_URL=$VITE_WS_BASE_URL
+ENV VITE_AUTH_MODE=$VITE_AUTH_MODE
+ENV VITE_OIDC_AUTHORITY=$VITE_OIDC_AUTHORITY
+ENV VITE_OIDC_CLIENT_ID=$VITE_OIDC_CLIENT_ID
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 

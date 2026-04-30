@@ -67,10 +67,15 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Default build arguments — override in your compose file or CI secrets
+          # Default build arguments — override via GitHub repository variables/secrets.
+          # VITE_API_BASE_URL and VITE_WS_BASE_URL default to relative paths so
+          # the image works behind any reverse-proxy without a rebuild.
           build-args: |
-            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'http://localhost:8080/api/v1' }}
-            VITE_WS_BASE_URL=${{ vars.VITE_WS_BASE_URL || 'ws://localhost:8080/ws' }}
+            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || '/api/v1' }}
+            VITE_WS_BASE_URL=${{ vars.VITE_WS_BASE_URL || '' }}
+            VITE_AUTH_MODE=${{ vars.VITE_AUTH_MODE || 'oidc' }}
+            VITE_OIDC_AUTHORITY=${{ vars.VITE_OIDC_AUTHORITY || 'https://auth.astromote.com' }}
+            VITE_OIDC_CLIENT_ID=${{ vars.VITE_OIDC_CLIENT_ID || 'astrostack' }}
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
           # Persist the build cache in GitHub Actions cache

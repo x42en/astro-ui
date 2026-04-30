@@ -21,6 +21,7 @@ with the community.
 | Routing | React Router v7 |
 | State | Zustand (with `localStorage` persistence) |
 | Data fetching | TanStack Query v5 + Axios |
+| Authentication | oidc-client-ts · AuthService (OAuth 2.1 + PKCE · RS256) |
 | UI primitives | Radix UI (dialog, dropdown, progress, select, switch, tooltip) |
 | Styling | Tailwind CSS v3 |
 | Icons | Lucide React |
@@ -34,9 +35,10 @@ with the community.
   live gallery carousel, and an honest roadmap.
 - **Public gallery** — anonymous browsing of published sessions with a
   full-screen lightbox; signed-in users can publish their own.
-- **Mock authentication** for the preview build — any non-empty credentials
-  succeed; the username `admin` unlocks the Settings area. Real authentication
-  is on the roadmap.
+- **OAuth 2.1 / OIDC authentication** — production sign-in redirects to
+  [AuthService](https://auth.astromote.com) (Authorization Code + PKCE, RS256
+  JWTs). A `mock` mode is available for staging (HS256, `X-Mock-User` header).
+  Role-based route guards enforce access to admin-only pages.
 - **Sessions dashboard** — create sessions, drag-and-drop calibration frames,
   pick a preset, launch the pipeline. Live sessions are flagged with a
   pulsing **Live** badge and clicking one jumps straight back into the
@@ -71,13 +73,20 @@ with the community.
 
 ## Architecture
 
-```
-Browser
-  │
-  ├─► Nginx (port 80) ──► serves dist/index.html + static assets
-  │
-  ├─► AstroStack API  ──► REST calls (axios)
-  └─► AstroStack WS   ──► real-time job events (WebSocket)
+```mermaid
+flowchart LR
+    B(["Browser"])
+    NGINX["Nginx\nserves dist/ · port 80"]
+    AUTH(["AuthService\nauth.astromote.com\nOIDC · OAuth 2.1 · PKCE"])
+    API["AstroStack API\nREST · /api/v1/*"]
+    WS["AstroStack WebSocket\n/ws/jobs/{id} · /ws/sessions/{id}"]
+
+    B -->|"HTTP GET"| NGINX
+    NGINX -->|"index.html + assets"| B
+    B -- "login redirect + PKCE" --> AUTH
+    AUTH -- "RS256 access token" --> B
+    B -- "Bearer token" --> API
+    B -- "?ticket= query param" --> WS
 ```
 
 ### Routes
@@ -86,7 +95,8 @@ Browser
 |---|---|---|
 | `/` | Public / Authed | Smart redirect: anonymous → Landing; authed → Dashboard. |
 | `/welcome` | Public | Landing page, always reachable. |
-| `/login` | Public | Mock sign-in form (preview only). |
+| `/login` | Public | OIDC sign-in — initiates Authorization Code + PKCE redirect. |
+| `/auth/callback` | Public | OAuth 2.1 redirect callback — completes token exchange. |
 | `/gallery` | Public | Community gallery + lightbox. |
 | `/history` | Authed | Personal sessions dashboard. |
 | `/sessions/:id` | Authed | Session detail, processing, output. |
@@ -125,7 +135,11 @@ running AstroStack backend.
 
 ### With the AstroStack compose stack
 
-Add the service to the backend's `docker-compose.yml`:
+`VITE_*` variables are baked into the JavaScript bundle at compile time.
+The pre-built image ships with sensible defaults (`/api/v1` relative URL,
+`AUTH_MODE=oidc`, `OIDC_AUTHORITY=https://auth.astromote.com`) that work
+out-of-the-box behind Traefik. Add the service to the backend's
+`docker-compose.yml`:
 
 ```yaml
 services:
@@ -134,9 +148,6 @@ services:
     restart: unless-stopped
     ports:
       - "3000:80"
-    environment:
-      VITE_API_BASE_URL: http://localhost:8080/api/v1
-      VITE_WS_BASE_URL: ws://localhost:8080/ws
     depends_on:
       - astro-api
     labels:
@@ -162,15 +173,21 @@ the Settings page; users can override them at runtime.
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_BASE_URL` | `/api/v1` | REST API root URL (relative URLs route via Traefik). |
-| `VITE_WS_BASE_URL` | derived from page origin | WebSocket endpoint for live job progress. |
-| `VITE_SUPABASE_URL` | *(empty)* | Supabase project URL — required only if Supabase persistence is enabled. |
-| `VITE_SUPABASE_ANON_KEY` | *(empty)* | Supabase anonymous key. |
+| `VITE_API_BASE_URL` | `/api/v1` | REST API root URL. Relative paths route via Traefik. |
+| `VITE_WS_BASE_URL` | *(derived from page origin)* | WebSocket endpoint for live job progress. |
+| `VITE_AUTH_MODE` | `oidc` | Auth mode: `oidc` (prod), `mock` (staging), `disabled` (dev). |
+| `VITE_OIDC_AUTHORITY` | `https://auth.astromote.com` | OIDC issuer base URL. |
+| `VITE_OIDC_CLIENT_ID` | `astrostack` | OAuth 2.1 client identifier. |
+| `VITE_SUPABASE_URL` | *(empty)* | Supabase project URL (only if Supabase is used). |
+| `VITE_SUPABASE_ANON_KEY` | *(empty)* | Supabase anonymous key (only if Supabase is used). |
 
 ```bash
 docker build \
   --build-arg VITE_API_BASE_URL=https://api.example.com/api/v1 \
   --build-arg VITE_WS_BASE_URL=wss://api.example.com/ws \
+  --build-arg VITE_AUTH_MODE=oidc \
+  --build-arg VITE_OIDC_AUTHORITY=https://auth.astromote.com \
+  --build-arg VITE_OIDC_CLIENT_ID=astrostack \
   -t astro-stack-ui:local .
 ```
 
@@ -180,8 +197,6 @@ docker build \
 |---|---|---|
 | **API Base URL** | `VITE_API_BASE_URL` | REST API root URL. |
 | **WebSocket URL** | `VITE_WS_BASE_URL` | Live-progress endpoint. |
-| **Authentication** | `false` | Toggle Bearer-token authentication on API requests. |
-| **API Key** | *(empty)* | Token sent in `Authorization: Bearer <key>` when enabled. |
 | **Inbox Path** | `/data/inbox` | Informational — must match the backend's `INBOX_PATH`. |
 | **Ollama URL** | `http://localhost:11434` | Informational — must match the backend's `OLLAMA_URL`. |
 | **Max retries** | `3` | Default per-step retry budget. |
@@ -201,8 +216,11 @@ account. Anonymous visitors can request a one-time download by email.
 
 ### Sign in
 
-`/login` accepts any non-empty credentials in the preview build. Use the
-username `admin` to unlock the Settings page and its menu entries.
+Navigate to `/login` and click **Sign in with Astromote**. You will be
+redirected to [auth.astromote.com](https://auth.astromote.com) to authenticate
+via OAuth 2.1 + PKCE. After a successful login you are redirected back to the
+application. Users with the `admin` role automatically gain access to the
+Settings page.
 
 ### Create and run a session
 
@@ -233,17 +251,16 @@ collapsed so it never hides the photo.
 The following items are planned but not yet implemented. They are listed in
 priority order; the order may change based on feedback.
 
-1. **Authentication** via [auth-service](https://github.com/circle-rd/auth-service).
-2. **Planet-dedicated processing pipeline** with lucky-imaging support.
-3. **Observation time-slot suggestions** after selecting a celestial object and
+1. **Planet-dedicated processing pipeline** with lucky-imaging support.
+2. **Observation time-slot suggestions** after selecting a celestial object and
    a location.
-4. **AI-driven session scheduling** and observation recommendations based on
+3. **AI-driven session scheduling** and observation recommendations based on
    weather forecast, location, and target.
-5. **Pipeline tools and steps exposed as MCP servers** so external agents can
+4. **Pipeline tools and steps exposed as MCP servers** so external agents can
    compose them.
-6. **AI-driven pipeline auto-selection and auto-improve** through agent
+5. **AI-driven pipeline auto-selection and auto-improve** through agent
    workflows.
-7. **Observation alerts** (cancel reminders for cloudy nights, favourite-target
+6. **Observation alerts** (cancel reminders for cloudy nights, favourite-target
    visibility windows, etc.).
 
 ---
