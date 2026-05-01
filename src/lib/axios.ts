@@ -49,15 +49,15 @@ api.interceptors.request.use(async (config) => {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-  } else if (AUTH_MODE === 'mock') {
-    // Mock-auth bridge: identify the caller via a deterministic header so
-    // backend /me/* endpoints can persist per-user data without a real JWT.
+  } else if (AUTH_MODE === 'mock' || AUTH_MODE === 'disabled') {
+    // Mock-auth / disabled-auth bridge: identify the caller via a deterministic
+    // header so backend endpoints can resolve the user without a real JWT.
+    // In 'disabled' mode the synthetic user id is 'local-admin'.
     const user = useAuthStore.getState().user;
-    if (user?.name) {
-      config.headers['X-Mock-User'] = user.name;
+    if (user?.id) {
+      config.headers['X-Mock-User'] = user.id;
     }
   }
-  // AUTH_MODE === 'disabled': no auth header
 
   return config;
 });
