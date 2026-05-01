@@ -137,6 +137,7 @@ function MiniDropZone({
   disabled: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useCallback((el: HTMLInputElement | null) => {
     if (el) el.value = '';
   }, []);
@@ -145,16 +146,28 @@ function MiniDropZone({
     e.preventDefault();
     setDragging(false);
     if (disabled) return;
-    const valid = Array.from(e.dataTransfer.files).filter(isValidAstroFile);
-    if (valid.length) onAdd(valid);
+    // Snapshot files synchronously, then defer heavy work so React can
+    // paint the loading state before blocking the main thread.
+    const snapshot = Array.from(e.dataTransfer.files);
+    setIsProcessing(true);
+    setTimeout(() => {
+      const valid = snapshot.filter(isValidAstroFile);
+      if (valid.length) onAdd(valid);
+      setIsProcessing(false);
+    }, 0);
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const valid = Array.from(e.target.files).filter(isValidAstroFile);
+    if (!e.target.files || e.target.files.length === 0) return;
+    // Snapshot FileList before clearing the input, then defer heavy work.
+    const snapshot = Array.from(e.target.files);
+    e.target.value = '';
+    setIsProcessing(true);
+    setTimeout(() => {
+      const valid = snapshot.filter(isValidAstroFile);
       if (valid.length) onAdd(valid);
-      e.target.value = '';
-    }
+      setIsProcessing(false);
+    }, 0);
   };
 
   const Icon = category.icon;
@@ -176,13 +189,13 @@ function MiniDropZone({
           ${
             dragging
               ? 'border-accent/60 bg-accent-muted scale-[1.01]'
-              : disabled
+              : disabled || isProcessing
                 ? 'border-space-border/50 opacity-50 cursor-not-allowed'
                 : `${category.borderColor} bg-space-elevated hover:bg-space-border/20`
           }
         `}
         onClick={() =>
-          !disabled && document.getElementById(`file-input-${category.type}`)?.click()
+          !disabled && !isProcessing && document.getElementById(`file-input-${category.type}`)?.click()
         }
       >
         <input
@@ -193,7 +206,7 @@ function MiniDropZone({
           accept=".fits,.fit,.fts,.raw,.cr2,.cr3,.nef,.arw,.dng"
           className="hidden"
           onChange={handleInput}
-          disabled={disabled}
+          disabled={disabled || isProcessing}
         />
         <Icon size={15} className={category.color} />
         <div className="flex-1">
@@ -204,7 +217,12 @@ function MiniDropZone({
           <p className="text-xs text-text-muted">{category.description}</p>
         </div>
 
-        {files.length > 0 ? (
+        {isProcessing ? (
+          <span className="text-xs text-text-muted flex items-center gap-1.5 flex-shrink-0">
+            <Loader2 size={12} className="animate-spin text-primary" />
+            Indexing…
+          </span>
+        ) : files.length > 0 ? (
           <div className="flex items-center gap-2 flex-shrink-0">
             {errorCount > 0 && (
               <span className="text-xs text-error font-mono">{errorCount} err</span>
