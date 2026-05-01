@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Lock, User, type LucideIcon } from 'lucide-react';
 import { Logo } from '../components/branding/Logo';
@@ -151,48 +151,91 @@ function MockLoginForm() {
 }
 
 // ---------------------------------------------------------------------------
-// OIDC-mode redirect button (rendered when VITE_AUTH_MODE=oidc, the default)
+// Disabled-mode handler — triggers on mount, redirects without any UI flash
 // ---------------------------------------------------------------------------
 
-function OidcLoginButton() {
+function DisabledModeLogin() {
+  const navigate = useNavigate();
   const [params] = useSearchParams();
-  const [loading, setLoading] = useState(false);
-  const returnUrl = params.get('redirect') ?? '/dashboard';
 
-  const handleSignIn = async () => {
-    if (!userManager) return;
-    setLoading(true);
-    try {
-      await userManager.signinRedirect({ state: returnUrl });
-    } catch {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    // In disabled mode bootstrap() always resolves to the synthetic admin user.
+    useAuthStore
+      .getState()
+      .bootstrap()
+      .then(() => {
+        const redirect = params.get('redirect');
+        const safe =
+          redirect && redirect.startsWith('/') && !redirect.startsWith('//')
+            ? decodeURIComponent(redirect)
+            : '/dashboard';
+        navigate(safe, { replace: true });
+      })
+      .catch(() => navigate('/', { replace: true }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className="space-y-4">
-      <button
-        type="button"
-        onClick={handleSignIn}
-        disabled={loading}
-        className="
-          group inline-flex items-center justify-center gap-2 w-full
-          rounded-md bg-primary text-white font-medium px-4 py-2.5
-          hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50
-          disabled:opacity-50 disabled:cursor-not-allowed
-          transition-colors duration-150
-        "
-      >
-        {loading ? 'Redirecting…' : 'Sign in with Astromote'}
-        {!loading && (
-          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-        )}
-      </button>
+    <div className="min-h-screen flex items-center justify-center bg-space-bg">
+      <div className="w-7 h-7 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
+}
 
-      <p className="text-xs text-text-muted text-center">
-        You will be redirected to{' '}
-        <span className="text-text-secondary">auth.astromote.com</span> to authenticate.
-      </p>
+// ---------------------------------------------------------------------------
+// OIDC-mode auto-redirect — initiates signinRedirect on mount
+// ---------------------------------------------------------------------------
+
+function OidcAutoRedirect() {
+  const [params] = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
+  const returnUrl = params.get('redirect') ?? '/dashboard';
+
+  useEffect(() => {
+    if (!userManager) return;
+    userManager.signinRedirect({ state: returnUrl }).catch((err: unknown) => {
+      setError(err instanceof Error ? err.message : 'OIDC redirect failed.');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div
+          role="alert"
+          className="rounded-md border border-error/30 bg-error/10 px-3 py-2 text-xs text-error"
+        >
+          {error}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            userManager?.signinRedirect({ state: returnUrl }).catch((err: unknown) => {
+              setError(err instanceof Error ? err.message : 'OIDC redirect failed.');
+            });
+          }}
+          className="
+            group inline-flex items-center justify-center gap-2 w-full
+            rounded-md bg-primary text-white font-medium px-4 py-2.5
+            hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50
+            transition-colors duration-150
+          "
+        >
+          Retry sign in
+          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 text-center">
+      <div className="flex justify-center">
+        <div className="w-7 h-7 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+      <p className="text-sm text-text-muted">Redirecting to authentication provider…</p>
     </div>
   );
 }
@@ -202,6 +245,11 @@ function OidcLoginButton() {
 // ---------------------------------------------------------------------------
 
 export function Login() {
+  // Disabled mode: silently auto-login without rendering the full layout.
+  if (AUTH_MODE === 'disabled') {
+    return <DisabledModeLogin />;
+  }
+
   return (
     <div className="min-h-screen w-full grid md:grid-cols-2 bg-space-bg text-text-primary">
       {/* Brand panel */}
@@ -241,11 +289,13 @@ export function Login() {
           <div className="space-y-1.5">
             <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
             <p className="text-sm text-text-muted">
-              Sign in or create an account to publish your sessions.
+              {AUTH_MODE === 'mock'
+                ? 'Sign in with your development credentials.'
+                : 'You will be redirected to the authentication provider.'}
             </p>
           </div>
 
-          {AUTH_MODE === 'mock' ? <MockLoginForm /> : <OidcLoginButton />}
+          {AUTH_MODE === 'mock' ? <MockLoginForm /> : <OidcAutoRedirect />}
 
           {AUTH_MODE === 'oidc' && (
             <div className="text-center">

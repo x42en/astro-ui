@@ -93,9 +93,20 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   bootstrap: async () => {
-    // ── Disabled mode ─────────────────────────────────────────────────────
+    // ── Disabled mode — auto-authenticate as a local admin user ──────────
+    // No login UI is ever shown; the app behaves as a single-user workstation.
     if (AUTH_MODE === 'disabled') {
-      set({ user: null, accessToken: null, status: 'anonymous' });
+      set({
+        user: {
+          id: 'local-admin',
+          email: null,
+          name: 'Local Admin',
+          roles: ['admin', 'user'],
+          permissions: [],
+        },
+        accessToken: null,
+        status: 'authenticated',
+      });
       return;
     }
 
@@ -155,8 +166,13 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   loginRedirect: async (returnUrl?: string) => {
+    // Disabled mode: simply re-run bootstrap to materialise the synthetic user.
+    if (AUTH_MODE === 'disabled') {
+      await get().bootstrap();
+      return;
+    }
     if (AUTH_MODE === 'mock') {
-      // Redirect to the legacy mock login page
+      // Redirect to the mock login page
       window.location.href = `/login${returnUrl ? `?redirect=${encodeURIComponent(returnUrl)}` : ''}`;
       return;
     }
@@ -167,6 +183,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   logout: async () => {
+    // Disabled mode: logout is a no-op — re-bootstrap immediately as admin.
+    if (AUTH_MODE === 'disabled') {
+      await get().bootstrap();
+      return;
+    }
     if (AUTH_MODE === 'mock') {
       localStorage.removeItem(MOCK_STORAGE_KEY);
       set({ user: null, accessToken: null, status: 'anonymous' });
