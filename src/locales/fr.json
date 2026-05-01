@@ -1,0 +1,579 @@
+{
+  "header": {
+    "nav": {
+      "gallery": "Galerie",
+      "dashboard": "Tableau de bord",
+      "plan": "Planifier",
+      "profiles": "Profils",
+      "learn": "Apprendre",
+      "settings": "Paramètres",
+      "analytics": "Analyse"
+    },
+    "connection": {
+      "connected": "API connectée",
+      "disconnected": "API inaccessible",
+      "live": "En ligne",
+      "offline": "Hors ligne"
+    },
+    "nightMode": {
+      "enable": "Activer le mode nuit",
+      "disable": "Désactiver le mode nuit"
+    },
+    "language": {
+      "switch": "Changer de langue"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Votre ciel nocturne,<br /><span class=\"text-gradient-accent\">traité.</span>",
+      "description": "AstroStack prend en charge vos poses brutes et les traite via un pipeline GPU — calibration, stacking, plate solving et amélioration IA — sans quitter votre machine.",
+      "getStarted": "Commencer",
+      "browseGallery": "Parcourir la galerie"
+    },
+    "capabilities": {
+      "kicker": "Fonctionnalités",
+      "title": "Tout ce qu'il faut pour vos stacks, en un seul outil.",
+      "subtitle": "Un pipeline complet et les outils pour partager, réutiliser et inspecter chaque résultat."
+    },
+    "capabilityList": [
+      {
+        "title": "Pipeline de bout en bout",
+        "description": "Calibration, stacking, plate solving, suppression de gradient, stretch, denoise, sharpen, super-résolution et séparation des étoiles en une seule passe."
+      },
+      {
+        "title": "Live stacking avec coaching",
+        "description": "Ajoutez vos poses dès la sortie du capteur et regardez le stack se construire en direct. Un recommandeur analyse exposition, balance des blancs, FWHM et écrêtage en temps réel."
+      },
+      {
+        "title": "Planifier selon la météo",
+        "description": "Choisissez un site, parcourez les cibles et sélectionnez la nuit selon la turbulence, la couverture nuageuse et la phase lunaire — puis lancez directement la session."
+      },
+      {
+        "title": "Pipelines détaillés et personnalisables",
+        "description": "Chaque étape — calibration, registration, stacking, GraXpert, denoise, sharpen, super-résolution — est un paramètre réglable, avec des presets sensés et des overrides par session."
+      },
+      {
+        "title": "Accélération multi-GPU",
+        "description": "Siril headless, ASTAP, GraXpert et Cosmic Clarity pilotés par des workers CUDA — distribuez les jobs sur plusieurs GPU."
+      },
+      {
+        "title": "Presets de profils & bibliothèques de calibration",
+        "description": "Les presets Rapide, Standard, Qualité et Avancé sont préconfigurés ; les zones de dépôt par session gèrent vos bibliothèques de darks, flats et dark-flats."
+      },
+      {
+        "title": "Partagez vos recettes",
+        "description": "Exportez vos profils en JSON, importez-les en un clic, ou publiez-les pour que la communauté puisse stacker avec vos réglages."
+      },
+      {
+        "title": "Galerie publique",
+        "description": "Publiez vos sessions, proposez le téléchargement en un clic, et laissez les visiteurs inspecter l'EXIF et le pipeline ayant produit chaque image."
+      },
+      {
+        "title": "Progression en temps réel",
+        "description": "Un flux WebSocket diffuse chaque étape, log et pourcentage — vous savez toujours où en est votre stack."
+      }
+    ],
+    "community": {
+      "kicker": "Profils communautaires",
+      "title": "Profitez des recettes éprouvées par la communauté.",
+      "subtitle": "Créez un compte pour parcourir les profils d'autres astronomes, importez-les en un clic, ou partagez les vôtres.",
+      "list": [
+        "Parcourez les profils par preset, cible ou auteur.",
+        "Importez un profil et relancez-le sur vos propres poses.",
+        "Publiez votre recette favorite d'un simple toggle."
+      ],
+      "createAccount": "Créer un compte"
+    },
+    "showcase": {
+      "kicker": "En direct de la communauté",
+      "title": "Images récemment publiées.",
+      "subtitle": "Le flux des sessions que des astronomes viennent de partager. Cliquez pour inspecter leur EXIF et leur pipeline.",
+      "openFullGallery": "Ouvrir la galerie complète"
+    },
+    "roadmap": {
+      "kicker": "Feuille de route",
+      "title": "Ce que nous construisons ensuite.",
+      "subtitle": "Un aperçu des prochaines fonctionnalités. Les priorités peuvent évoluer — vos retours sont bienvenus.",
+      "items": [
+        "Pipeline dédié au planétaire",
+        "Mosaïque & fusion multi-nuits",
+        "Outils et étapes du pipeline exposés comme serveurs MCP",
+        "Agents IA de sélection et d'optimisation automatique du pipeline",
+        "Alertes d'observation (rappels d'annulation, visibilité des cibles, …)",
+        "App mobile pour le suivi en direct"
+      ]
+    },
+    "tools": {
+      "plateSolve": "Plate solve",
+      "denoise": "Denoise",
+      "superRes": "Super-res",
+      "profilePreview": "Aperçu profil",
+      "quality": "Qualité",
+      "object": "Objet",
+      "frames": "Poses",
+      "integration": "Intégration",
+      "filter": "Filtre",
+      "pipeline": "Pipeline"
+    },
+    "finalCta": {
+      "title": "Prêt à publier votre première nuit ?",
+      "description": "Gratuit en preview. Aucune carte, aucune vérification — connectez-vous et commencez à stacker.",
+      "createAccount": "Créer un compte"
+    },
+    "footer": {
+      "learnBasics": "Apprendre les bases",
+      "heroPhoto": "Photo : AstroBackyard",
+      "backend": "Backend",
+      "frontend": "Frontend"
+    }
+  },
+  "login": {
+    "brand": {
+      "title": "Traitez le ciel nocturne.",
+      "description": "AstroStack transforme vos poses brutes en images finales via un pipeline GPU, des presets de profils et une communauté de recettes partagées."
+    },
+    "welcome": "Bienvenue sur AstroStack",
+    "signIn": "Se connecter",
+    "mockSubtitle": "Connectez-vous avec vos identifiants de développement.",
+    "oidcSubtitle": "Vous serez redirigé vers le fournisseur d'authentification.",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "usernamePlaceholder": "astronome",
+    "passwordPlaceholder": "••••••••",
+    "submitMock": "Se connecter (mock)",
+    "submitOidc": "Réessayer la connexion",
+    "noAccount": "Pas encore de compte ? Créez-en un",
+    "redirecting": "Redirection vers le fournisseur d'authentification…",
+    "errors": {
+      "usernameRequired": "Le nom d'utilisateur est requis.",
+      "passwordRequired": "Le mot de passe est requis.",
+      "generic": "La connexion a échoué.",
+      "oidcFailed": "La redirection OIDC a échoué."
+    }
+  },
+  "dashboard": {
+    "title": "Sessions",
+    "subtitle": "Historique",
+    "description": "Parcourez et gérez vos sessions d'astrophotographie.",
+    "description_with_count": "{{count}} session — parcourez et gérez vos sessions d'astrophotographie.",
+    "description_with_count_plural": "{{count}} sessions — parcourez et gérez vos sessions d'astrophotographie.",
+    "newSession": "Nouvelle session",
+    "new": "Nouveau",
+    "page": "Page",
+    "of": "sur",
+    "noSessionsFound": "Aucune session trouvée",
+    "tryAdjustingFilters": "Essayez d'ajuster vos critères de recherche ou de filtre",
+    "noSessionsYet": "Pas encore de sessions",
+    "uploadFrames": "Importez vos poses FITS ou RAW pour créer votre première session de traitement.",
+    "createFirstSession": "Créez votre première session"
+  },
+  "settings": {
+    "title": "Config",
+    "heading": "Paramètres",
+    "description": "Configurez les paramètres de connexion et les valeurs par défaut du traitement côté serveur.",
+    "connection": {
+      "title": "Connexion",
+      "description": "Endpoint API backend et URL WebSocket — stockés localement dans ce navigateur",
+      "apiBaseUrl": "URL de base de l'API",
+      "apiBaseUrlHint": "URL racine de l'API REST Astro-Stack, chemin de version inclus",
+      "test": "Tester",
+      "webSocketUrl": "URL WebSocket",
+      "webSocketHint": "Utilisée pour les mises à jour de progression en temps réel",
+      "unsavedChanges": "Modifications non enregistrées",
+      "resetDefaults": "Réinitialiser les valeurs par défaut",
+      "save": "Enregistrer",
+      "saved": "Paramètres de connexion enregistrés",
+      "reset": "Paramètres de connexion réinitialisés",
+      "checking": "Vérification…",
+      "ok": "Backend accessible et opérationnel",
+      "error": "Impossible de joindre le backend"
+    },
+    "inboxAi": {
+      "title": "Inbox & IA",
+      "description": "Chemins côté serveur et configuration IA Ollama — partagés entre toutes les instances",
+      "inboxPath": "Chemin de l'inbox",
+      "inboxPathHint": "Dossier surveillé par le backend pour les poses entrantes (correspond à la variable INBOX_PATH)",
+      "ollamaUrl": "URL Ollama",
+      "ollamaUrlHint": "URL de base de l'instance Ollama pour la suppression de gradient par IA",
+      "ollamaModel": "Modèle Ollama",
+      "ollamaModelHint": "Nom du modèle utilisé pour les requêtes d'inférence Ollama"
+    },
+    "processingDefaults": {
+      "title": "Valeurs par défaut du traitement",
+      "description": "Comportement par défaut du pipeline pour les nouveaux jobs — partagé entre toutes les instances",
+      "maxRetries": "Tentatives max",
+      "maxRetriesHint": "Nombre max de tentatives par étape du pipeline en cas d'échec",
+      "stabilityDelay": "Délai de stabilité",
+      "stabilityDelayHint": "Secondes à attendre après le dernier changement de fichier avant de déclencher le traitement",
+      "seconds": "secondes",
+      "adminRequired": "Rôle admin requis pour modifier les paramètres opérationnels",
+      "unsavedChanges": "Modifications non enregistrées — s'appliqueront immédiatement à toutes les instances",
+      "discard": "Annuler",
+      "save": "Enregistrer",
+      "saved": "Paramètres opérationnels enregistrés",
+      "saveFailed": "Échec de l'enregistrement",
+      "lastUpdated": "Dernière mise à jour",
+      "by": "par",
+      "loading": "Chargement…",
+      "errorLoad": "Impossible de charger les paramètres opérationnels depuis le backend."
+    }
+  },
+  "gallery": {
+    "title": "Galerie",
+    "heading": "Galerie communautaire",
+    "description": "Une sélection de résultats d'astrophotographie partagés par la communauté.",
+    "description_with_count": "{{count}} image publiée par la communauté.",
+    "description_with_count_plural": "{{count}} images publiées par la communauté.",
+    "signInToPublish": "Connectez-vous pour publier",
+    "galleryEmpty": "La galerie est vide",
+    "emptyDescription": "Les sessions publiées s'afficheront ici. Ouvrez une session terminée et cliquez sur l'étoile jaune pour la partager.",
+    "openFullView": "Ouvrir {{name}} en plein écran",
+    "by": "par",
+    "astronomer": "Astronome",
+    "downloadHint": "Demander le téléchargement haute résolution",
+    "downloading": "Préparation du téléchargement…",
+    "downloadReady": "Votre téléchargement est prêt",
+    "downloadError": "Impossible de préparer le téléchargement",
+    "enterEmail": "Entrez votre e-mail pour recevoir le lien de téléchargement",
+    "email": "E-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "sendLink": "Envoyer le lien",
+    "downloadingSession": "Préparation du téléchargement pour {{name}}",
+    "lightbox": {
+      "of": "sur",
+      "close": "Fermer",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "download": "Télécharger",
+      "pipeline": "Pipeline",
+      "exif": "EXIF",
+      "object": "Objet",
+      "frames": "Poses",
+      "integration": "Intégration",
+      "filter": "Filtre",
+      "date": "Date",
+      "author": "Auteur"
+    }
+  },
+  "learn": {
+    "toc": {
+      "frameTypes": "Types de poses",
+      "reuseCheatSheet": "Aide-mémoire réutilisation",
+      "pipeline": "Pipeline",
+      "beginnerTips": "Conseils débutant"
+    },
+    "hero": {
+      "badge": "Apprendre les bases",
+      "title": "L'astrophotographie, décodée.",
+      "description": "Un guide rapide sur les poses à capturer et ce qu'AstroStack en fait — écrit pour les astrophotographes débutants."
+    },
+    "primer": {
+      "kicker": "Pourquoi la calibration compte",
+      "title": "Une seule pose, c'est surtout du bruit.",
+      "description": "Les capteurs génèrent du bruit thermique, vignettent sur les bords et accumulent de la poussière sur chaque surface optique. Les poses de calibration mesurent ces défauts pour que le stacker les soustraie — et stacker de nombreuses lights moyenne le bruit aléatoire que la calibration ne peut pas éliminer."
+    },
+    "frames": {
+      "kicker": "Les cinq types de poses",
+      "title": "Toute astrophoto est un stack de celles-ci.",
+      "description": "Les lights sont vos données. Les darks, flats, dark-flats et bias sont des poses de calibration qui indiquent au stacker comment nettoyer chaque light.",
+      "singleUse": "Usage unique",
+      "reusable": "Réutilisable",
+      "longTermReusable": "Réutilisable long terme",
+      "count": "Nombre",
+      "exposure": "Exposition",
+      "notes": "Notes",
+      "light": {
+        "name": "Lights",
+        "purpose": "Les vrais photons de votre cible — chaque filament de nébuleuse ou bras de galaxie vient de ces poses.",
+        "count": "30 – 100+ poses",
+        "exposure": "L'exposition max que votre monture tient sans traînées (60 s – 5 min typique).",
+        "notes": "Capturées pendant la session d'imagerie. Plus de temps d'intégration = image finale plus propre."
+      },
+      "dark": {
+        "name": "Darks",
+        "purpose": "Cartographier le signal thermique et les pixels chauds générés par le capteur lors des longues poses.",
+        "count": "20 – 40 poses",
+        "exposure": "Même exposition, ISO/gain et température capteur que vos lights, bouchon sur l'objectif.",
+        "notes": "Constituez une bibliothèque de darks réutilisable entre sessions, à condition que température, exposition et gain restent identiques."
+      },
+      "flat": {
+        "name": "Flats",
+        "purpose": "Révéler le vignettage, les poussières et l'illumination inégale du train optique pour les diviser.",
+        "count": "20 – 30 poses",
+        "exposure": "Courte pose sur une source lumineuse uniforme (panneau éclairant, méthode T-shirt, ciel de l'aube).",
+        "notes": "À capturer sans toucher la mise au point, la rotation de la caméra ni les filtres — à refaire si le train optique a bougé."
+      },
+      "darkFlat": {
+        "name": "Dark-flats",
+        "purpose": "Calibrer le biais et le bruit de lecture spécifiquement présents dans vos flats.",
+        "count": "20 – 30 poses",
+        "exposure": "Même exposition que vos flats, bouchon sur l'objectif. Remplace souvent les bias sur capteurs CMOS.",
+        "notes": "Valides uniquement avec la bibliothèque de flats correspondante — stockez-les ensemble."
+      },
+      "bias": {
+        "name": "Bias / Offset",
+        "purpose": "Capturer le plancher de bruit de lecture du capteur — le signal présent même à exposition nulle.",
+        "count": "50 – 100 poses",
+        "exposure": "L'exposition la plus courte supportée par votre caméra, bouchon sur l'objectif.",
+        "notes": "À faire une fois par combinaison caméra/gain et réutilisable des mois. Les workflows CMOS modernes préfèrent souvent les dark-flats aux bias."
+      }
+    },
+    "reuse": {
+      "kicker": "Aide-mémoire",
+      "title": "Qu'est-ce qui invalide une bibliothèque de calibration ?",
+      "description": "La bonne nouvelle : la plupart des poses de calibration se réutilisent pendant des semaines ou des mois. La mauvaise : quelques changements les rendent silencieusement inutiles — les règles ci-dessous valent la peine d'être mémorisées.",
+      "library": "Bibliothèque",
+      "invalidatedBy": "Invalidée par",
+      "shelfLife": "Durée de vie typique",
+      "lights": {
+        "library": "Lights",
+        "invalidatedBy": "Toujours usage unique — ce sont les données d'une session précise.",
+        "shelfLife": "Une cible, une session."
+      },
+      "darks": {
+        "library": "Darks",
+        "invalidatedBy": "Dérive de température, changement d'exposition ou d'ISO/gain.",
+        "shelfLife": "Plusieurs mois si la température est régulée (caméras refroidies)."
+      },
+      "flats": {
+        "library": "Flats",
+        "invalidatedBy": "Changement de mise au point, rotation de caméra, changement de filtre, poussières déplacées.",
+        "shelfLife": "Une configuration de train optique, typiquement une nuit."
+      },
+      "darkFlats": {
+        "library": "Dark-flats",
+        "invalidatedBy": "Tout ce qui invalide les flats auxquels ils appartiennent.",
+        "shelfLife": "Liée à leur bibliothèque de flats."
+      },
+      "bias": {
+        "library": "Bias / Offset",
+        "invalidatedBy": "Changement de caméra ou de gain.",
+        "shelfLife": "Long terme — des mois à des années par paire caméra/gain."
+      }
+    },
+    "pipeline": {
+      "kicker": "Dans les coulisses du pipeline",
+      "title": "Ce qu'AstroStack fait à votre stack.",
+      "description": "Chaque session passe par ces dix étapes dans l'ordre. Vous pouvez reprendre depuis n'importe quelle étape échouée sans rejouer celles qui ont réussi.",
+      "steps": {
+        "rawConversion": {
+          "title": "Conversion RAW → FITS",
+          "engine": "AstroStack",
+          "description": "Décode les fichiers RAW (CR2, NEF, ARW, DNG…) au format scientifique FITS attendu par tous les outils en aval, en préservant la pleine profondeur de bits du capteur."
+        },
+        "preprocessing": {
+          "title": "Calibration & stacking",
+          "engine": "Siril (headless)",
+          "description": "Construit les masters darks, flats et bias depuis vos poses de calibration, les applique à chaque light, aligne les poses sur le même patron d'étoiles et les stacke pour améliorer radicalement le rapport signal/bruit."
+        },
+        "plateSolving": {
+          "title": "Plate solving",
+          "engine": "ASTAP",
+          "description": "Identifie la zone de ciel couverte par votre image en croisant les positions d'étoiles avec un catalogue astrométrique. Coordonnées et orientation sont inscrites dans l'en-tête FITS pour les étapes suivantes."
+        },
+        "gradientRemoval": {
+          "title": "Suppression du gradient de fond",
+          "engine": "GraXpert",
+          "description": "Détecte et soustrait les gradients de pollution lumineuse et de halo lunaire qui noient les structures faibles, laissant un fond plat et neutre à partir duquel étirer l'image."
+        },
+        "stretchColor": {
+          "title": "Stretch & calibration des couleurs",
+          "engine": "Siril",
+          "description": "Remappe les données linéaires du capteur en image visible : la nébulosité faible devient apparente, tandis que la calibration colorimétrique utilise les couleurs d'étoiles du catalogue pour un équilibre des blancs scientifiquement neutre."
+        },
+        "denoise": {
+          "title": "Réduction du bruit par IA",
+          "engine": "Cosmic Clarity",
+          "description": "Un réseau neuronal entraîné sur des données d'astrophotographie lisse le grain de fond sans ramollir les étoiles ni les détails de nébuleuse — bien plus doux que les denoisers photo génériques."
+        },
+        "sharpen": {
+          "title": "Sharpening IA / déconvolution",
+          "engine": "Cosmic Clarity",
+          "description": "Récupère les détails perdus par le seeing, la mise au point et le suivi. Les étoiles se resserrent et les structures s'affûtent sans amplifier le bruit."
+        },
+        "superResolution": {
+          "title": "Super-résolution IA (2×)",
+          "engine": "Cosmic Clarity",
+          "description": "Double la résolution linéaire de l'image via un modèle entraîné à extrapoler des détails haute fréquence plausibles — utile pour les petites cibles ou les courtes focales."
+        },
+        "starSeparation": {
+          "title": "Séparation des étoiles",
+          "engine": "Cosmic Clarity (Dark Star)",
+          "description": "Sépare l'image en une couche sans étoiles et une couche étoiles seules, traitables indépendamment. C'est le secret des rendus de nébuleuse modernes où les étoiles restent discrètes mais le gaz brille."
+        },
+        "export": {
+          "title": "Export",
+          "engine": "AstroStack",
+          "description": "Écrit le master final en FITS (pour retraitement), TIFF (pour retouche) et JPEG (pour partage), et génère une miniature pour la galerie."
+        }
+      }
+    },
+    "tips": {
+      "kicker": "Notes de terrain",
+      "title": "Six réflexes qui vous sauveront une nuit.",
+      "description": "Les conseils que les astrophotographes auraient aimé recevoir dès le premier jour.",
+      "focus": {
+        "title": "La mise au point avant tout",
+        "body": "Un masque de Bahtinov prend trente secondes et offre le plus grand gain de qualité stellaire que vous puissiez obtenir gratuitement."
+      },
+      "dither": {
+        "title": "Dithering entre les poses",
+        "body": "De petits décalages aléatoires entre les poses permettent au stacker d'éliminer pixels chauds et bruit de marche — vos darks travaillent moins et le résultat est plus propre."
+      },
+      "captureOrder": {
+        "title": "Ordre de capture",
+        "body": "Lights d'abord, puis flats avant de démonter le rig (train optique intact). Darks et bias peuvent être faits à tout moment si la température capteur correspond."
+      },
+      "matchCalibration": {
+        "title": "Faites correspondre la calibration aux lights",
+        "body": "Même exposition, même ISO/gain, même température pour les darks. Même mise au point et rotation pour les flats. Un désaccord ajoute du bruit au lieu d'en supprimer."
+      },
+      "brightTargets": {
+        "title": "Commencez par les cibles lumineuses",
+        "body": "M42 (Orion), M31 (Andromède), M45 (Pléiades) et la nébuleuse du Voile pardonnent les temps d'intégration courts et les erreurs de suivi — parfaits pour débuter."
+      },
+      "profiles": {
+        "title": "Les profils plutôt que le bidouillage",
+        "body": "Choisissez un preset Qualité et laissez le pipeline tourner de bout en bout avant de commencer à ajuster. Comparez les résultats, puis modifiez un paramètre à la fois."
+      }
+    },
+    "cta": {
+      "title": "Prêt pour votre premier stack ?",
+      "description": "Parcourez ce que d'autres astronomes ont publié, ou connectez-vous et passez vos propres poses dans le pipeline.",
+      "getStarted": "Commencer",
+      "browseGallery": "Parcourir la galerie",
+      "help": "Bloqué ? Ouvrez une issue sur GitHub, on vous aidera."
+    }
+  },
+  "profile": {
+    "account": "Compte",
+    "yourProfile": "Votre profil",
+    "manageAccount": "Gérer le compte",
+    "observationSites": "Sites d'observation",
+    "whereYouObserve": "D'où vous observez",
+    "addSite": "Ajouter un site",
+    "noSitesYet": "Pas encore de site — ajoutez-en un pour planifier ce soir.",
+    "watchlist": "Liste de suivi",
+    "objectsYouFollow": "Objets que vous suivez",
+    "followNew": "Suivre un nouvel objet",
+    "noFollowedYet": "Aucun objet suivi — choisissez-en un pour le surveiller quand il est haut dans le ciel.",
+    "siteDeleted": "Site supprimé",
+    "couldNotDeleteSite": "Impossible de supprimer le site",
+    "unfollowed": "Objet retiré de la liste",
+    "couldNotUnfollow": "Impossible de retirer l'objet"
+  },
+  "sessionPrep": {
+    "kicker": "Planification",
+    "title": "Préparez votre prochaine nuit d'imagerie",
+    "subtitle": "Choisissez un lieu, consultez la météo et découvrez les meilleures cibles du ciel profond — comme une agence de voyage pour le cosmos.",
+    "signInBanner": "Connectez-vous pour sauvegarder vos sites et suivre vos cibles préférées.",
+    "signIn": "Se connecter",
+    "pickLocation": "Choisissez un lieu ci-dessus pour voir les meilleures cibles de ce soir.",
+    "recommendedTargets": "Cibles recommandées",
+    "objectsAbove": "{{count}} objet au-dessus de {{minAltitude}}°",
+    "objectsAbove_plural": "{{count}} objets au-dessus de {{minAltitude}}°",
+    "loadingError": "Erreur lors du calcul des recommandations. Essayez une autre date ou réduisez l'altitude minimale.",
+    "noTargets": "Aucune cible n'atteint {{minAltitude}}° ce soir. Réduisez l'altitude minimale ou changez de date.",
+    "errorToast": "Impossible de calculer les recommandations",
+    "weatherErrorToast": "Prévisions météo indisponibles"
+  },
+  "profileEditor": {
+    "kicker": "Profils",
+    "title": "Profils de traitement",
+    "description": "Pipelines personnalisés — créez, partagez et importez des recettes pour n'importe quelle cible.",
+    "community": "Communauté",
+    "communityHint": "Parcourez les profils partagés par d'autres utilisateurs",
+    "import": "Importer",
+    "importHint": "Importer un fichier .astroprofile.json",
+    "export": "Exporter",
+    "exportHint": "Exporter le profil sélectionné en JSON",
+    "newProfile": "Nouveau profil",
+    "count_one": "{{count}} Profil",
+    "count_other": "{{count}} Profils",
+    "editPrefix": "Modifier :",
+    "newProfileForm": "Nouveau profil",
+    "close": "Fermer",
+    "duplicateEdit": "Dupliquer & modifier",
+    "save": "Enregistrer",
+    "readOnly": "Lecture seule — profil partagé par un autre utilisateur. Dupliquez-le pour le modifier.",
+    "unsavedChanges": "Modifications non enregistrées",
+    "shareToggle": "Partager avec les autres utilisateurs",
+    "shareHint": "Les autres utilisateurs inscrits verront ce profil (lecture seule) et pourront le dupliquer.",
+    "selectToEdit": "Sélectionnez un profil à modifier",
+    "or": "ou",
+    "createNew": "créez-en un nouveau",
+    "importFile": "importez un fichier",
+    "profileCreated": "Profil créé",
+    "profileSaved": "Profil enregistré",
+    "saveFailed": "Échec de l'enregistrement du profil",
+    "imported": "\"{{name}}\" importé",
+    "importFailed": "Échec de l'importation",
+    "shared": "Profil partagé avec les autres utilisateurs",
+    "unshared": "Profil retiré du partage",
+    "shareUpdateFailed": "Échec de la mise à jour du partage",
+    "exported": "\"{{name}}\" exporté",
+    "exportFailed": "Échec de l'exportation"
+  },
+  "sessionDetail": {
+    "loading": "Chargement de la session…",
+    "deleteConfirm": "Supprimer la session",
+    "deleteMessage": "Supprimer \"{{name}}\" ? Cette action est irréversible.",
+    "deleteLabel": "Supprimer",
+    "resetConfirm": "Réinitialiser le statut de la session",
+    "resetMessage": "Réinitialiser \"{{name}}\" à Prêt ? À utiliser uniquement si le pipeline a planté et que la session est bloquée en Traitement.",
+    "resetLabel": "Réinitialiser à Prêt",
+    "calibration": "Calibration",
+    "calibrationHint": "Ajouter des darks / flats / dark-flats",
+    "resetToReady": "Réinitialiser à Prêt",
+    "resetting": "Réinitialisation…",
+    "resetHint": "Débloquer la session en la remettant à Prêt",
+    "delete": "Supprimer",
+    "deleting": "Suppression…",
+    "deleteHint": "Supprimer la session",
+    "cancelBeforeDelete": "Annulez ou réinitialisez la session avant de la supprimer."
+  },
+  "liveSession": {
+    "live": "EN DIRECT",
+    "idle": "INACTIF",
+    "startStacking": "Lancer le stacking",
+    "pause": "Pause",
+    "terminate": "Terminer",
+    "terminateHint": "Fermer la session et importer des darks / flats",
+    "pushFrame": "Envoyer une pose",
+    "pushFramePending": "Envoyer une pose ({{name}})",
+    "noFrameStacked": "Aucune pose empilée pour le moment.",
+    "pushHint": "Envoyez une pose FITS ou RAW pour amorcer le stack — l'aperçu s'affichera ici.",
+    "stacked": "Empilées",
+    "rejected": "Rejetées",
+    "generation": "Génération",
+    "activity": "Activité",
+    "waitingActivity": "En attente d'activité…",
+    "armed": "Live stacking armé",
+    "paused": "Live stacking en pause",
+    "startFailed": "Échec du démarrage",
+    "uploadFailed": "Échec de l'envoi",
+    "frameAccepted": "✓ Pose {{index}} empilée (n={{count}})",
+    "frameAcceptedFwhm": "✓ Pose {{index}} empilée (n={{count}}) · FWHM {{fwhm}}px",
+    "frameRejected": "✗ Pose {{index}} rejetée : {{message}}",
+    "frameStacked": "Pose empilée · gen {{gen}}"
+  },
+  "adminGallery": {
+    "kicker": "Admin",
+    "title": "Analyse de la galerie",
+    "description": "Activité de téléchargement des images de la galerie. Données des {{days}} derniers jours.",
+    "period7": "7 jours",
+    "period30": "30 jours",
+    "period90": "90 jours",
+    "totalDownloads": "Total téléchargements",
+    "uniqueRequestors": "Demandeurs uniques",
+    "tiffDownloads": "Téléchargements TIFF",
+    "fitsDownloads": "Téléchargements FITS",
+    "downloadsOverTime": "Téléchargements dans le temps",
+    "formatSplit": "Répartition par format",
+    "topSessions": "Top sessions par téléchargements",
+    "downloadLog": "Journal des téléchargements"
+  },
+  "authCallback": {
+    "signingIn": "Connexion en cours…"
+  }
+}

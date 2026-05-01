@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, RotateCcw, Layers } from 'lucide-react';
 import { getSession, deleteSession, resetSession, getLatestJobForSession } from '../services/sessions';
@@ -12,6 +13,7 @@ import { CalibrationFramesModal } from '../components/sessions/CalibrationFrames
 import type { JobRead } from '../types';
 
 export function SessionDetail() {
+  const { t } = useTranslation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -40,10 +42,6 @@ export function SessionDetail() {
     },
   });
 
-  // Fallback: when the UI store doesn't know about a job for this session
-  // (e.g. server restart, cleared local storage, fresh browser), recover the
-  // most recent job from the backend so the rendered preview, step browser
-  // and download buttons stay available on the session detail page.
   const { data: latestJob } = useQuery<JobRead | null>({
     queryKey: ['sessions', sessionId, 'latest-job'],
     queryFn: () => getLatestJobForSession(sessionId!),
@@ -51,9 +49,6 @@ export function SessionDetail() {
     staleTime: 30_000,
   });
 
-  // Mirror the recovered job into the UI store so subsequent revisits hit
-  // the regular ``jobs/{id}`` query path without round-tripping through the
-  // fallback endpoint.
   useEffect(() => {
     if (sessionId && !jobId && latestJob?.id) {
       setSessionJob(sessionId, latestJob.id);
@@ -83,7 +78,7 @@ export function SessionDetail() {
     const isProcessing = session.status === 'processing';
     if (isProcessing) {
       setShowResetConfirm(false);
-      alert('Cancel or reset the session before deleting.');
+      alert(t('sessionDetail.cancelBeforeDelete'));
       return;
     }
     setShowConfirm(true);
@@ -100,7 +95,7 @@ export function SessionDetail() {
         ) : null}
         <div className="relative z-10 text-center space-y-2">
           <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-text-muted">Loading session…</p>
+          <p className="text-sm text-text-muted">{t('sessionDetail.loading')}</p>
         </div>
       </div>
     );
@@ -113,17 +108,17 @@ export function SessionDetail() {
       <ConfirmModal
         open={showConfirm}
         onOpenChange={setShowConfirm}
-        title="Delete session"
-        message={`Delete “${session.name}”? This cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('sessionDetail.deleteConfirm')}
+        message={t('sessionDetail.deleteMessage', { name: session.name })}
+        confirmLabel={t('sessionDetail.deleteLabel')}
         onConfirm={() => deleteMutation.mutate()}
       />
       <ConfirmModal
         open={showResetConfirm}
         onOpenChange={setShowResetConfirm}
-        title="Reset session status"
-        message={`Reset “${session.name}” back to Ready? Use this only if the pipeline crashed and the session is stuck in Processing.`}
-        confirmLabel="Reset to Ready"
+        title={t('sessionDetail.resetConfirm')}
+        message={t('sessionDetail.resetMessage', { name: session.name })}
+        confirmLabel={t('sessionDetail.resetLabel')}
         variant="warning"
         onConfirm={() => resetMutation.mutate()}
       />
@@ -135,40 +130,36 @@ export function SessionDetail() {
         session={session}
       />
 
-      {/* Calibration button — always available, lets the user complete
-          the darks / flats / dark-flats libraries after acquisition. */}
       <button
         onClick={() => setShowCalibration(true)}
         className="absolute top-4 right-44 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-accent/70 text-white/60 hover:text-white text-xs font-medium transition-all duration-200 backdrop-blur-sm"
-        title="Add darks / flats / dark-flats"
+        title={t('sessionDetail.calibrationHint')}
       >
         <Layers size={13} />
-        Calibration
+        {t('sessionDetail.calibration')}
       </button>
 
-      {/* Reset button — only shown when stuck in processing */}
       {isProcessing && (
         <button
           onClick={() => setShowResetConfirm(true)}
           disabled={resetMutation.isPending}
           className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-warning/70 text-white/50 hover:text-white text-xs font-medium transition-all duration-200 disabled:opacity-40 backdrop-blur-sm"
-          title="Reset stuck session to Ready"
+          title={t('sessionDetail.resetHint')}
         >
           <RotateCcw size={13} />
-          {resetMutation.isPending ? 'Resetting…' : 'Reset to Ready'}
+          {resetMutation.isPending ? t('sessionDetail.resetting') : t('sessionDetail.resetToReady')}
         </button>
       )}
 
-      {/* Delete button — shown when not processing */}
       {!isProcessing && (
         <button
           onClick={handleDelete}
           disabled={deleteMutation.isPending}
           className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/60 hover:bg-red-600/80 text-white/50 hover:text-white text-xs font-medium transition-all duration-200 disabled:opacity-40 backdrop-blur-sm"
-          title="Delete session"
+          title={t('sessionDetail.deleteHint')}
         >
           <Trash2 size={13} />
-          {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+          {deleteMutation.isPending ? t('sessionDetail.deleting') : t('sessionDetail.delete')}
         </button>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   Save,
@@ -25,13 +26,10 @@ import { useUiStore } from '../store/uiStore';
 import { DEFAULT_ADVANCED_CONFIG } from '../lib/presets';
 import type { ProcessingProfileConfig, ProfileRead } from '../types';
 
-// New profiles inherit the standard preset defaults so they immediately
-// reflect the modern backend pipeline (AI gradient removal, asinh stretch,
-// luminance-only denoise, defiltered camera as the norm, …).  Picking an
-// object template afterwards overrides the relevant subset of fields.
 const BLANK_CONFIG: ProcessingProfileConfig = { ...DEFAULT_ADVANCED_CONFIG };
 
 export function ProfileEditor() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const addToast = useUiStore((s) => s.addToast);
 
@@ -65,10 +63,10 @@ export function ProfileEditor() {
       queryClient.invalidateQueries({ queryKey: ['profiles'] });
       setSelectedId(profile.id);
       setIsCreating(false);
-      addToast({ variant: 'success', title: isCreating ? 'Profile created' : 'Profile saved' });
+      addToast({ variant: 'success', title: isCreating ? t('profileEditor.profileCreated') : t('profileEditor.profileSaved') });
     },
     onError: () => {
-      addToast({ variant: 'error', title: 'Failed to save profile' });
+      addToast({ variant: 'error', title: t('profileEditor.saveFailed') });
     },
   });
 
@@ -81,13 +79,13 @@ export function ProfileEditor() {
       setFormName(profile.name);
       setFormDescription(profile.description ?? '');
       setFormConfig(profile.config);
-      addToast({ variant: 'success', title: `Imported "${profile.name}"` });
+      addToast({ variant: 'success', title: t('profileEditor.imported', { name: profile.name }) });
     },
     onError: (err: unknown) => {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? 'Failed to import profile';
-      addToast({ variant: 'error', title: 'Import failed', message });
+          ?.message ?? t('profileEditor.importFailed');
+      addToast({ variant: 'error', title: t('profileEditor.importFailed'), message });
     },
   });
 
@@ -99,12 +97,12 @@ export function ProfileEditor() {
       addToast({
         variant: 'success',
         title: profile.is_shared
-          ? 'Profile shared with other users'
-          : 'Profile is no longer shared',
+          ? t('profileEditor.shared')
+          : t('profileEditor.unshared'),
       });
     },
     onError: () => {
-      addToast({ variant: 'error', title: 'Failed to update sharing' });
+      addToast({ variant: 'error', title: t('profileEditor.shareUpdateFailed') });
     },
   });
 
@@ -144,9 +142,9 @@ export function ProfileEditor() {
     if (!selectedProfile) return;
     try {
       await exportProfile(selectedProfile);
-      addToast({ variant: 'success', title: `Exported "${selectedProfile.name}"` });
+      addToast({ variant: 'success', title: t('profileEditor.exported', { name: selectedProfile.name }) });
     } catch {
-      addToast({ variant: 'error', title: 'Export failed' });
+      addToast({ variant: 'error', title: t('profileEditor.exportFailed') });
     }
   };
 
@@ -159,7 +157,6 @@ export function ProfileEditor() {
     if (file) {
       importMutation.mutate(file);
     }
-    // Reset so selecting the same file twice still triggers onChange.
     e.target.value = '';
   };
 
@@ -185,10 +182,10 @@ export function ProfileEditor() {
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-6">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Profiles</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Processing Profiles</h1>
+            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">{t('profileEditor.kicker')}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{t('profileEditor.title')}</h1>
             <p className="text-base text-text-secondary mt-2 leading-relaxed">
-              Custom processing pipelines — build, share, and import recipes for any target.
+              {t('profileEditor.description')}
             </p>
           </div>
 
@@ -197,30 +194,30 @@ export function ProfileEditor() {
               type="button"
               onClick={() => setCommunityOpen(true)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary border border-space-border hover:bg-space-elevated rounded transition-all"
-              title="Browse profiles shared by other users"
+              title={t('profileEditor.communityHint')}
             >
               <Globe2 size={14} />
-              Community
+              {t('profileEditor.community')}
             </button>
             <button
               type="button"
               onClick={handleImportClick}
               disabled={importMutation.isPending}
               className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary border border-space-border hover:bg-space-elevated rounded transition-all disabled:opacity-50"
-              title="Import a .astroprofile.json file"
+              title={t('profileEditor.importHint')}
             >
               <Upload size={14} />
-              Import
+              {t('profileEditor.import')}
             </button>
             <button
               type="button"
               onClick={handleExportClick}
               disabled={!selectedProfile || isCreating}
               className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary border border-space-border hover:bg-space-elevated rounded transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Export the selected profile as a JSON file"
+              title={t('profileEditor.exportHint')}
             >
               <Download size={14} />
-              Export
+              {t('profileEditor.export')}
             </button>
             <button
               type="button"
@@ -228,7 +225,7 @@ export function ProfileEditor() {
               className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded transition-all duration-150 shadow-sm"
             >
               <Plus size={15} />
-              New profile
+              {t('profileEditor.newProfile')}
             </button>
           </div>
         </div>
@@ -237,7 +234,7 @@ export function ProfileEditor() {
           <div className="lg:col-span-2">
             <div className="bg-space-surface border border-space-border rounded-lg p-4">
               <h2 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
-                {profiles.length} Profile{profiles.length !== 1 ? 's' : ''}
+                {t('profileEditor.count', { count: profiles.length })}
               </h2>
               <ProfileList
                 profiles={profiles}
@@ -254,7 +251,7 @@ export function ProfileEditor() {
               <div className="bg-space-surface border border-space-border rounded-lg p-5">
                 <div className="flex items-center justify-between mb-5 gap-3">
                   <h2 className="text-sm font-semibold text-text-primary truncate">
-                    {isCreating ? 'New profile' : `Edit: ${selectedProfile?.name ?? ''}`}
+                    {isCreating ? t('profileEditor.newProfileForm') : `${t('profileEditor.editPrefix')} ${selectedProfile?.name ?? ''}`}
                   </h2>
                   <div className="flex items-center gap-2">
                     <button
@@ -263,7 +260,7 @@ export function ProfileEditor() {
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-text-muted border border-space-border hover:bg-space-elevated rounded transition-all"
                     >
                       <X size={12} />
-                      Close
+                      {t('profileEditor.close')}
                     </button>
                     {readOnly && selectedProfile && (
                       <button
@@ -272,7 +269,7 @@ export function ProfileEditor() {
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary hover:bg-primary-hover text-white font-medium rounded transition-all"
                       >
                         <CopyIcon size={12} />
-                        Duplicate &amp; Edit
+                        {t('profileEditor.duplicateEdit')}
                       </button>
                     )}
                     {!readOnly && (
@@ -287,7 +284,7 @@ export function ProfileEditor() {
                         ) : (
                           <Save size={12} />
                         )}
-                        Save
+                        {t('profileEditor.save')}
                       </button>
                     )}
                   </div>
@@ -296,25 +293,24 @@ export function ProfileEditor() {
                 {readOnly && (
                   <div className="mb-4 px-3 py-2 bg-space-elevated border border-space-border rounded text-xs text-text-secondary flex items-center gap-2">
                     <Lock size={12} className="text-text-muted" />
-                    Read-only — this profile is shared by another user. Duplicate it to customise.
+                    {t('profileEditor.readOnly')}
                   </div>
                 )}
 
                 {hasChanges && !isCreating && !readOnly && (
                   <div className="mb-4 px-3 py-2 bg-warning-muted border border-warning/20 rounded text-xs text-warning">
-                    You have unsaved changes
+                    {t('profileEditor.unsavedChanges')}
                   </div>
                 )}
 
-                {/* Sharing toggle — owner-only, persists immediately. */}
                 {!isCreating && selectedProfile && selectedProfile.is_owner && (
                   <div className="mb-4 flex items-center justify-between gap-4 px-3 py-2 bg-space-elevated border border-space-border rounded">
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-text-secondary">
-                        Share with other users
+                        {t('profileEditor.shareToggle')}
                       </p>
                       <p className="text-[11px] text-text-muted mt-0.5">
-                        Other registered users will see this profile (read-only) and can duplicate it.
+                        {t('profileEditor.shareHint')}
                       </p>
                     </div>
                     <label className="inline-flex items-center cursor-pointer flex-shrink-0">
@@ -356,23 +352,24 @@ export function ProfileEditor() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-64 bg-space-surface border border-dashed border-space-border rounded-lg text-center">
-                <p className="text-sm text-text-muted">Select a profile to edit</p>
+                <p className="text-sm text-text-muted">{t('profileEditor.selectToEdit')}</p>
                 <p className="text-xs text-text-muted mt-1">
-                  or{' '}
+                  {t('profileEditor.or')}{' '}
                   <button
                     type="button"
                     onClick={handleNew}
                     className="text-primary hover:text-primary-hover underline"
                   >
-                    create a new one
+                    {t('profileEditor.createNew')}
                   </button>
-                  {' '}or{' '}
+                  {' '}
+                  {t('profileEditor.or')}{' '}
                   <button
                     type="button"
                     onClick={handleImportClick}
                     className="text-primary hover:text-primary-hover underline"
                   >
-                    import a file
+                    {t('profileEditor.importFile')}
                   </button>
                 </p>
               </div>

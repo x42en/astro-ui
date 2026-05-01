@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Telescope, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { listSessions } from '../services/sessions';
 import { SessionCard } from '../components/sessions/SessionCard';
 import { SessionFilters } from '../components/sessions/SessionFilters';
@@ -11,6 +12,7 @@ import type { SessionStatus } from '../types';
 const PAGE_SIZE = 12;
 
 export function Dashboard() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all');
@@ -48,12 +50,12 @@ export function Dashboard() {
       <div className="mb-6">
         <div className="flex items-start justify-between gap-6">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Sessions</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">History</h1>
+            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">{t('dashboard.title')}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{t('dashboard.subtitle')}</h1>
             <p className="text-base text-text-secondary mt-2 leading-relaxed">
               {total > 0
-                ? `${total} session${total !== 1 ? 's' : ''} — browse and manage your astrophotography runs.`
-                : 'Browse and manage your past astrophotography sessions.'}
+                ? t('dashboard.description_with_count', { count: total })
+                : t('dashboard.description')}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 mt-1">
@@ -63,8 +65,8 @@ export function Dashboard() {
               className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded transition-all duration-150"
             >
               <Plus size={15} />
-              <span className="hidden sm:inline">New Session</span>
-              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">{t('dashboard.newSession')}</span>
+              <span className="sm:hidden">{t('dashboard.new')}</span>
             </button>
           </div>
         </div>
@@ -111,7 +113,7 @@ export function Dashboard() {
                   <ChevronLeft size={15} />
                 </button>
                 <span className="text-sm text-text-muted">
-                  Page <span className="text-text-primary font-medium">{page}</span> of {totalPages}
+                  {t('dashboard.page')} <span className="text-text-primary font-medium">{page}</span> {t('dashboard.of')} {totalPages}
                 </span>
                 <button
                   type="button"
@@ -141,6 +143,7 @@ function EmptyState({
   statusFilter: SessionStatus | 'all';
   onNew: () => void;
 }) {
+  const { t } = useTranslation();
   const hasFilters = search || statusFilter !== 'all';
 
   return (
@@ -150,16 +153,16 @@ function EmptyState({
       </div>
       {hasFilters ? (
         <>
-          <h3 className="text-base font-semibold text-text-primary">No sessions found</h3>
+          <h3 className="text-base font-semibold text-text-primary">{t('dashboard.noSessionsFound')}</h3>
           <p className="text-sm text-text-muted mt-1">
-            Try adjusting your search or filter criteria
+            {t('dashboard.tryAdjustingFilters')}
           </p>
         </>
       ) : (
         <>
-          <h3 className="text-base font-semibold text-text-primary">No sessions yet</h3>
+          <h3 className="text-base font-semibold text-text-primary">{t('dashboard.noSessionsYet')}</h3>
           <p className="text-sm text-text-muted mt-1 max-w-xs">
-            Upload your FITS or RAW frames to create your first processing session.
+            {t('dashboard.uploadFrames')}
           </p>
           <button
             type="button"
@@ -167,7 +170,7 @@ function EmptyState({
             className="mt-5 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-md transition-all shadow-sm"
           >
             <Plus size={15} />
-            Create your first session
+            {t('dashboard.createFirstSession')}
           </button>
         </>
       )}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Download, Users, FileImage, FileCode } from 'lucide-react';
 import { KpiCard } from '../components/admin/KpiCard';
@@ -9,20 +10,14 @@ import { DownloadTable } from '../components/admin/DownloadTable';
 import { getGalleryStats, getGalleryDownloads } from '../services/galleryAdmin';
 import type { GalleryDownloadsQuery } from '../types';
 
-const PERIOD_OPTIONS: { label: string; value: number }[] = [
-  { label: '7 days', value: 7 },
-  { label: '30 days', value: 30 },
-  { label: '90 days', value: 90 },
+const PERIOD_OPTIONS = [
+  { labelKey: 'adminGallery.period7', value: 7 },
+  { labelKey: 'adminGallery.period30', value: 30 },
+  { labelKey: 'adminGallery.period90', value: 90 },
 ];
 
-/**
- * Admin analytics dashboard for the public gallery.
- *
- * Displays aggregated KPIs, a downloads-over-time line chart, a TIFF vs FITS
- * donut, a top-sessions bar chart, and a paginated download log.  All data is
- * fetched from the admin-protected API endpoints.
- */
 export function AdminGallery() {
+  const { t } = useTranslation();
   const [days, setDays] = useState(30);
   const [downloadsQuery, setDownloadsQuery] = useState<GalleryDownloadsQuery>({
     page: 1,
@@ -51,14 +46,12 @@ export function AdminGallery() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-      {/* ── Page header ────────────────────────────────────────────────── */}
       <div>
         <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">
-          Admin
+          {t('adminGallery.kicker')}
         </p>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h1 className="text-2xl font-bold text-text-primary">Gallery Analytics</h1>
-          {/* Period selector — affects KPIs + charts */}
+          <h1 className="text-2xl font-bold text-text-primary">{t('adminGallery.title')}</h1>
           <div className="flex items-center gap-1 p-0.5 bg-space-surface border border-space-border rounded-lg">
             {PERIOD_OPTIONS.map(opt => (
               <button
@@ -70,49 +63,46 @@ export function AdminGallery() {
                     : 'text-text-muted hover:text-text-primary hover:bg-space-elevated'
                 }`}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </button>
             ))}
           </div>
         </div>
         <p className="text-sm text-text-muted mt-2">
-          Download activity for gallery images. Data covers the last {days} days.
+          {t('adminGallery.description', { days })}
         </p>
       </div>
 
-      {/* ── KPI cards ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           icon={Download}
           value={stats?.total_downloads ?? 0}
-          label="Total downloads"
+          label={t('adminGallery.totalDownloads')}
         />
         <KpiCard
           icon={Users}
           value={stats?.unique_emails ?? 0}
-          label="Unique requestors"
+          label={t('adminGallery.uniqueRequestors')}
           accent="text-accent"
         />
         <KpiCard
           icon={FileImage}
           value={stats?.tiff_count ?? 0}
-          label="TIFF downloads"
+          label={t('adminGallery.tiffDownloads')}
           accent="text-success"
         />
         <KpiCard
           icon={FileCode}
           value={stats?.fits_count ?? 0}
-          label="FITS downloads"
+          label={t('adminGallery.fitsDownloads')}
           accent="text-warning"
         />
       </div>
 
-      {/* ── Charts row ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Downloads over time */}
         <div className="bg-space-surface border border-space-border rounded-lg px-5 py-4">
           <h2 className="text-sm font-semibold text-text-primary mb-4">
-            Downloads over time
+            {t('adminGallery.downloadsOverTime')}
           </h2>
           {statsQuery.isLoading ? (
             <div className="h-[200px] flex items-center justify-center">
@@ -123,10 +113,9 @@ export function AdminGallery() {
           )}
         </div>
 
-        {/* Format split */}
         <div className="bg-space-surface border border-space-border rounded-lg px-5 py-4">
           <h2 className="text-sm font-semibold text-text-primary mb-4">
-            Format split
+            {t('adminGallery.formatSplit')}
           </h2>
           {statsQuery.isLoading ? (
             <div className="h-[200px] flex items-center justify-center">
@@ -141,10 +130,9 @@ export function AdminGallery() {
         </div>
       </div>
 
-      {/* ── Top sessions bar ────────────────────────────────────────────── */}
       <div className="bg-space-surface border border-space-border rounded-lg px-5 py-4">
         <h2 className="text-sm font-semibold text-text-primary mb-4">
-          Top sessions by downloads
+          {t('adminGallery.topSessions')}
         </h2>
         {statsQuery.isLoading ? (
           <div className="h-32 flex items-center justify-center">
@@ -155,10 +143,9 @@ export function AdminGallery() {
         )}
       </div>
 
-      {/* ── Download log ────────────────────────────────────────────────── */}
       <div className="bg-space-surface border border-space-border rounded-lg px-5 py-4">
         <h2 className="text-sm font-semibold text-text-primary mb-4">
-          Download log
+          {t('adminGallery.downloadLog')}
         </h2>
         <DownloadTable
           data={downloadsResult.data}
