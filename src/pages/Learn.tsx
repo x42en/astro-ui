@@ -14,6 +14,7 @@ import {
   Sun,
   Telescope,
   Wand2,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 import { SectionHeading } from '../components/landing/SectionHeading';
