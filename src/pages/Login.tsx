@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Lock, User, type LucideIcon } from 'lucide-react';
 import { Logo } from '../components/branding/Logo';
 import { AUTH_MODE, userManager } from '../lib/oidc';
 import { useAuthStore } from '../store/authStore';
+import { useTranslation } from 'react-i18next';
 
 // ---------------------------------------------------------------------------
 // Field sub-component (shared by mock form)
@@ -65,6 +66,7 @@ function Field({
 // ---------------------------------------------------------------------------
 
 function MockLoginForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [username, setUsername] = useState('');
@@ -78,8 +80,8 @@ function MockLoginForm() {
     setSubmitting(true);
     try {
       const u = username.trim();
-      if (!u) throw new Error('Username is required.');
-      if (!password) throw new Error('Password is required.');
+      if (!u) throw new Error(t('login.errors.usernameRequired'));
+      if (!password) throw new Error(t('login.errors.passwordRequired'));
       // Persist mock user to the legacy localStorage key so the auth store
       // picks it up on next bootstrap() call.
       localStorage.setItem(
@@ -95,7 +97,7 @@ function MockLoginForm() {
           : '/dashboard';
       navigate(safe, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign-in failed.');
+      setError(err instanceof Error ? err.message : t('login.errors.generic'));
       setSubmitting(false);
     }
   };
@@ -104,23 +106,23 @@ function MockLoginForm() {
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <Field
         icon={User}
-        label="Username"
+        label={t('login.username')}
         id="login-username"
         type="text"
         autoComplete="username"
         value={username}
         onChange={setUsername}
-        placeholder="astronomer"
+        placeholder={t('login.usernamePlaceholder')}
       />
       <Field
         icon={Lock}
-        label="Password"
+        label={t('login.password')}
         id="login-password"
         type="password"
         autoComplete="current-password"
         value={password}
         onChange={setPassword}
-        placeholder="••••••••"
+        placeholder={t('login.passwordPlaceholder')}
       />
 
       {error && (
@@ -143,7 +145,7 @@ function MockLoginForm() {
           transition-colors duration-150
         "
       >
-        Sign in (mock)
+        {t('login.submitMock')}
         <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
       </button>
     </form>
@@ -151,48 +153,92 @@ function MockLoginForm() {
 }
 
 // ---------------------------------------------------------------------------
-// OIDC-mode redirect button (rendered when VITE_AUTH_MODE=oidc, the default)
+// Disabled-mode handler — triggers on mount, redirects without any UI flash
 // ---------------------------------------------------------------------------
 
-function OidcLoginButton() {
+function DisabledModeLogin() {
+  const navigate = useNavigate();
   const [params] = useSearchParams();
-  const [loading, setLoading] = useState(false);
-  const returnUrl = params.get('redirect') ?? '/dashboard';
 
-  const handleSignIn = async () => {
-    if (!userManager) return;
-    setLoading(true);
-    try {
-      await userManager.signinRedirect({ state: returnUrl });
-    } catch {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    // In disabled mode bootstrap() always resolves to the synthetic admin user.
+    useAuthStore
+      .getState()
+      .bootstrap()
+      .then(() => {
+        const redirect = params.get('redirect');
+        const safe =
+          redirect && redirect.startsWith('/') && !redirect.startsWith('//')
+            ? decodeURIComponent(redirect)
+            : '/dashboard';
+        navigate(safe, { replace: true });
+      })
+      .catch(() => navigate('/', { replace: true }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className="space-y-4">
-      <button
-        type="button"
-        onClick={handleSignIn}
-        disabled={loading}
-        className="
-          group inline-flex items-center justify-center gap-2 w-full
-          rounded-md bg-primary text-white font-medium px-4 py-2.5
-          hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50
-          disabled:opacity-50 disabled:cursor-not-allowed
-          transition-colors duration-150
-        "
-      >
-        {loading ? 'Redirecting…' : 'Sign in with Astromote'}
-        {!loading && (
-          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-        )}
-      </button>
+    <div className="min-h-screen flex items-center justify-center bg-space-bg">
+      <div className="w-7 h-7 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
+}
 
-      <p className="text-xs text-text-muted text-center">
-        You will be redirected to{' '}
-        <span className="text-text-secondary">auth.astromote.com</span> to authenticate.
-      </p>
+// ---------------------------------------------------------------------------
+// OIDC-mode auto-redirect — initiates signinRedirect on mount
+// ---------------------------------------------------------------------------
+
+function OidcAutoRedirect() {
+  const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
+  const returnUrl = params.get('redirect') ?? '/dashboard';
+
+  useEffect(() => {
+    if (!userManager) return;
+    userManager.signinRedirect({ state: returnUrl }).catch((err: unknown) => {
+      setError(err instanceof Error ? err.message : t('login.errors.oidcFailed'));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div
+          role="alert"
+          className="rounded-md border border-error/30 bg-error/10 px-3 py-2 text-xs text-error"
+        >
+          {error}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            userManager?.signinRedirect({ state: returnUrl }).catch((err: unknown) => {
+              setError(err instanceof Error ? err.message : t('login.errors.oidcFailed'));
+            });
+          }}
+          className="
+            group inline-flex items-center justify-center gap-2 w-full
+            rounded-md bg-primary text-white font-medium px-4 py-2.5
+            hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50
+            transition-colors duration-150
+          "
+        >
+          {t('login.submitOidc')}
+          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 text-center">
+      <div className="flex justify-center">
+        <div className="w-7 h-7 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+      <p className="text-sm text-text-muted">{t('login.redirecting')}</p>
     </div>
   );
 }
@@ -202,6 +248,13 @@ function OidcLoginButton() {
 // ---------------------------------------------------------------------------
 
 export function Login() {
+  const { t } = useTranslation();
+
+  // Disabled mode: silently auto-login without rendering the full layout.
+  if (AUTH_MODE === 'disabled') {
+    return <DisabledModeLogin />;
+  }
+
   return (
     <div className="min-h-screen w-full grid md:grid-cols-2 bg-space-bg text-text-primary">
       {/* Brand panel */}
@@ -217,12 +270,10 @@ export function Login() {
           <Logo variant="mark" size={96} className="mx-auto" />
           <div className="space-y-3">
             <h1 className="text-3xl font-semibold tracking-tight">
-              Process the night sky.
+              {t('login.brand.title')}
             </h1>
             <p className="text-sm text-text-secondary leading-relaxed">
-              AstroStack turns raw frames into finished images with a
-              GPU-accelerated pipeline, profile presets, and a community of
-              shared recipes.
+              {t('login.brand.description')}
             </p>
           </div>
         </div>
@@ -234,18 +285,20 @@ export function Login() {
           <div className="md:hidden flex flex-col items-center gap-3 text-center">
             <Logo variant="mark" size={56} />
             <h1 className="text-xl font-semibold tracking-tight">
-              Welcome to AstroStack
+              {t('login.welcome')}
             </h1>
           </div>
 
           <div className="space-y-1.5">
-            <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">{t('login.signIn')}</h2>
             <p className="text-sm text-text-muted">
-              Sign in or create an account to publish your sessions.
+              {AUTH_MODE === 'mock'
+                ? t('login.mockSubtitle')
+                : t('login.oidcSubtitle')}
             </p>
           </div>
 
-          {AUTH_MODE === 'mock' ? <MockLoginForm /> : <OidcLoginButton />}
+          {AUTH_MODE === 'mock' ? <MockLoginForm /> : <OidcAutoRedirect />}
 
           {AUTH_MODE === 'oidc' && (
             <div className="text-center">
@@ -255,7 +308,7 @@ export function Login() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                No account yet? Create one
+                {t('login.noAccount')}
               </Link>
             </div>
           )}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Plus, Sparkles } from 'lucide-react';
 import { useCurrentUser } from '../store/authStore';
 import { useUiStore } from '../store/uiStore';
@@ -38,6 +39,7 @@ function SectionTitle({
 }
 
 export function UserProfile() {
+  const { t } = useTranslation();
   const user = useCurrentUser();
   const queryClient = useQueryClient();
   const { addToast } = useUiStore();
@@ -59,20 +61,20 @@ export function UserProfile() {
     mutationFn: (site: ObservationSite) => deleteObservationSite(site.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['observation_sites'] });
-      addToast({ variant: 'success', title: 'Site deleted' });
+      addToast({ variant: 'success', title: t('profile.siteDeleted') });
     },
     onError: (err: Error) =>
-      addToast({ variant: 'error', title: 'Could not delete site', message: err.message }),
+      addToast({ variant: 'error', title: t('profile.couldNotDeleteSite'), message: err.message }),
   });
 
   const unfollowMutation = useMutation({
     mutationFn: (followed: FollowedObject) => unfollowObject(followed.catalog_id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['followed_objects'] });
-      addToast({ variant: 'success', title: 'Unfollowed' });
+      addToast({ variant: 'success', title: t('profile.unfollowed') });
     },
     onError: (err: Error) =>
-      addToast({ variant: 'error', title: 'Could not unfollow', message: err.message }),
+      addToast({ variant: 'error', title: t('profile.couldNotUnfollow'), message: err.message }),
   });
 
   const sites = sitesQuery.data ?? [];
@@ -92,9 +94,8 @@ export function UserProfile() {
   return (
     <div className="min-h-screen bg-space-bg">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-12 animate-fade-in">
-        {/* Account section */}
         <section>
-          <SectionTitle kicker="Account" title="Your profile" />
+          <SectionTitle kicker={t('profile.account')} title={t('profile.yourProfile')} />
           <div className="bg-space-surface border border-space-border rounded-xl p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-primary-muted flex items-center justify-center text-primary font-semibold uppercase">
               {(user?.name ?? user?.email ?? user?.id ?? '??').slice(0, 2)}
@@ -126,17 +127,16 @@ export function UserProfile() {
                 rel="noopener noreferrer"
                 className="flex-shrink-0 text-xs text-text-muted hover:text-text-secondary underline underline-offset-2 transition-colors"
               >
-                Manage account
+                {t('profile.manageAccount')}
               </a>
             )}
           </div>
         </section>
 
-        {/* Observation sites */}
         <section>
           <SectionTitle
-            kicker="Observation sites"
-            title="Where you observe from"
+            kicker={t('profile.observationSites')}
+            title={t('profile.whereYouObserve')}
             action={
               <button
                 type="button"
@@ -144,7 +144,7 @@ export function UserProfile() {
                 className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md bg-primary hover:bg-primary-hover text-white transition-colors"
               >
                 <Plus size={14} />
-                <span>Add a site</span>
+                <span>{t('profile.addSite')}</span>
               </button>
             }
           />
@@ -160,7 +160,7 @@ export function UserProfile() {
           {!sitesQuery.isLoading && sites.length === 0 && (
             <div className="bg-space-surface border border-dashed border-space-border rounded-xl p-8 text-center">
               <p className="text-sm text-text-secondary">
-                No observation sites yet — add your first to plan tonight.
+                {t('profile.noSitesYet')}
               </p>
             </div>
           )}
@@ -179,11 +179,10 @@ export function UserProfile() {
           )}
         </section>
 
-        {/* Followed objects */}
         <section>
           <SectionTitle
-            kicker="Watchlist"
-            title="Objects you follow"
+            kicker={t('profile.watchlist')}
+            title={t('profile.objectsYouFollow')}
             action={
               <button
                 type="button"
@@ -191,7 +190,7 @@ export function UserProfile() {
                 className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md bg-primary hover:bg-primary-hover text-white transition-colors"
               >
                 <Sparkles size={14} />
-                <span>Follow new</span>
+                <span>{t('profile.followNew')}</span>
               </button>
             }
           />
@@ -207,7 +206,7 @@ export function UserProfile() {
           {!followedQuery.isLoading && followed.length === 0 && (
             <div className="bg-space-surface border border-dashed border-space-border rounded-xl p-8 text-center">
               <p className="text-sm text-text-secondary">
-                No followed objects yet — pick one to track when it&apos;s high in the sky.
+                {t('profile.noFollowedYet')}
               </p>
             </div>
           )}

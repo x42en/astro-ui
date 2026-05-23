@@ -18,77 +18,10 @@ import {
   LandingGalleryCarousel,
 } from '../components/landing/LandingGalleryCarousel';
 import { SectionHeading } from '../components/landing/SectionHeading';
+import { useTranslation } from 'react-i18next';
 
-interface Capability {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}
-
-const CAPABILITIES: Capability[] = [
-  {
-    icon: Telescope,
-    title: 'End-to-end pipeline',
-    description:
-      'Calibration, stacking, plate solving, gradient removal, stretching, denoising, sharpening, super-resolution and star separation in a single run.',
-  },
-  {
-    icon: Radio,
-    title: 'Live stacking with coaching',
-    description:
-      'Drop frames as they come off the sensor and watch the stack build live. A recommender reads exposure, white balance, FWHM and clipping in real time and tells you what to fix at the rig.',
-  },
-  {
-    icon: CalendarClock,
-    title: 'Plan by weather window',
-    description:
-      'Pick an observation site, browse curated targets and pick the night by forecasted seeing, cloud cover and Moon phase — then jump straight to the live session.',
-  },
-  {
-    icon: Sliders,
-    title: 'Detailed, customizable pipelines',
-    description:
-      'Every step — calibration, registration, stacking, GraXpert, denoising, sharpening, super-resolution — is exposed as a tunable parameter, with sensible presets and per-session overrides.',
-  },
-  {
-    icon: Cpu,
-    title: 'Multi-GPU acceleration',
-    description:
-      'Headless Siril, ASTAP, GraXpert and Cosmic Clarity wired to CUDA workers — distribute jobs across multiple GPUs.',
-  },
-  {
-    icon: Layers,
-    title: 'Profile presets & calibration libraries',
-    description:
-      'Quick, Standard, Quality and Advanced presets ship with sensible defaults; per-session calibration dropzones manage your darks, flats and dark-flats libraries.',
-  },
-  {
-    icon: Share2,
-    title: 'Share your recipes',
-    description:
-      'Export profiles to JSON, import in one click, or publish them so the community can stack with your exact settings.',
-  },
-  {
-    icon: Images,
-    title: 'Public gallery',
-    description:
-      'Publish processed sessions, get one-click downloads, and let viewers inspect the EXIF and pipeline used to produce each image.',
-  },
-  {
-    icon: Activity,
-    title: 'Real-time progress',
-    description:
-      'A WebSocket feed streams every step, log line and percentage so you always know where your stack is.',
-  },
-];
-
-const ROADMAP: string[] = [
-  'Planet-dedicated processing pipeline',
-  'Mosaic & multi-night session merging',
-  'Pipeline tools and steps exposed as MCP servers',
-  'AI-driven pipeline auto-selection & auto-improve agents',
-  'Observation alerts (cancel reminders, target visibility, …)',
-  'Mobile companion app for live monitoring',
+const CAPABILITY_ICONS: LucideIcon[] = [
+  Telescope, Radio, CalendarClock, Sliders, Cpu, Layers, Share2, Images, Activity,
 ];
 
 export function Landing() {
@@ -106,6 +39,7 @@ export function Landing() {
 }
 
 function Hero() {
+  const { t } = useTranslation();
   return (
     <section
       id="hero"
@@ -132,15 +66,11 @@ function Hero() {
             size={128}
             className="text-white text-4xl sm:text-5xl md:text-6xl [&>svg]:!w-auto [&>svg]:!h-[2.1em]"
           />
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] text-center sm:text-left">
-            Your night sky,<br />
-            <span className="text-gradient-accent">processed.</span>
-          </h1>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] text-center sm:text-left"
+              dangerouslySetInnerHTML={{ __html: t('landing.hero.title') }} />
         </div>
         <p className="text-base sm:text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed text-center">
-          AstroStack ingests your raw frames and runs them through a
-          GPU-accelerated pipeline — calibration, stacking, plate solving and
-          AI enhancement — without leaving your machine.
+          {t('landing.hero.description')}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -152,7 +82,7 @@ function Hero() {
               focus:outline-none focus:ring-2 focus:ring-primary/40
             "
           >
-            Get started
+            {t('landing.hero.getStarted')}
             <ArrowRight
               size={15}
               className="transition-transform group-hover:translate-x-0.5"
@@ -168,7 +98,7 @@ function Hero() {
             "
           >
             <Images size={14} />
-            Browse gallery
+            {t('landing.hero.browseGallery')}
           </Link>
         </div>
       </div>
@@ -186,6 +116,9 @@ function Hero() {
 }
 
 function Capabilities() {
+  const { t } = useTranslation();
+  const capabilityList = t('landing.capabilityList', { returnObjects: true }) as Array<{ title: string; description: string }>;
+
   return (
     <section
       id="capabilities"
@@ -193,13 +126,13 @@ function Capabilities() {
     >
       <div className="max-w-6xl mx-auto px-6 py-20 sm:py-28 space-y-12">
         <SectionHeading
-          kicker="Capabilities"
-          title="Everything your stacks need, in one box."
-          subtitle="A full processing pipeline plus the tooling to share, reuse and inspect every result."
+          kicker={t('landing.capabilities.kicker')}
+          title={t('landing.capabilities.title')}
+          subtitle={t('landing.capabilities.subtitle')}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CAPABILITIES.map((c) => (
-            <CapabilityCard key={c.title} capability={c} />
+          {capabilityList.map((c, idx) => (
+            <CapabilityCard key={c.title} capability={c} icon={CAPABILITY_ICONS[idx]} />
           ))}
         </div>
       </div>
@@ -207,8 +140,7 @@ function Capabilities() {
   );
 }
 
-function CapabilityCard({ capability }: { capability: Capability }) {
-  const Icon = capability.icon;
+function CapabilityCard({ capability, icon: Icon }: { capability: { title: string; description: string }; icon: LucideIcon }) {
   return (
     <div className="group rounded-xl border border-space-border bg-space-elevated/40 p-5 hover:border-white/15 hover:bg-space-elevated/70 transition-colors">
       <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4 group-hover:bg-primary/15">
@@ -225,6 +157,9 @@ function CapabilityCard({ capability }: { capability: Capability }) {
 }
 
 function Community() {
+  const { t } = useTranslation();
+  const bulletList = t('landing.community.list', { returnObjects: true }) as string[];
+
   return (
     <section
       id="community"
@@ -233,20 +168,20 @@ function Community() {
       <div className="max-w-6xl mx-auto px-6 py-20 sm:py-28 grid md:grid-cols-2 gap-12 items-center">
         <div className="space-y-5">
           <SectionHeading
-            kicker="Community profiles"
-            title="Tap into community-tested recipes."
-            subtitle="Sign up to browse profiles published by other astronomers, import them in one click, or share your own."
+            kicker={t('landing.community.kicker')}
+            title={t('landing.community.title')}
+            subtitle={t('landing.community.subtitle')}
           />
           <ul className="space-y-2.5 text-sm text-text-secondary">
-            <Bullet>Browse shared profiles by preset, target or author.</Bullet>
-            <Bullet>Import a profile and re-run it on your own frames.</Bullet>
-            <Bullet>Publish your favorite recipe with a single toggle.</Bullet>
+            {bulletList.map((item) => (
+              <Bullet key={item}>{item}</Bullet>
+            ))}
           </ul>
           <Link
             to="/login"
             className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:text-accent-hover transition-colors"
           >
-            Create an account
+            {t('landing.community.createAccount')}
             <ArrowRight size={14} />
           </Link>
         </div>
@@ -266,9 +201,8 @@ function Bullet({ children }: { children: React.ReactNode }) {
 }
 
 function ProfileTeaserMock() {
-  // Decorative — mirrors the shape of MetadataCartouche without rendering
-  // real session data.  Static labels keep the landing layout deterministic.
-  const tools = ['Plate solve', 'GraXpert', 'Denoise', 'Super-res', 'PCC'];
+  const { t } = useTranslation();
+  const tools = [t('landing.tools.plateSolve'), 'GraXpert', t('landing.tools.denoise'), t('landing.tools.superRes'), 'PCC'];
   return (
     <div className="rounded-2xl bg-black/70 backdrop-blur-xl border border-white/[0.08] shadow-2xl shadow-black/60 p-5 max-w-md md:ml-auto">
       <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-4">
@@ -278,31 +212,31 @@ function ProfileTeaserMock() {
             AstroStack
           </span>
           <span className="text-[10px] uppercase tracking-[0.12em] text-white/35">
-            · Profile preview
+            · {t('landing.tools.profilePreview')}
           </span>
         </div>
         <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent/10 border border-accent/25 text-[9.5px] uppercase tracking-[0.10em] text-accent font-semibold">
-          Quality
+          {t('landing.tools.quality')}
         </span>
       </div>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] font-mono text-white/85">
-        <Stat label="Object" value="M31" />
-        <Stat label="Frames" value="120 × 60s" />
-        <Stat label="Integration" value="2h 00m" />
-        <Stat label="Filter" value="L-eXtreme" />
+        <Stat label={t('landing.tools.object')} value="M31" />
+        <Stat label={t('landing.tools.frames')} value="120 × 60s" />
+        <Stat label={t('landing.tools.integration')} value="2h 00m" />
+        <Stat label={t('landing.tools.filter')} value="L-eXtreme" />
       </dl>
       <div className="border-t border-white/[0.06] mt-4 pt-3">
         <div className="text-[9.5px] uppercase tracking-[0.14em] text-white/45 font-semibold mb-2">
-          Pipeline
+          {t('landing.tools.pipeline')}
         </div>
         <div className="flex flex-wrap gap-1">
-          {tools.map((t) => (
+          {tools.map((tool) => (
             <span
-              key={t}
+              key={tool}
               className="inline-flex items-center gap-1 px-2 py-[3px] rounded-md bg-white/[0.03] border border-white/[0.08] text-[9.5px] uppercase tracking-[0.08em] text-white/75 font-medium leading-tight"
             >
               <span className="w-1 h-1 rounded-full bg-accent/70" />
-              {t}
+              {tool}
             </span>
           ))}
         </div>
@@ -323,6 +257,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 function Showcase() {
+  const { t } = useTranslation();
   return (
     <section
       id="showcase"
@@ -331,15 +266,15 @@ function Showcase() {
       <div className="max-w-6xl mx-auto px-6 py-20 sm:py-28 space-y-10">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <SectionHeading
-            kicker="Live from the community"
-            title="Recently published images."
-            subtitle="A live feed of sessions astronomers have just shared. Click through to inspect their EXIF and pipeline."
+            kicker={t('landing.showcase.kicker')}
+            title={t('landing.showcase.title')}
+            subtitle={t('landing.showcase.subtitle')}
           />
           <Link
             to="/gallery"
             className="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent-hover transition-colors"
           >
-            Open the full gallery
+            {t('landing.showcase.openFullGallery')}
             <ArrowRight size={13} />
           </Link>
         </div>
@@ -350,6 +285,9 @@ function Showcase() {
 }
 
 function Roadmap() {
+  const { t } = useTranslation();
+  const roadmapItems = t('landing.roadmap.items', { returnObjects: true }) as string[];
+
   return (
     <section
       id="roadmap"
@@ -357,12 +295,12 @@ function Roadmap() {
     >
       <div className="max-w-6xl mx-auto px-6 py-20 sm:py-28 space-y-10">
         <SectionHeading
-          kicker="Roadmap"
-          title="What we're building next."
-          subtitle="A peek at the upcoming features. Priorities can shift — feedback welcome."
+          kicker={t('landing.roadmap.kicker')}
+          title={t('landing.roadmap.title')}
+          subtitle={t('landing.roadmap.subtitle')}
         />
         <ol className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {ROADMAP.map((item, idx) => (
+          {roadmapItems.map((item, idx) => (
             <li
               key={item}
               className="flex items-start gap-3 rounded-lg border border-space-border bg-space-elevated/40 px-4 py-3"
@@ -382,6 +320,7 @@ function Roadmap() {
 }
 
 function FinalCta() {
+  const { t } = useTranslation();
   return (
     <section
       id="join"
@@ -389,11 +328,10 @@ function FinalCta() {
     >
       <div className="max-w-3xl mx-auto px-6 py-20 sm:py-28 text-center space-y-6">
         <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-          Ready to publish your first night?
+          {t('landing.finalCta.title')}
         </h2>
         <p className="text-text-secondary">
-          Free during preview. No card, no email verification — just sign in and
-          start stacking.
+          {t('landing.finalCta.description')}
         </p>
         <div className="flex items-center justify-center gap-3">
           <Link
@@ -404,7 +342,7 @@ function FinalCta() {
               hover:bg-primary-hover transition-colors
             "
           >
-            Create an account
+            {t('landing.finalCta.createAccount')}
             <ArrowRight
               size={15}
               className="transition-transform group-hover:translate-x-0.5"
@@ -417,6 +355,7 @@ function FinalCta() {
 }
 
 function Footer() {
+  const { t } = useTranslation();
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-space-border bg-space-bg">
@@ -430,7 +369,7 @@ function Footer() {
             to="/learn"
             className="hover:text-text-secondary transition-colors"
           >
-            Learn the basics
+            {t('landing.footer.learnBasics')}
           </Link>
           <a
             href="https://astrobackyard.com"
@@ -438,7 +377,7 @@ function Footer() {
             rel="noopener noreferrer"
             className="hover:text-text-secondary transition-colors"
           >
-            Hero photo: AstroBackyard
+            {t('landing.footer.heroPhoto')}
           </a>
           <a
             href="https://github.com/x42en/AstroStack"
@@ -446,7 +385,7 @@ function Footer() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 hover:text-text-secondary transition-colors"
           >
-            <Github size={13} /> Backend
+            <Github size={13} /> {t('landing.footer.backend')}
           </a>
           <a
             href="https://github.com/x42en/astro-stack-ui"
@@ -454,7 +393,7 @@ function Footer() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 hover:text-text-secondary transition-colors"
           >
-            <Github size={13} /> Frontend
+            <Github size={13} /> {t('landing.footer.frontend')}
           </a>
         </div>
       </div>

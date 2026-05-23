@@ -1,0 +1,579 @@
+{
+  "header": {
+    "nav": {
+      "gallery": "Gallery",
+      "dashboard": "Dashboard",
+      "plan": "Plan",
+      "profiles": "Profiles",
+      "learn": "Learn",
+      "settings": "Settings",
+      "analytics": "Analytics"
+    },
+    "connection": {
+      "connected": "API connected",
+      "disconnected": "API unreachable",
+      "live": "Live",
+      "offline": "Offline"
+    },
+    "nightMode": {
+      "enable": "Enable night mode",
+      "disable": "Disable night mode"
+    },
+    "language": {
+      "switch": "Switch language"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Your night sky,<br /><span class=\"text-gradient-accent\">processed.</span>",
+      "description": "AstroStack ingests your raw frames and runs them through a GPU-accelerated pipeline — calibration, stacking, plate solving and AI enhancement — without leaving your machine.",
+      "getStarted": "Get started",
+      "browseGallery": "Browse gallery"
+    },
+    "capabilities": {
+      "kicker": "Capabilities",
+      "title": "Everything your stacks need, in one box.",
+      "subtitle": "A full processing pipeline plus the tooling to share, reuse and inspect every result."
+    },
+    "capabilityList": [
+      {
+        "title": "End-to-end pipeline",
+        "description": "Calibration, stacking, plate solving, gradient removal, stretching, denoising, sharpening, super-resolution and star separation in a single run."
+      },
+      {
+        "title": "Live stacking with coaching",
+        "description": "Drop frames as they come off the sensor and watch the stack build live. A recommender reads exposure, white balance, FWHM and clipping in real time and tells you what to fix at the rig."
+      },
+      {
+        "title": "Plan by weather window",
+        "description": "Pick an observation site, browse curated targets and pick the night by forecasted seeing, cloud cover and Moon phase — then jump straight to the live session."
+      },
+      {
+        "title": "Detailed, customizable pipelines",
+        "description": "Every step — calibration, registration, stacking, GraXpert, denoising, sharpening, super-resolution — is exposed as a tunable parameter, with sensible presets and per-session overrides."
+      },
+      {
+        "title": "Multi-GPU acceleration",
+        "description": "Headless Siril, ASTAP, GraXpert and Cosmic Clarity wired to CUDA workers — distribute jobs across multiple GPUs."
+      },
+      {
+        "title": "Profile presets & calibration libraries",
+        "description": "Quick, Standard, Quality and Advanced presets ship with sensible defaults; per-session calibration dropzones manage your darks, flats and dark-flats libraries."
+      },
+      {
+        "title": "Share your recipes",
+        "description": "Export profiles to JSON, import in one click, or publish them so the community can stack with your exact settings."
+      },
+      {
+        "title": "Public gallery",
+        "description": "Publish processed sessions, get one-click downloads, and let viewers inspect the EXIF and pipeline used to produce each image."
+      },
+      {
+        "title": "Real-time progress",
+        "description": "A WebSocket feed streams every step, log line and percentage so you always know where your stack is."
+      }
+    ],
+    "community": {
+      "kicker": "Community profiles",
+      "title": "Tap into community-tested recipes.",
+      "subtitle": "Sign up to browse profiles published by other astronomers, import them in one click, or share your own.",
+      "list": [
+        "Browse shared profiles by preset, target or author.",
+        "Import a profile and re-run it on your own frames.",
+        "Publish your favorite recipe with a single toggle."
+      ],
+      "createAccount": "Create an account"
+    },
+    "showcase": {
+      "kicker": "Live from the community",
+      "title": "Recently published images.",
+      "subtitle": "A live feed of sessions astronomers have just shared. Click through to inspect their EXIF and pipeline.",
+      "openFullGallery": "Open the full gallery"
+    },
+    "roadmap": {
+      "kicker": "Roadmap",
+      "title": "What we're building next.",
+      "subtitle": "A peek at the upcoming features. Priorities can shift — feedback welcome.",
+      "items": [
+        "Planet-dedicated processing pipeline",
+        "Mosaic & multi-night session merging",
+        "Pipeline tools and steps exposed as MCP servers",
+        "AI-driven pipeline auto-selection & auto-improve agents",
+        "Observation alerts (cancel reminders, target visibility, …)",
+        "Mobile companion app for live monitoring"
+      ]
+    },
+    "tools": {
+      "plateSolve": "Plate solve",
+      "denoise": "Denoise",
+      "superRes": "Super-res",
+      "profilePreview": "Profile preview",
+      "quality": "Quality",
+      "object": "Object",
+      "frames": "Frames",
+      "integration": "Integration",
+      "filter": "Filter",
+      "pipeline": "Pipeline"
+    },
+    "finalCta": {
+      "title": "Ready to publish your first night?",
+      "description": "Free during preview. No card, no email verification — just sign in and start stacking.",
+      "createAccount": "Create an account"
+    },
+    "footer": {
+      "learnBasics": "Learn the basics",
+      "heroPhoto": "Hero photo: AstroBackyard",
+      "backend": "Backend",
+      "frontend": "Frontend"
+    }
+  },
+  "login": {
+    "brand": {
+      "title": "Process the night sky.",
+      "description": "AstroStack turns raw frames into finished images with a GPU-accelerated pipeline, profile presets, and a community of shared recipes."
+    },
+    "welcome": "Welcome to AstroStack",
+    "signIn": "Sign in",
+    "mockSubtitle": "Sign in with your development credentials.",
+    "oidcSubtitle": "You will be redirected to the authentication provider.",
+    "username": "Username",
+    "password": "Password",
+    "usernamePlaceholder": "astronomer",
+    "passwordPlaceholder": "••••••••",
+    "submitMock": "Sign in (mock)",
+    "submitOidc": "Retry sign in",
+    "noAccount": "No account yet? Create one",
+    "redirecting": "Redirecting to authentication provider…",
+    "errors": {
+      "usernameRequired": "Username is required.",
+      "passwordRequired": "Password is required.",
+      "generic": "Sign-in failed.",
+      "oidcFailed": "OIDC redirect failed."
+    }
+  },
+  "dashboard": {
+    "title": "Sessions",
+    "subtitle": "History",
+    "description": "Browse and manage your astrophotography runs.",
+    "description_with_count": "{{count}} session — browse and manage your astrophotography runs.",
+    "description_with_count_plural": "{{count}} sessions — browse and manage your astrophotography runs.",
+    "newSession": "New Session",
+    "new": "New",
+    "page": "Page",
+    "of": "of",
+    "noSessionsFound": "No sessions found",
+    "tryAdjustingFilters": "Try adjusting your search or filter criteria",
+    "noSessionsYet": "No sessions yet",
+    "uploadFrames": "Upload your FITS or RAW frames to create your first processing session.",
+    "createFirstSession": "Create your first session"
+  },
+  "settings": {
+    "title": "Config",
+    "heading": "Settings",
+    "description": "Configure connection parameters and server-side processing defaults.",
+    "connection": {
+      "title": "Connection",
+      "description": "Backend API endpoint and WebSocket URL — stored locally in this browser",
+      "apiBaseUrl": "API Base URL",
+      "apiBaseUrlHint": "Root URL of the Astro-Stack REST API, including the version path",
+      "test": "Test",
+      "webSocketUrl": "WebSocket URL",
+      "webSocketHint": "Used for real-time job progress updates",
+      "unsavedChanges": "Unsaved changes",
+      "resetDefaults": "Reset defaults",
+      "save": "Save",
+      "saved": "Connection settings saved",
+      "reset": "Connection settings reset to defaults",
+      "checking": "Checking…",
+      "ok": "Backend reachable and responding",
+      "error": "Could not reach the backend"
+    },
+    "inboxAi": {
+      "title": "Inbox & AI",
+      "description": "Server-side paths and Ollama AI configuration — shared across all instances",
+      "inboxPath": "Inbox Path",
+      "inboxPathHint": "Folder watched by the backend for incoming session frames (matches INBOX_PATH env var)",
+      "ollamaUrl": "Ollama URL",
+      "ollamaUrlHint": "Base URL of the Ollama instance used for AI-based gradient removal",
+      "ollamaModel": "Ollama Model",
+      "ollamaModelHint": "Model name used for inference requests to Ollama"
+    },
+    "processingDefaults": {
+      "title": "Processing Defaults",
+      "description": "Default pipeline behaviour for new processing jobs — shared across all instances",
+      "maxRetries": "Max retries",
+      "maxRetriesHint": "Maximum number of retry attempts per pipeline step on failure",
+      "stabilityDelay": "Session stability delay",
+      "stabilityDelayHint": "Seconds to wait after the last file change before auto-triggering processing",
+      "seconds": "seconds",
+      "adminRequired": "Admin role required to edit operational settings",
+      "unsavedChanges": "Unsaved changes — these will apply immediately to all running instances",
+      "discard": "Discard",
+      "save": "Save",
+      "saved": "Operational settings saved",
+      "saveFailed": "Save failed",
+      "lastUpdated": "Last updated",
+      "by": "by",
+      "loading": "Loading…",
+      "errorLoad": "Could not load operational settings from the backend."
+    }
+  },
+  "gallery": {
+    "title": "Gallery",
+    "heading": "Community Gallery",
+    "description": "A curated selection of community astrophotography results.",
+    "description_with_count": "{{count}} published image from the community.",
+    "description_with_count_plural": "{{count}} published images from the community.",
+    "signInToPublish": "Sign in to publish",
+    "galleryEmpty": "Gallery is empty",
+    "emptyDescription": "Published sessions will appear here. Open a completed session and tap the yellow star to share it.",
+    "openFullView": "Open {{name}} in full view",
+    "by": "by",
+    "astronomer": "Astronomer",
+    "downloadHint": "Request high-resolution download",
+    "downloading": "Preparing download…",
+    "downloadReady": "Your download is ready",
+    "downloadError": "Could not prepare download",
+    "enterEmail": "Enter your email to receive the download link",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "sendLink": "Send download link",
+    "downloadingSession": "Preparing download for {{name}}",
+    "lightbox": {
+      "of": "of",
+      "close": "Close",
+      "previous": "Previous",
+      "next": "Next",
+      "download": "Download",
+      "pipeline": "Pipeline",
+      "exif": "EXIF",
+      "object": "Object",
+      "frames": "Frames",
+      "integration": "Integration",
+      "filter": "Filter",
+      "date": "Date",
+      "author": "Author"
+    }
+  },
+  "learn": {
+    "toc": {
+      "frameTypes": "Frame types",
+      "reuseCheatSheet": "Reuse cheat sheet",
+      "pipeline": "Pipeline",
+      "beginnerTips": "Beginner tips"
+    },
+    "hero": {
+      "badge": "Learn the basics",
+      "title": "Astrophotography, decoded.",
+      "description": "A short guide to the frames you should be capturing and what AstroStack actually does to them — written for first-time astrophotographers."
+    },
+    "primer": {
+      "kicker": "Why calibration matters",
+      "title": "A single frame is mostly noise.",
+      "description": "Camera sensors generate thermal noise, vignette toward the edges and accumulate dust on every optical surface. Calibration frames measure those defects so the stacker can subtract them — and stacking many lights averages out the random noise the calibration can't remove."
+    },
+    "frames": {
+      "kicker": "The five frame types",
+      "title": "Every astrophoto is a stack of these.",
+      "description": "Lights are your data. Darks, flats, dark-flats and bias are calibration frames that tell the stacker how to clean each light up.",
+      "singleUse": "Single-use",
+      "reusable": "Reusable",
+      "longTermReusable": "Long-term reusable",
+      "count": "Count",
+      "exposure": "Exposure",
+      "notes": "Notes",
+      "light": {
+        "name": "Light frames",
+        "purpose": "The actual photons from your target — every faint nebula tendril or galaxy arm comes from these subs.",
+        "count": "30 – 100+ subs",
+        "exposure": "Longest exposure your mount can track without star trails (60 s – 5 min typical).",
+        "notes": "Captured during the imaging session itself. More integration time = cleaner final image."
+      },
+      "dark": {
+        "name": "Dark frames",
+        "purpose": "Map the thermal signal and hot pixels generated by the sensor when it heats up during long exposures.",
+        "count": "20 – 40 subs",
+        "exposure": "Identical exposure, ISO/gain and sensor temperature as your lights, lens cap on.",
+        "notes": "Build a dark library you can reuse across sessions, but only while temperature, exposure and gain stay matched."
+      },
+      "flat": {
+        "name": "Flat frames",
+        "purpose": "Reveal vignetting, dust motes and uneven illumination across the optical train so they can be divided out.",
+        "count": "20 – 30 subs",
+        "exposure": "Short exposure aimed at a uniform light source (sky panel, T-shirt method, dawn sky).",
+        "notes": "Must be captured without disturbing focus, camera rotation or filter — recapture if anything in the imaging train moves."
+      },
+      "darkFlat": {
+        "name": "Dark-flat frames",
+        "purpose": "Calibrate the bias and read noise specifically present in your flat frames.",
+        "count": "20 – 30 subs",
+        "exposure": "Same exposure as your flats, lens cap on. Often replaces bias frames for CMOS sensors.",
+        "notes": "Only valid alongside the flat library they were taken with — store them together."
+      },
+      "bias": {
+        "name": "Bias / Offset frames",
+        "purpose": "Capture the read-out noise floor of the sensor — the signal present even in a zero-second exposure.",
+        "count": "50 – 100 subs",
+        "exposure": "The shortest exposure your camera supports, lens cap on.",
+        "notes": "Build once per camera/gain combination and reuse for months. Modern CMOS workflows often skip bias in favour of dark-flats."
+      }
+    },
+    "reuse": {
+      "kicker": "Cheat sheet",
+      "title": "What invalidates a calibration library?",
+      "description": "The good news: most calibration frames can be reused for weeks or months. The bad news: a handful of changes silently make them useless, so the rules below are worth memorising.",
+      "library": "Library",
+      "invalidatedBy": "Invalidated by",
+      "shelfLife": "Typical shelf life",
+      "lights": {
+        "library": "Lights",
+        "invalidatedBy": "Always single-use — they are the data of one specific session.",
+        "shelfLife": "One target, one session."
+      },
+      "darks": {
+        "library": "Darks",
+        "invalidatedBy": "Sensor temperature drift, exposure change, ISO/gain change.",
+        "shelfLife": "Months, if temperature is regulated (cooled cameras)."
+      },
+      "flats": {
+        "library": "Flats",
+        "invalidatedBy": "Focus shift, camera rotation, filter swap, dust motes moving.",
+        "shelfLife": "Single imaging-train configuration, typically one night."
+      },
+      "darkFlats": {
+        "library": "Dark-flats",
+        "invalidatedBy": "Anything that invalidates the flats they belong to.",
+        "shelfLife": "Tied to their flat library."
+      },
+      "bias": {
+        "library": "Bias / Offset",
+        "invalidatedBy": "Camera or gain change.",
+        "shelfLife": "Long-term — months to years per camera/gain pair."
+      }
+    },
+    "pipeline": {
+      "kicker": "Inside the pipeline",
+      "title": "What AstroStack does to your stack.",
+      "description": "Each session runs through these ten steps in order. You can resume from any failed step without re-running the ones that already succeeded.",
+      "steps": {
+        "rawConversion": {
+          "title": "RAW → FITS conversion",
+          "engine": "AstroStack",
+          "description": "Decodes camera RAW files (CR2, NEF, ARW, DNG…) into the scientific FITS format expected by every downstream tool, preserving the full bit depth of the sensor."
+        },
+        "preprocessing": {
+          "title": "Calibration & stacking",
+          "engine": "Siril (headless)",
+          "description": "Builds master darks, flats and bias from your calibration frames, applies them to every light, registers the subs on the same star pattern and stacks them to dramatically improve the signal-to-noise ratio."
+        },
+        "plateSolving": {
+          "title": "Plate solving",
+          "engine": "ASTAP",
+          "description": "Identifies the exact patch of sky your image covers by matching star positions against an astrometric catalog. Coordinates and orientation are written into the FITS header and used by later steps."
+        },
+        "gradientRemoval": {
+          "title": "Background gradient removal",
+          "engine": "GraXpert",
+          "description": "Detects and subtracts the smooth light-pollution and Moon glow gradients that wash out faint structures, leaving a flat, neutral background to stretch from."
+        },
+        "stretchColor": {
+          "title": "Stretch & colour calibration",
+          "engine": "Siril",
+          "description": "Re-maps the linear sensor data into a viewable image: faint nebulosity becomes visible, while photometric colour calibration uses catalog star colours to set a scientifically neutral white balance."
+        },
+        "denoise": {
+          "title": "AI noise reduction",
+          "engine": "Cosmic Clarity",
+          "description": "A neural network trained on astrophotography data smooths out background grain without softening real stars or nebula details — far gentler than generic photo denoisers."
+        },
+        "sharpen": {
+          "title": "AI sharpening / deconvolution",
+          "engine": "Cosmic Clarity",
+          "description": "Recovers detail lost to seeing, focus and tracking imperfections. Stars become tighter and structures crisper without amplifying noise."
+        },
+        "superResolution": {
+          "title": "AI super-resolution (2×)",
+          "engine": "Cosmic Clarity",
+          "description": "Doubles the linear resolution of the frame using a model trained to hallucinate plausible high-frequency detail — useful for small targets or short focal lengths."
+        },
+        "starSeparation": {
+          "title": "Star separation",
+          "engine": "Cosmic Clarity (Dark Star)",
+          "description": "Splits the image into a starless layer and a stars-only layer so each can be processed independently. This is the trick behind most modern nebula renderings where stars feel small but the gas glows."
+        },
+        "export": {
+          "title": "Export",
+          "engine": "AstroStack",
+          "description": "Writes the final master to FITS (for re-processing), TIFF (for editing) and JPEG (for sharing), and renders a thumbnail for the gallery."
+        }
+      }
+    },
+    "tips": {
+      "kicker": "Field notes",
+      "title": "Six habits that will save you a night.",
+      "description": "The advice astrophotographers wish someone had handed them on day one.",
+      "focus": {
+        "title": "Nail focus first",
+        "body": "A Bahtinov mask takes thirty seconds and is the single biggest jump in star quality you can get for free."
+      },
+      "dither": {
+        "title": "Dither between subs",
+        "body": "Small random offsets between exposures let stacking reject hot pixels and walking noise — your darks do less work and the result is cleaner."
+      },
+      "captureOrder": {
+        "title": "Capture order",
+        "body": "Lights first, then flats before you tear down the rig (so the optical train is undisturbed). Darks and bias can be shot any time the sensor temperature matches."
+      },
+      "matchCalibration": {
+        "title": "Match calibration to lights",
+        "body": "Same exposure, same ISO/gain, same temperature for darks. Same focus and rotation for flats. Mismatches add noise instead of removing it."
+      },
+      "brightTargets": {
+        "title": "Start with bright targets",
+        "body": "M42 (Orion), M31 (Andromeda), M45 (Pleiades) and the Veil Nebula forgive short integration times and tracking errors — perfect first projects."
+      },
+      "profiles": {
+        "title": "Profiles over fiddling",
+        "body": "Pick a Quality preset and let the pipeline run end-to-end before you start tuning. Compare runs, then adjust one parameter at a time."
+      }
+    },
+    "cta": {
+      "title": "Ready for your first stack?",
+      "description": "Browse what other astronomers have published, or sign in and run your own subs through the pipeline.",
+      "getStarted": "Get started",
+      "browseGallery": "Browse the gallery",
+      "help": "Stuck? Open an issue on GitHub and we'll help."
+    }
+  },
+  "profile": {
+    "account": "Account",
+    "yourProfile": "Your profile",
+    "manageAccount": "Manage account",
+    "observationSites": "Observation sites",
+    "whereYouObserve": "Where you observe from",
+    "addSite": "Add a site",
+    "noSitesYet": "No observation sites yet — add your first to plan tonight.",
+    "watchlist": "Watchlist",
+    "objectsYouFollow": "Objects you follow",
+    "followNew": "Follow new",
+    "noFollowedYet": "No followed objects yet — pick one to track when it's high in the sky.",
+    "siteDeleted": "Site deleted",
+    "couldNotDeleteSite": "Could not delete site",
+    "unfollowed": "Unfollowed",
+    "couldNotUnfollow": "Could not unfollow"
+  },
+  "sessionPrep": {
+    "kicker": "Planning",
+    "title": "Plan your next imaging night",
+    "subtitle": "Pick a location, check the night, and discover the best deep-sky targets — like a travel agency for the cosmos.",
+    "signInBanner": "Sign in to save your sites and follow your favourite targets.",
+    "signIn": "Sign in",
+    "pickLocation": "Pick a location above to see tonight's best targets.",
+    "recommendedTargets": "Recommended targets",
+    "objectsAbove": "{{count}} object above {{minAltitude}}°",
+    "objectsAbove_plural": "{{count}} objects above {{minAltitude}}°",
+    "loadingError": "Something went wrong while computing recommendations. Try a different date or lower the minimum altitude.",
+    "noTargets": "No targets reach {{minAltitude}}° tonight. Try lowering the minimum altitude or picking another date.",
+    "errorToast": "Could not compute recommendations",
+    "weatherErrorToast": "Weather forecast unavailable"
+  },
+  "profileEditor": {
+    "kicker": "Profiles",
+    "title": "Processing Profiles",
+    "description": "Custom processing pipelines — build, share, and import recipes for any target.",
+    "community": "Community",
+    "communityHint": "Browse profiles shared by other users",
+    "import": "Import",
+    "importHint": "Import a .astroprofile.json file",
+    "export": "Export",
+    "exportHint": "Export the selected profile as a JSON file",
+    "newProfile": "New profile",
+    "count_one": "{{count}} Profile",
+    "count_other": "{{count}} Profiles",
+    "editPrefix": "Edit:",
+    "newProfileForm": "New profile",
+    "close": "Close",
+    "duplicateEdit": "Duplicate & Edit",
+    "save": "Save",
+    "readOnly": "Read-only — this profile is shared by another user. Duplicate it to customise.",
+    "unsavedChanges": "You have unsaved changes",
+    "shareToggle": "Share with other users",
+    "shareHint": "Other registered users will see this profile (read-only) and can duplicate it.",
+    "selectToEdit": "Select a profile to edit",
+    "or": "or",
+    "createNew": "create a new one",
+    "importFile": "import a file",
+    "profileCreated": "Profile created",
+    "profileSaved": "Profile saved",
+    "saveFailed": "Failed to save profile",
+    "imported": "Imported \"{{name}}\"",
+    "importFailed": "Import failed",
+    "shared": "Profile shared with other users",
+    "unshared": "Profile is no longer shared",
+    "shareUpdateFailed": "Failed to update sharing",
+    "exported": "Exported \"{{name}}\"",
+    "exportFailed": "Export failed"
+  },
+  "sessionDetail": {
+    "loading": "Loading session…",
+    "deleteConfirm": "Delete session",
+    "deleteMessage": "Delete \"{{name}}\"? This cannot be undone.",
+    "deleteLabel": "Delete",
+    "resetConfirm": "Reset session status",
+    "resetMessage": "Reset \"{{name}}\" back to Ready? Use this only if the pipeline crashed and the session is stuck in Processing.",
+    "resetLabel": "Reset to Ready",
+    "calibration": "Calibration",
+    "calibrationHint": "Add darks / flats / dark-flats",
+    "resetToReady": "Reset to Ready",
+    "resetting": "Resetting…",
+    "resetHint": "Reset stuck session to Ready",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "deleteHint": "Delete session",
+    "cancelBeforeDelete": "Cancel or reset the session before deleting."
+  },
+  "liveSession": {
+    "live": "LIVE",
+    "idle": "IDLE",
+    "startStacking": "Start stacking",
+    "pause": "Pause",
+    "terminate": "Terminate",
+    "terminateHint": "Close the session and upload darks / flats",
+    "pushFrame": "Push frame",
+    "pushFramePending": "Push frame ({{name}})",
+    "noFrameStacked": "No frame stacked yet.",
+    "pushHint": "Push a FITS or RAW frame to seed the stack — the preview will appear here.",
+    "stacked": "Stacked",
+    "rejected": "Rejected",
+    "generation": "Generation",
+    "activity": "Activity",
+    "waitingActivity": "Waiting for activity…",
+    "armed": "Live stacking armed",
+    "paused": "Live stacking paused",
+    "startFailed": "Start failed",
+    "uploadFailed": "Upload failed",
+    "frameAccepted": "✓ Frame {{index}} stacked (n={{count}})",
+    "frameAcceptedFwhm": "✓ Frame {{index}} stacked (n={{count}}) · FWHM {{fwhm}}px",
+    "frameRejected": "✗ Frame {{index}} rejected: {{message}}",
+    "frameStacked": "Stacked frame · gen {{gen}}"
+  },
+  "adminGallery": {
+    "kicker": "Admin",
+    "title": "Gallery Analytics",
+    "description": "Download activity for gallery images. Data covers the last {{days}} days.",
+    "period7": "7 days",
+    "period30": "30 days",
+    "period90": "90 days",
+    "totalDownloads": "Total downloads",
+    "uniqueRequestors": "Unique requestors",
+    "tiffDownloads": "TIFF downloads",
+    "fitsDownloads": "FITS downloads",
+    "downloadsOverTime": "Downloads over time",
+    "formatSplit": "Format split",
+    "topSessions": "Top sessions by downloads",
+    "downloadLog": "Download log"
+  },
+  "authCallback": {
+    "signingIn": "Signing you in…"
+  }
+}

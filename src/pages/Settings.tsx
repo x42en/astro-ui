@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   FolderOpen,
@@ -130,6 +131,7 @@ function NumberInput({
 type ConnectionState = 'idle' | 'checking' | 'ok' | 'error';
 
 function ConnectionSettings() {
+  const { t } = useTranslation();
   const store = useSettingsStore();
   const { addToast } = useUiStore();
 
@@ -153,7 +155,7 @@ function ConnectionSettings() {
 
   const handleSave = () => {
     store.update(form);
-    addToast({ variant: 'success', title: 'Connection settings saved' });
+    addToast({ variant: 'success', title: t('settings.connection.saved') });
     setDirty(false);
   };
 
@@ -161,7 +163,7 @@ function ConnectionSettings() {
     store.reset();
     const s = useSettingsStore.getState();
     setForm({ apiBaseUrl: s.apiBaseUrl, wsBaseUrl: s.wsBaseUrl });
-    addToast({ variant: 'info', title: 'Connection settings reset to defaults' });
+    addToast({ variant: 'info', title: t('settings.connection.reset') });
     setDirty(false);
   };
 
@@ -172,23 +174,23 @@ function ConnectionSettings() {
     try {
       await api.get('/health', { timeout: 5000 });
       setConnectionState('ok');
-      setConnectionMessage('Backend reachable and responding');
+      setConnectionMessage(t('settings.connection.ok'));
     } catch (err: unknown) {
       setConnectionState('error');
       const e = err as { message?: string };
-      setConnectionMessage(e?.message ?? 'Could not reach the backend');
+      setConnectionMessage(e?.message ?? t('settings.connection.error'));
     }
   };
 
   return (
     <SettingsSection
       icon={Server}
-      title="Connection"
-      description="Backend API endpoint and WebSocket URL — stored locally in this browser"
+      title={t('settings.connection.title')}
+      description={t('settings.connection.description')}
     >
       <FieldRow
-        label="API Base URL"
-        hint="Root URL of the Astro-Stack REST API, including the version path"
+        label={t('settings.connection.apiBaseUrl')}
+        hint={t('settings.connection.apiBaseUrlHint')}
       >
         <div className="flex gap-2">
           <TextInput
@@ -212,7 +214,7 @@ function ConnectionSettings() {
             ) : (
               <Wifi size={12} />
             )}
-            Test
+            {t('settings.connection.test')}
           </button>
         </div>
         {connectionMessage && (
@@ -226,8 +228,8 @@ function ConnectionSettings() {
       <div className="h-px bg-space-border/60" />
 
       <FieldRow
-        label="WebSocket URL"
-        hint="Used for real-time job progress updates"
+        label={t('settings.connection.webSocketUrl')}
+        hint={t('settings.connection.webSocketHint')}
       >
         <TextInput
           value={form.wsBaseUrl}
@@ -240,7 +242,7 @@ function ConnectionSettings() {
       {dirty && (
         <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-muted border border-warning/30 rounded-md text-xs text-warning">
           <AlertCircle size={13} />
-          Unsaved changes
+          {t('settings.connection.unsavedChanges')}
         </div>
       )}
 
@@ -251,7 +253,7 @@ function ConnectionSettings() {
           className="flex items-center gap-1.5 px-3 py-2 text-xs text-text-muted hover:text-text-secondary border border-space-border hover:border-space-border-light rounded-md transition-all"
         >
           <RotateCcw size={12} />
-          Reset defaults
+          {t('settings.connection.resetDefaults')}
         </button>
         <button
           type="button"
@@ -260,7 +262,7 @@ function ConnectionSettings() {
           className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-md transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
         >
           <Save size={13} />
-          Save
+          {t('settings.connection.save')}
         </button>
       </div>
     </SettingsSection>
@@ -270,10 +272,10 @@ function ConnectionSettings() {
 // ── Operational section (backend DB) ──────────────────────────────────────
 
 function OperationalSettings() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { addToast } = useUiStore();
   const isAdmin = useIsAdmin();
-  // In disabled auth mode every user is implicitly an admin.
   const canEdit = isAdmin || AUTH_MODE === 'disabled';
 
   const { data, isLoading, isError } = useQuery<AppSettingsRemote>({
@@ -284,7 +286,6 @@ function OperationalSettings() {
   const [form, setForm] = useState<AppSettingsUpdate | null>(null);
   const [dirty, setDirty] = useState(false);
 
-  // Initialise form when query data arrives
   useEffect(() => {
     if (data && form === null) {
       setForm({
@@ -297,7 +298,6 @@ function OperationalSettings() {
     }
   }, [data, form]);
 
-  // Track dirty state vs persisted data
   useEffect(() => {
     if (!data || !form) { setDirty(false); return; }
     setDirty(
@@ -313,11 +313,11 @@ function OperationalSettings() {
     mutationFn: updateRemoteSettings,
     onSuccess: (updated) => {
       qc.setQueryData(['app-settings'], updated);
-      addToast({ variant: 'success', title: 'Operational settings saved' });
+      addToast({ variant: 'success', title: t('settings.processingDefaults.saved') });
       setDirty(false);
     },
     onError: (err) => {
-      addToast({ variant: 'error', title: 'Save failed', message: err.message });
+      addToast({ variant: 'error', title: t('settings.processingDefaults.saveFailed'), message: err.message });
     },
   });
 
@@ -345,7 +345,7 @@ function OperationalSettings() {
     return (
       <div className="bg-space-surface border border-space-border rounded-lg p-8 flex items-center justify-center gap-2 text-text-muted text-sm">
         <Loader2 size={16} className="animate-spin" />
-        Loading…
+        {t('settings.processingDefaults.loading')}
       </div>
     );
   }
@@ -354,7 +354,7 @@ function OperationalSettings() {
     return (
       <div className="bg-space-surface border border-space-border rounded-lg p-8 flex items-center justify-center gap-2 text-error text-sm">
         <AlertCircle size={16} />
-        Could not load operational settings from the backend.
+        {t('settings.processingDefaults.errorLoad')}
       </div>
     );
   }
@@ -370,12 +370,12 @@ function OperationalSettings() {
     <>
       <SettingsSection
         icon={FolderOpen}
-        title="Inbox &amp; AI"
-        description="Server-side paths and Ollama AI configuration — shared across all instances"
+        title={t('settings.inboxAi.title')}
+        description={t('settings.inboxAi.description')}
       >
         <FieldRow
-          label="Inbox Path"
-          hint="Folder watched by the backend for incoming session frames (matches INBOX_PATH env var)"
+          label={t('settings.inboxAi.inboxPath')}
+          hint={t('settings.inboxAi.inboxPathHint')}
         >
           <TextInput
             value={form.inbox_path ?? ''}
@@ -389,8 +389,8 @@ function OperationalSettings() {
         <div className="h-px bg-space-border/60" />
 
         <FieldRow
-          label="Ollama URL"
-          hint="Base URL of the Ollama instance used for AI-based gradient removal"
+          label={t('settings.inboxAi.ollamaUrl')}
+          hint={t('settings.inboxAi.ollamaUrlHint')}
         >
           <TextInput
             value={form.ollama_url ?? ''}
@@ -404,8 +404,8 @@ function OperationalSettings() {
         <div className="h-px bg-space-border/60" />
 
         <FieldRow
-          label="Ollama Model"
-          hint="Model name used for inference requests to Ollama"
+          label={t('settings.inboxAi.ollamaModel')}
+          hint={t('settings.inboxAi.ollamaModelHint')}
         >
           <TextInput
             value={form.ollama_model ?? ''}
@@ -419,12 +419,12 @@ function OperationalSettings() {
 
       <SettingsSection
         icon={Cpu}
-        title="Processing Defaults"
-        description="Default pipeline behaviour for new processing jobs — shared across all instances"
+        title={t('settings.processingDefaults.title')}
+        description={t('settings.processingDefaults.description')}
       >
         <FieldRow
-          label="Max retries"
-          hint="Maximum number of retry attempts per pipeline step on failure"
+          label={t('settings.processingDefaults.maxRetries')}
+          hint={t('settings.processingDefaults.maxRetriesHint')}
         >
           <NumberInput
             value={form.pipeline_max_retries ?? 3}
@@ -438,8 +438,8 @@ function OperationalSettings() {
         <div className="h-px bg-space-border/60" />
 
         <FieldRow
-          label="Session stability delay"
-          hint="Seconds to wait after the last file change before auto-triggering processing"
+          label={t('settings.processingDefaults.stabilityDelay')}
+          hint={t('settings.processingDefaults.stabilityDelayHint')}
         >
           <div className="flex items-center gap-2">
             <NumberInput
@@ -449,21 +449,21 @@ function OperationalSettings() {
               max={300}
               disabled={!canEdit}
             />
-            <span className="text-sm text-text-muted">seconds</span>
+            <span className="text-sm text-text-muted">{t('settings.processingDefaults.seconds')}</span>
           </div>
         </FieldRow>
 
         {!canEdit && (
           <div className="flex items-center gap-2 px-4 py-2.5 bg-space-elevated border border-space-border rounded-md text-xs text-text-muted">
             <Lock size={12} />
-            Admin role required to edit operational settings
+            {t('settings.processingDefaults.adminRequired')}
           </div>
         )}
 
         {dirty && canEdit && (
           <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-muted border border-warning/30 rounded-md text-xs text-warning">
             <AlertCircle size={13} />
-            Unsaved changes — these will apply immediately to all running instances
+            {t('settings.processingDefaults.unsavedChanges')}
           </div>
         )}
 
@@ -476,7 +476,7 @@ function OperationalSettings() {
               className="flex items-center gap-1.5 px-3 py-2 text-xs text-text-muted hover:text-text-secondary border border-space-border hover:border-space-border-light rounded-md transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <RotateCcw size={12} />
-              Discard
+              {t('settings.processingDefaults.discard')}
             </button>
             <button
               type="button"
@@ -485,7 +485,7 @@ function OperationalSettings() {
               className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-md transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
             >
               {mutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-              Save
+              {t('settings.processingDefaults.save')}
             </button>
           </div>
         )}
@@ -494,9 +494,9 @@ function OperationalSettings() {
       {data && (
         <div className="flex items-center gap-1.5 text-xs text-text-muted justify-end">
           <Clock size={11} />
-          Last updated {updatedAt}
+          {t('settings.processingDefaults.lastUpdated')} {updatedAt}
           {data.updated_by_user_id && (
-            <span className="font-mono text-text-muted/70">by {data.updated_by_user_id}</span>
+            <span className="font-mono text-text-muted/70">{t('settings.processingDefaults.by')} {data.updated_by_user_id}</span>
           )}
         </div>
       )}
@@ -507,13 +507,14 @@ function OperationalSettings() {
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Config</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Settings</h1>
+        <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">{t('settings.title')}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{t('settings.heading')}</h1>
         <p className="text-base text-text-secondary mt-2 leading-relaxed">
-          Configure connection parameters and server-side processing defaults.
+          {t('settings.description')}
         </p>
       </div>
 

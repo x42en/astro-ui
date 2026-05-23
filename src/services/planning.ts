@@ -1,4 +1,5 @@
 import api from '../lib/axios';
+import { useSettingsStore } from '../store/settingsStore';
 import type {
   GeoLocation,
   ObjectForecast,
@@ -74,4 +75,14 @@ export async function getObjectForecast(
       { params: p },
     )
   ).data;
+}
+
+/**
+ * Build the URL for a catalog object's preview thumbnail. The backend
+ * resolves and caches the image, so the browser can fetch it directly via
+ * a plain ``<img src>`` — no axios call needed.
+ */
+export function getObjectThumbnailUrl(catalogId: string): string {
+  const base = useSettingsStore.getState().apiBaseUrl;
+  return `${base}/planning/object/${encodeURIComponent(catalogId)}/thumbnail`;
 }

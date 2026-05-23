@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Download, Star, Telescope, LogIn } from 'lucide-react';
 import { listGallery, type GalleryItem } from '../services/gallery';
 import { EmailDownloadModal } from '../components/gallery/EmailDownloadModal';
@@ -17,6 +18,7 @@ function formatDate(iso: string | null): string {
 }
 
 export function Gallery() {
+  const { t } = useTranslation();
   const [downloadTarget, setDownloadTarget] = useState<GalleryItem | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const isAuthenticated = useIsAuthenticated();
@@ -32,12 +34,12 @@ export function Gallery() {
       <div className="mb-8">
         <div className="flex items-start justify-between gap-6">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">Gallery</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Community Gallery</h1>
+            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-accent mb-1.5">{t('gallery.title')}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{t('gallery.heading')}</h1>
             <p className="text-base text-text-secondary mt-2 leading-relaxed">
               {items.length > 0
-                ? `${items.length} published image${items.length !== 1 ? 's' : ''} from the community.`
-                : 'A curated selection of community astrophotography results.'}
+                ? t('gallery.description_with_count', { count: items.length })
+                : t('gallery.description')}
             </p>
           </div>
           {!isAuthenticated && (
@@ -46,7 +48,7 @@ export function Gallery() {
               className="flex-shrink-0 mt-1 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-medium bg-primary/15 border border-primary/30 text-primary hover:bg-primary/20 transition-colors"
             >
               <LogIn size={14} />
-              <span>Sign in to publish</span>
+              <span>{t('gallery.signInToPublish')}</span>
             </Link>
           )}
         </div>
@@ -100,13 +102,14 @@ interface GalleryCardProps {
 }
 
 function GalleryCard({ item, onOpen, onDownload }: GalleryCardProps) {
+  const { t } = useTranslation();
   return (
     <figure className="break-inside-avoid mb-4 group relative rounded-lg overflow-hidden bg-space-elevated/40 border border-space-border hover:border-space-border-hover transition-all">
       <button
         type="button"
         onClick={onOpen}
         className="block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-        aria-label={`Open ${item.name} in full view`}
+        aria-label={t('gallery.openFullView', { name: item.name })}
       >
         <img
           src={item.preview_url}
@@ -116,12 +119,10 @@ function GalleryCard({ item, onOpen, onDownload }: GalleryCardProps) {
         />
       </button>
 
-      {/* Star badge */}
       <div className="absolute top-2 right-2 hud-glass rounded-full p-1.5 text-yellow-400 pointer-events-none">
         <Star size={12} className="fill-yellow-400" />
       </div>
 
-      {/* Bottom overlay */}
       <figcaption className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 via-black/55 to-transparent pointer-events-none">
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
@@ -134,7 +135,7 @@ function GalleryCard({ item, onOpen, onDownload }: GalleryCardProps) {
               </p>
             )}
             <p className="text-[11px] text-white/55 mt-0.5 truncate">
-              by {item.author_name ?? 'Astronomer'}
+              {t('gallery.by')} {item.author_name ?? t('gallery.astronomer')}
               {item.acquired_at && (
                 <>
                   {' · '}
@@ -150,8 +151,8 @@ function GalleryCard({ item, onOpen, onDownload }: GalleryCardProps) {
               onDownload();
             }}
             className="pointer-events-auto flex-shrink-0 hud-glass rounded-md p-2 text-white/85 hover:text-white opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
-            title="Request high-resolution download"
-            aria-label="Request high-resolution download"
+            title={t('gallery.downloadHint')}
+            aria-label={t('gallery.downloadHint')}
           >
             <Download size={14} />
           </button>
@@ -162,17 +163,17 @@ function GalleryCard({ item, onOpen, onDownload }: GalleryCardProps) {
 }
 
 function EmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="w-16 h-16 rounded-full bg-space-elevated border border-space-border flex items-center justify-center mb-4">
         <Telescope size={24} className="text-text-muted" />
       </div>
       <h3 className="text-base font-semibold text-text-primary">
-        Gallery is empty
+        {t('gallery.galleryEmpty')}
       </h3>
       <p className="text-sm text-text-muted mt-1 max-w-md">
-        Published sessions will appear here. Open a completed session and tap
-        the yellow star to share it.
+        {t('gallery.emptyDescription')}
       </p>
     </div>
   );

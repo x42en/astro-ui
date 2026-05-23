@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — AstroStack</title>
+  <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+  <style>
+    /* ── Design tokens (mirrors src/styles/theme.css) ──────────────────── */
+    :root {
+      --space-bg:           rgb(8,8,8);
+      --space-surface:      rgb(17,17,17);
+      --space-elevated:     rgb(26,26,26);
+      --space-border:       rgb(37,37,37);
+      --space-border-light: rgb(51,51,51);
+
+      --primary:            rgb(99,102,241);
+      --primary-hover:      rgb(129,140,248);
+      --primary-ring:       rgba(99,102,241,0.35);
+      --primary-muted:      rgba(99,102,241,0.12);
+
+      --accent:             rgb(34,211,238);
+
+      --error:              rgb(239,68,68);
+      --error-bg:           rgba(239,68,68,0.10);
+      --error-border:       rgba(239,68,68,0.30);
+
+      --text-primary:       rgb(239,239,239);
+      --text-secondary:     rgb(136,136,136);
+      --text-muted:         rgb(85,85,85);
+
+      --radius:             6px;
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--space-bg);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout: two-column on ≥768 px ─────────────────────────────────── */
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .page { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Brand panel (left column) ──────────────────────────────────────── */
+    .brand-panel {
+      display: none;
+      position: relative;
+      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+    }
+    @media (min-width: 768px) {
+      .brand-panel { display: flex; }
+    }
+    .brand-panel__bg-gradient {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at top left, rgba(99,102,241,0.18), transparent 55%),
+        radial-gradient(ellipse at bottom right, rgba(34,211,238,0.14), transparent 55%);
+    }
+    .brand-panel__bg-photo {
+      position: absolute;
+      inset: 0;
+      background: url('/background.jpg') center/cover no-repeat;
+      opacity: 0.25;
+    }
+    .brand-panel__bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(8,8,8,0.80), rgba(8,8,8,0.60), rgba(8,8,8,0.95));
+    }
+    .brand-panel__content {
+      position: relative;
+      z-index: 1;
+      max-width: 28rem;
+      text-align: center;
+    }
+    .brand-panel__content h1 {
+      font-size: 1.875rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+    .brand-panel__content p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Logo mark (inline SVG replica) ────────────────────────────────── */
+    .logo-mark {
+      display: block;
+      margin: 0 auto 1.5rem;
+      color: var(--text-primary);
+    }
+    .logo-mark--sm {
+      width: 56px;
+      height: 56px;
+    }
+    .logo-mark--lg {
+      width: 96px;
+      height: 96px;
+    }
+
+    /* ── Form panel (right column) ──────────────────────────────────────── */
+    .form-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .form-card {
+      width: 100%;
+      max-width: 24rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Mobile header (hidden on desktop) */
+    .mobile-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      text-align: center;
+    }
+    @media (min-width: 768px) {
+      .mobile-header { display: none; }
+    }
+    .mobile-header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    /* Heading block */
+    .heading-block { display: flex; flex-direction: column; gap: 0.375rem; }
+    .heading-block h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .heading-block p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Form */
+    form { display: flex; flex-direction: column; gap: 1rem; }
+
+    .field { display: flex; flex-direction: column; gap: 0.375rem; }
+
+    .field label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .field__input-wrap {
+      position: relative;
+    }
+    .field__icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+    .field input {
+      width: 100%;
+      padding: 0.625rem 0.75rem 0.625rem 2.25rem;
+      background: var(--space-bg);
+      border: 1px solid var(--space-border);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input::placeholder { color: var(--text-muted); }
+    .field input:focus {
+      border-color: rgba(99,102,241,0.60);
+      box-shadow: 0 0 0 3px var(--primary-ring);
+    }
+
+    /* Error alert */
+    .alert-error {
+      border: 1px solid var(--error-border);
+      background: var(--error-bg);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      color: var(--error);
+    }
+
+    /* Submit button */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.625rem 1rem;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    .btn-primary svg { flex-shrink: 0; }
+
+    /* Divider row */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-top: 1px solid var(--space-border);
+    }
+
+    /* Footer link */
+    .footer-link {
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    .footer-link a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-link a:hover { color: var(--text-secondary); }
+    .footer-link a span {
+      color: var(--primary);
+    }
+
+    /* Accent gradient for wordmark */
+    .text-gradient {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* AuthService template variables — these will be replaced by the engine.
+       Kept here as comments for documentation. */
+    /*
+      {{ .Error }}       — non-empty string if credentials were invalid
+      {{ .CSRF }}        — hidden CSRF input rendered by the template engine
+      {{ .LoginURL }}    — form action URL
+      {{ .RegisterURL }} — link to the register page
+    */
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ── Brand panel ─────────────────────────────────────────────────── -->
+    <aside class="brand-panel" aria-hidden="true">
+      <div class="brand-panel__bg-gradient"></div>
+      <div class="brand-panel__bg-photo"></div>
+      <div class="brand-panel__bg-overlay"></div>
+      <div class="brand-panel__content">
+        <svg class="logo-mark logo-mark--lg" viewBox="0 0 64 64" aria-hidden="true">
+          <ellipse cx="32" cy="32" rx="29" ry="10.5" fill="none" stroke="currentColor"
+            stroke-width="2.6" transform="rotate(-28 32 32)" />
+          <circle cx="57.6" cy="18.4" r="2.4" fill="currentColor" />
+          <path d="M32 12 L35.2 28.8 L52 32 L35.2 35.2 L32 52 L28.8 35.2 L12 32 L28.8 28.8 Z"
+            fill="currentColor" />
+        </svg>
+        <h1>Process the night sky.</h1>
+        <p>
+          AstroStack turns raw frames into finished images with a GPU-accelerated
+          pipeline, profile presets, and a community of shared recipes.
+        </p>
+      </div>
+    </aside>
+
+    <!-- ── Form panel ──────────────────────────────────────────────────── -->
+    <main class="form-panel">
+      <div class="form-card">
+
+        <!-- Mobile logo (hidden ≥md) -->
+        <div class="mobile-header">
+          <svg class="logo-mark logo-mark--sm" viewBox="0 0 64 64" aria-hidden="true">
+            <ellipse cx="32" cy="32" rx="29" ry="10.5" fill="none" stroke="currentColor"
+              stroke-width="2.6" transform="rotate(-28 32 32)" />
+            <circle cx="57.6" cy="18.4" r="2.4" fill="currentColor" />
+            <path d="M32 12 L35.2 28.8 L52 32 L35.2 35.2 L32 52 L28.8 35.2 L12 32 L28.8 28.8 Z"
+              fill="currentColor" />
+          </svg>
+          <h1>Welcome to Astro<span class="text-gradient">Stack</span></h1>
+        </div>
+
+        <!-- Heading -->
+        <div class="heading-block">
+          <h2>Sign in</h2>
+          <p>Sign in or create an account to publish your sessions.</p>
+        </div>
+
+        <!-- Login form -->
+        <!-- ACTION: replace with {{ .LoginURL }} or your AuthService action -->
+        <form method="POST" action="{{ .LoginURL }}" novalidate>
+
+          <!-- CSRF token — replace with {{ .CSRF }} -->
+          {{ .CSRF }}
+
+          <!-- Error message -->
+          <!-- Conditionally rendered by AuthService: {{ if .Error }} … {{ end }} -->
+          {{ if .Error }}
+          <div class="alert-error" role="alert">{{ .Error }}</div>
+          {{ end }}
+
+          <div class="field">
+            <label for="email">Email address</label>
+            <div class="field__input-wrap">
+              <svg class="field__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="1" y="3" width="14" height="10" rx="2"/>
+                <path d="M1 5l7 5 7-5"/>
+              </svg>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                required
+                placeholder="you@example.com"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="field__input-wrap">
+              <svg class="field__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="7" width="12" height="8" rx="1.5"/>
+                <path d="M5 7V5a3 3 0 0 1 6 0v2"/>
+                <circle cx="8" cy="11" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            Sign in
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path d="M3 7.5h9M8.5 3.5l4 4-4 4"/>
+            </svg>
+          </button>
+
+        </form>
+
+        <!-- Footer -->
+        <!-- Replace {{ .RegisterURL }} with the actual register page URL -->
+        <p class="footer-link">
+          No account yet?
+          <a href="{{ .RegisterURL }}"> <span>Create one</span></a>
+        </p>
+
+      </div>
+    </main>
+
+  </div>
+</body>
+</html>

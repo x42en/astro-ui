@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Loader2, Play, StopCircle, Upload } from 'lucide-react';
@@ -21,15 +22,8 @@ import { HistogramPanel } from '../components/livestack/HistogramPanel';
 import { RecommendationsPanel } from '../components/livestack/RecommendationsPanel';
 import type { WsEvent } from '../types/websocket';
 
-/**
- * Live-stacking workspace for a single session.
- *
- * Layout: full-bleed canvas on the left, a stacked column of control
- * panels on the right (levels, RGB balance, histogram, status). The
- * preview JPEG is refreshed each time the worker emits a
- * ``livestack_preview_updated`` event over the session WebSocket.
- */
 export function LiveSession() {
+  const { t } = useTranslation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -57,16 +51,16 @@ export function LiveSession() {
   const startMutation = useMutation({
     mutationFn: () => startLive(sessionId!),
     onSuccess: () => {
-      addToast({ variant: 'success', title: 'Live stacking armed' });
+      addToast({ variant: 'success', title: t('liveSession.armed') });
       queryClient.invalidateQueries({ queryKey: ['live-state', sessionId] });
     },
-    onError: (e) => addToast({ variant: 'error', title: 'Start failed', message: String(e) }),
+    onError: (e) => addToast({ variant: 'error', title: t('liveSession.startFailed'), message: String(e) }),
   });
 
   const stopMutation = useMutation({
     mutationFn: () => stopLive(sessionId!),
     onSuccess: () => {
-      addToast({ variant: 'info', title: 'Live stacking paused' });
+      addToast({ variant: 'info', title: t('liveSession.paused') });
       queryClient.invalidateQueries({ queryKey: ['live-state', sessionId] });
     },
   });
@@ -74,28 +68,26 @@ export function LiveSession() {
   const uploadMutation = useMutation({
     mutationFn: (file: File) => pushLiveFrame(sessionId!, file),
     onSuccess: () => {
-      // Bumping the cache key gives instant feedback while we wait for
-      // the worker's preview-updated event.
       queryClient.invalidateQueries({ queryKey: ['live-state', sessionId] });
     },
-    onError: (e) => addToast({ variant: 'error', title: 'Upload failed', message: String(e) }),
+    onError: (e) => addToast({ variant: 'error', title: t('liveSession.uploadFailed'), message: String(e) }),
   });
 
   const handleEvent = useCallback((event: WsEvent) => {
     if (event.type === 'livestack_preview_updated') {
       setPreviewGeneration(event.preview_generation);
-      setLogLines((prev) => [`Stacked frame · gen ${event.preview_generation}`, ...prev].slice(0, 50));
+      setLogLines((prev) => [t('liveSession.frameStacked', { gen: event.preview_generation }), ...prev].slice(0, 50));
     } else if (event.type === 'livestack_frame_accepted') {
-      const fwhmText = event.fwhm != null ? ` · FWHM ${event.fwhm.toFixed(1)}px` : '';
+      const fwhmText = event.fwhm != null ? t('liveSession.frameAcceptedFwhm', { index: event.frame_index, count: event.frame_count, fwhm: event.fwhm.toFixed(1) }) : t('liveSession.frameAccepted', { index: event.frame_index, count: event.frame_count });
       setLogLines((prev) =>
-        [`✓ Frame ${event.frame_index} stacked (n=${event.frame_count})${fwhmText}`, ...prev].slice(0, 50),
+        [fwhmText, ...prev].slice(0, 50),
       );
     } else if (event.type === 'livestack_frame_rejected') {
       setLogLines((prev) =>
-        [`✗ Frame ${event.frame_index} rejected: ${event.message}`, ...prev].slice(0, 50),
+        [t('liveSession.frameRejected', { index: event.frame_index, message: event.message }), ...prev].slice(0, 50),
       );
     }
-  }, []);
+  }, [t]);
 
   useWebSocket({ sessionId: sessionId ?? null, onEvent: handleEvent, enabled: !!sessionId });
 
@@ -131,7 +123,7 @@ export function LiveSession() {
               isRunning ? 'bg-success-muted text-success' : 'bg-white/5 text-text-secondary'
             }`}
           >
-            {isRunning ? 'LIVE' : 'IDLE'}
+            {isRunning ? t('liveSession.live') : t('liveSession.idle')}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -143,7 +135,7 @@ export function LiveSession() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-primary hover:bg-primary-hover text-white disabled:opacity-50"
             >
               {startMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
-              <span>Start stacking</span>
+              <span>{t('liveSession.startStacking')}</span>
             </button>
           ) : (
             <button
@@ -153,7 +145,7 @@ export function LiveSession() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-warning-muted text-warning hover:opacity-90 disabled:opacity-50"
             >
               {stopMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <StopCircle size={12} />}
-              <span>Pause</span>
+              <span>{t('liveSession.pause')}</span>
             </button>
           )}
           <button
@@ -161,14 +153,14 @@ export function LiveSession() {
             onClick={() => setCalibrationOpen(true)}
             disabled={!sessionQuery.data}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-success-muted text-success hover:opacity-90 disabled:opacity-50"
-            title="Close the session and upload darks / flats"
+            title={t('liveSession.terminateHint')}
           >
             <CheckCircle2 size={12} />
-            <span>Terminate</span>
+            <span>{t('liveSession.terminate')}</span>
           </button>
           <label className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-primary cursor-pointer">
             <Upload size={12} />
-            <span>Push frame{uploadMutation.isPending ? ` (${uploadMutation.variables?.name})` : ''}</span>
+            <span>{uploadMutation.isPending ? t('liveSession.pushFramePending', { name: uploadMutation.variables?.name }) : t('liveSession.pushFrame')}</span>
             <input
               ref={fileInputRef}
               type="file"
@@ -185,9 +177,9 @@ export function LiveSession() {
         <div className="bg-black border border-space-border rounded-xl overflow-hidden flex items-center justify-center min-h-[480px]">
           {frameCount === 0 ? (
             <div className="text-center text-text-muted text-sm p-8">
-              <p>No frame stacked yet.</p>
+              <p>{t('liveSession.noFrameStacked')}</p>
               <p className="mt-2 text-xs">
-                Push a FITS or RAW frame to seed the stack — the preview will appear here.
+                {t('liveSession.pushHint')}
               </p>
             </div>
           ) : (
@@ -198,11 +190,11 @@ export function LiveSession() {
         <aside className="flex flex-col gap-3 overflow-y-auto">
           <div className="bg-space-surface border border-space-border rounded-xl p-4 grid grid-cols-2 gap-2 text-xs">
             <div>
-              <div className="text-text-muted text-[10px] uppercase tracking-wide">Stacked</div>
+              <div className="text-text-muted text-[10px] uppercase tracking-wide">{t('liveSession.stacked')}</div>
               <div className="font-mono text-text-primary text-base">{frameCount}</div>
             </div>
             <div>
-              <div className="text-text-muted text-[10px] uppercase tracking-wide">Rejected</div>
+              <div className="text-text-muted text-[10px] uppercase tracking-wide">{t('liveSession.rejected')}</div>
               <div className="font-mono text-text-primary text-base">{rejectedCount}</div>
             </div>
             <div>
@@ -212,7 +204,7 @@ export function LiveSession() {
               </div>
             </div>
             <div>
-              <div className="text-text-muted text-[10px] uppercase tracking-wide">Generation</div>
+              <div className="text-text-muted text-[10px] uppercase tracking-wide">{t('liveSession.generation')}</div>
               <div className="font-mono text-text-primary">{previewGeneration}</div>
             </div>
           </div>
@@ -228,8 +220,8 @@ export function LiveSession() {
           )}
 
           <div className="bg-space-surface border border-space-border rounded-xl p-4 flex flex-col gap-1 text-[11px] font-mono text-text-secondary max-h-48 overflow-y-auto">
-            <h3 className="text-xs font-semibold text-text-primary not-italic mb-1">Activity</h3>
-            {logLines.length === 0 && <span className="text-text-muted">Waiting for activity…</span>}
+            <h3 className="text-xs font-semibold text-text-primary not-italic mb-1">{t('liveSession.activity')}</h3>
+            {logLines.length === 0 && <span className="text-text-muted">{t('liveSession.waitingActivity')}</span>}
             {logLines.map((line, idx) => (
               <span key={idx}>{line}</span>
             ))}

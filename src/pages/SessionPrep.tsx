@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Sparkles, AlertCircle } from 'lucide-react';
 import { SectionHeading } from '../components/landing/SectionHeading';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -21,10 +22,6 @@ import { useIsAuthenticated } from '../store/authStore';
 import { useUiStore } from '../store/uiStore';
 import { getRecommendations, getWeather } from '../services/planning';
 
-/** Minimum baseline altitude used for the backend fetch (°).
- *  All objects above this threshold are fetched once per site+date.
- *  Type and altitude filters are then applied client-side so that the
- *  night-conditions stats never re-fetch on a filter change. */
 const FETCH_MIN_ALT = 5;
 
 function todayIso(): string {
@@ -32,6 +29,7 @@ function todayIso(): string {
 }
 
 export function SessionPrep() {
+  const { t } = useTranslation();
   const isAuthenticated = useIsAuthenticated();
   const { addToast } = useUiStore();
 
@@ -94,11 +92,10 @@ export function SessionPrep() {
     retry: 1,
   });
 
-  // Surface query errors as toasts (deduplicated by message).
   useEffect(() => {
     if (recsQuery.error) {
       const msg = recsQuery.error instanceof Error ? recsQuery.error.message : 'Unknown error';
-      addToast({ variant: 'error', title: 'Could not compute recommendations', message: msg });
+      addToast({ variant: 'error', title: t('sessionPrep.errorToast'), message: msg });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recsQuery.error]);
@@ -106,7 +103,7 @@ export function SessionPrep() {
   useEffect(() => {
     if (weatherQuery.error) {
       const msg = weatherQuery.error instanceof Error ? weatherQuery.error.message : 'Unknown error';
-      addToast({ variant: 'error', title: 'Weather forecast unavailable', message: msg });
+      addToast({ variant: 'error', title: t('sessionPrep.weatherErrorToast'), message: msg });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weatherQuery.error]);
@@ -124,9 +121,8 @@ export function SessionPrep() {
   const timezone = resolvedSite?.timezone ?? 'UTC';
 
   const subtitle = useMemo(
-    () =>
-      'Pick a location, check the night, and discover the best deep-sky targets — like a travel agency for the cosmos.',
-    [],
+    () => t('sessionPrep.subtitle'),
+    [t],
   );
 
   return (
@@ -136,13 +132,13 @@ export function SessionPrep() {
           <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 text-sm">
             <p className="text-text-primary truncate">
               <Sparkles size={14} className="inline mr-1.5 -mt-0.5 text-accent" />
-              Sign in to save your sites and follow your favourite targets.
+              {t('sessionPrep.signInBanner')}
             </p>
             <Link
               to="/login?redirect=%2Fprepare"
               className="shrink-0 px-3 py-1.5 rounded-md bg-primary hover:bg-primary-hover text-white text-xs font-medium transition-colors"
             >
-              Sign in
+              {t('sessionPrep.signIn')}
             </Link>
           </div>
         </div>
@@ -150,8 +146,8 @@ export function SessionPrep() {
 
       <main className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8 animate-fade-in">
         <SectionHeading
-          kicker="Planning"
-          title="Plan your next imaging night"
+          kicker={t('sessionPrep.kicker')}
+          title={t('sessionPrep.title')}
           subtitle={subtitle}
         />
 
@@ -168,7 +164,6 @@ export function SessionPrep() {
           onSelectedTypesChange={setSelectedTypes}
         />
 
-        {/* Weather strip — needs only a site */}
         {hasSite && (
           <WeatherStrip
             forecast={weatherQuery.data}
@@ -178,7 +173,6 @@ export function SessionPrep() {
           />
         )}
 
-        {/* Night conditions */}
         {hasSite && hasDate && (
           <>
             {recsQuery.isLoading && (
@@ -198,11 +192,10 @@ export function SessionPrep() {
           </>
         )}
 
-        {/* Recommendations */}
         {!hasSite && (
           <div className="bg-space-surface border border-dashed border-space-border rounded-xl p-10 text-center">
             <p className="text-text-secondary">
-              Pick a location above to see tonight&apos;s best targets.
+              {t('sessionPrep.pickLocation')}
             </p>
           </div>
         )}
@@ -211,11 +204,11 @@ export function SessionPrep() {
           <section>
             <div className="flex items-end justify-between mb-3">
               <h3 className="text-lg font-semibold text-text-primary">
-                Recommended targets
+                {t('sessionPrep.recommendedTargets')}
               </h3>
               {recs.length > 0 && (
                 <span className="text-xs text-text-muted">
-                  {recs.length} object{recs.length === 1 ? '' : 's'} above {minAltitude}°
+                  {t('sessionPrep.objectsAbove', { count: recs.length, minAltitude })}
                 </span>
               )}
             </div>
@@ -232,8 +225,7 @@ export function SessionPrep() {
               <div className="bg-space-surface border border-error/40 rounded-xl p-6 text-center">
                 <AlertCircle size={20} className="mx-auto text-error mb-2" />
                 <p className="text-sm text-text-secondary">
-                  Something went wrong while computing recommendations. Try a different date or
-                  lower the minimum altitude.
+                  {t('sessionPrep.loadingError')}
                 </p>
               </div>
             )}
@@ -241,8 +233,7 @@ export function SessionPrep() {
             {!recsQuery.isLoading && !recsQuery.isError && recs.length === 0 && (
               <div className="bg-space-surface border border-dashed border-space-border rounded-xl p-10 text-center">
                 <p className="text-text-secondary">
-                  No targets reach {minAltitude}° tonight. Try lowering the minimum altitude or
-                  picking another date.
+                  {t('sessionPrep.noTargets', { minAltitude })}
                 </p>
               </div>
             )}
