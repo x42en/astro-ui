@@ -69,3 +69,24 @@
   --color-text-secondary:    200  80  80;
   --color-text-muted:        120  40  40;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Altitude sparkline — "over-image" variant
+ *
+ * The sparkline is drawn in white when overlaid on an object thumbnail so
+ * it reads on the photo. In night-mode we swap the trace and auxiliary
+ * lines to the warm red palette to preserve dark adaptation.
+ * ───────────────────────────────────────────────────────────────────────── */
+.night-mode .altitude-sparkline--over-image .altitude-sparkline__trace {
+  stroke: rgb(var(--color-primary));
+  fill: rgb(var(--color-primary));
+}
+
+.night-mode .altitude-sparkline--over-image .altitude-sparkline__aux {
+  stroke: rgb(var(--color-primary));
+}
+
+.night-mode .altitude-sparkline--over-image .altitude-sparkline__area {
+  fill: rgb(var(--color-primary));
+}
+
