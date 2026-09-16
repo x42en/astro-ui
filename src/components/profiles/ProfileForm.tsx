@@ -541,6 +541,38 @@ export function ProfileForm({
           </StepSection>
 
           <StepSection
+            title="Satellite Trail Removal"
+            description="Detects and removes satellite/aircraft trails from the final image. Disabled by default — mainly useful for real-world wide-field or long-exposure sessions rather than curated test data."
+            icon={<Sparkles size={13} />}
+            enabled={c.satellite_removal_enabled ?? false}
+            onEnabledChange={(v) => update({ satellite_removal_enabled: v })}
+            defaultOpen={false}
+          >
+            <SelectField
+              label="Mode"
+              value={c.satellite_removal_mode ?? 'full'}
+              options={[
+                { value: 'full', label: 'Full (all channels)' },
+                { value: 'luminance', label: 'Luminance only (faster, preserves colour)' },
+              ]}
+              onChange={(v) => update({ satellite_removal_mode: v as 'full' | 'luminance' })}
+            />
+            <SliderField
+              label="Detection sensitivity"
+              value={c.satellite_removal_sensitivity ?? 0.10}
+              min={0.01}
+              max={1.0}
+              step={0.01}
+              onChange={(v) => update({ satellite_removal_sensitivity: v })}
+            />
+            <ToggleField
+              label="Hard-clip trail pixels"
+              value={c.satellite_removal_clip_trail ?? true}
+              onChange={(v) => update({ satellite_removal_clip_trail: v })}
+            />
+          </StepSection>
+
+          <StepSection
             title="Retry"
             description="Automatic retry policy for transient failures (network timeouts, GPU contention)."
             icon={<RefreshCw size={13} />}
