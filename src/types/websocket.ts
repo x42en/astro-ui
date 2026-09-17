@@ -98,6 +98,17 @@ export interface WsLiveStackPreviewUpdatedEvent extends WsBaseEvent {
   height: number;
 }
 
+export interface WsAdaptiveIterationEvent extends WsBaseEvent {
+  type: 'adaptive_iteration';
+  step: string;
+  iteration: number;
+  satisfied: boolean;
+  confidence: number;
+  reasoning: string;
+  patch_applied: Record<string, unknown>;
+  human_approved: boolean | null;
+}
+
 export type WsEvent =
   | WsProgressEvent
   | WsLogEvent
@@ -110,4 +121,5 @@ export type WsEvent =
   | WsSessionStatusEvent
   | WsLiveStackFrameAcceptedEvent
   | WsLiveStackFrameRejectedEvent
-  | WsLiveStackPreviewUpdatedEvent;
+  | WsLiveStackPreviewUpdatedEvent
+  | WsAdaptiveIterationEvent;

@@ -225,6 +225,15 @@ export interface ProcessingProfileConfig {
   satellite_removal_clip_trail?: boolean;
 
   max_retries?: number;
+
+  /** Phase 2 adaptive vision-critic loop. Strictly opt-in and off by
+   *  default: AstroStack's core goal is complete, unattended automation. */
+  adaptive_critic_enabled?: boolean;
+  adaptive_critic_max_iterations?: number;
+  /** Off by default (fully autonomous). When true and no reviewer is wired
+   *  up server-side, patches auto-approve with a logged warning instead of
+   *  stalling the job. */
+  adaptive_critic_require_human_approval?: boolean;
 }
 
 export interface ProfileRead {
