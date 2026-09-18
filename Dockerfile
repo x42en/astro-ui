@@ -36,7 +36,7 @@ FROM nginx:1.27-alpine
 LABEL org.opencontainers.image.title="AstroStack UI"
 LABEL org.opencontainers.image.description="Web interface for the AstroStack astrophotography processing pipeline"
 LABEL org.opencontainers.image.url="https://github.com/x42en/astro-stack"
-LABEL org.opencontainers.image.source="https://github.com/x42en/astro-stack-ui"
+LABEL org.opencontainers.image.source="https://github.com/x42en/astro-ui"
 LABEL org.opencontainers.image.licenses="MIT"
 
 COPY --from=builder /app/dist /usr/share/nginx/html

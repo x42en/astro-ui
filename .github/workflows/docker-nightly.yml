@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # github.repository preserves the original casing (e.g. "BitsDiver/astro-ui").
+  # github.repository preserves the original casing (e.g. "x42en/astro-ui").
   # OCI registries require lowercase — use the lowercased form everywhere below.
   IMAGE_NAME: ${{ github.repository }}
 

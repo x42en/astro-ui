@@ -401,6 +401,11 @@
           "engine": "Cosmic Clarity (Dark Star)",
           "description": "Splits the image into a starless layer and a stars-only layer so each can be processed independently. This is the trick behind most modern nebula renderings where stars feel small but the gas glows."
         },
+        "satelliteRemoval": {
+          "title": "Satellite trail removal",
+          "engine": "Cosmic Clarity",
+          "description": "Detects and removes satellite or aircraft trails from the final image — common on real-world wide-field or long-exposure sessions, unlike curated test data."
+        },
         "export": {
           "title": "Export",
           "engine": "AstroStack",

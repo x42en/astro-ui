@@ -60,7 +60,8 @@ export interface ProfileSummary {
     | 'denoise_enabled'
     | 'sharpen_enabled'
     | 'super_resolution_enabled'
-    | 'star_separation_enabled',
+    | 'star_separation_enabled'
+    | 'satellite_removal_enabled',
     boolean
   >>;
 }
@@ -192,11 +193,15 @@ export interface ProcessingProfileConfig {
   denoise_luminance_only?: boolean;
   denoise_graxpert_ai_model?: string;
   denoise_graxpert_batch_size?: number;
+  /** Runs SASpro's standalone Aberration Remover (`cc correct`) before denoising. */
+  denoise_aberration_first?: boolean;
 
   sharpen_enabled?: boolean;
   sharpen_stellar_amount?: number;
   sharpen_nonstellar_amount?: number;
   sharpen_radius?: number;
+  /** Runs the Aberration Remover before sharpening (`--stellar-correct-mode correct_sharpen`). */
+  sharpen_aberration_first?: boolean;
 
   super_resolution_enabled?: boolean;
   super_resolution_scale?: number;
@@ -212,7 +217,23 @@ export interface ProcessingProfileConfig {
    *  galaxies / clusters); `on` / `off` force the step regardless. */
   star_separation_mode?: 'auto' | 'on' | 'off';
 
+  /** New in SASpro (absent from the old Cosmic Clarity script bundle):
+   *  detects and removes satellite/aircraft trails from the final image. */
+  satellite_removal_enabled?: boolean;
+  satellite_removal_mode?: 'full' | 'luminance';
+  satellite_removal_sensitivity?: number;
+  satellite_removal_clip_trail?: boolean;
+
   max_retries?: number;
+
+  /** Phase 2 adaptive vision-critic loop. Strictly opt-in and off by
+   *  default: AstroStack's core goal is complete, unattended automation. */
+  adaptive_critic_enabled?: boolean;
+  adaptive_critic_max_iterations?: number;
+  /** Off by default (fully autonomous). When true and no reviewer is wired
+   *  up server-side, patches auto-approve with a logged warning instead of
+   *  stalling the job. */
+  adaptive_critic_require_human_approval?: boolean;
 }
 
 export interface ProfileRead {

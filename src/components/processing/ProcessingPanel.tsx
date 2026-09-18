@@ -24,6 +24,7 @@ import { MetadataCartouche } from './MetadataCartouche';
 import { ProfileChoiceSelect, type ProfileChoice } from './ProfileChoiceSelect';
 import { StatusBadge } from '../ui/StatusBadge';
 import { AdaptiveOverridesPanel } from '../sessions/AdaptiveOverridesPanel';
+import { AdaptiveIterationsPanel } from '../sessions/AdaptiveIterationsPanel';
 import { GalleryStarToggle } from '../gallery/GalleryStarToggle';
 import type { SessionRead, JobRead, ProfilePreset, ProfileSummary } from '../../types';
 
@@ -263,6 +264,13 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
             <Square size={11} />
             Cancel
           </button>
+        </div>
+      )}
+
+      {/* ── Adaptive critic reasoning trace — top left (Result mode only) ── */}
+      {showResultStrip && (
+        <div className="absolute top-4 left-4 z-30">
+          <AdaptiveIterationsPanel job={activeJob} />
         </div>
       )}
 

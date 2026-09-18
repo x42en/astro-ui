@@ -352,6 +352,12 @@ function Pipeline() {
       description: t('learn.pipeline.steps.starSeparation.description'),
     },
     {
+      machine: 'satellite_removal',
+      title: t('learn.pipeline.steps.satelliteRemoval.title'),
+      engine: t('learn.pipeline.steps.satelliteRemoval.engine'),
+      description: t('learn.pipeline.steps.satelliteRemoval.description'),
+    },
+    {
       machine: 'export',
       title: t('learn.pipeline.steps.export.title'),
       engine: t('learn.pipeline.steps.export.engine'),

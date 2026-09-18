@@ -401,6 +401,11 @@
           "engine": "Cosmic Clarity (Dark Star)",
           "description": "Sépare l'image en une couche sans étoiles et une couche étoiles seules, traitables indépendamment. C'est le secret des rendus de nébuleuse modernes où les étoiles restent discrètes mais le gaz brille."
         },
+        "satelliteRemoval": {
+          "title": "Suppression des traînées de satellites",
+          "engine": "Cosmic Clarity",
+          "description": "Détecte et supprime les traînées de satellites ou d'avions dans l'image finale — fréquent en conditions réelles de grand champ ou de longue pose, contrairement aux jeux de test soignés."
+        },
         "export": {
           "title": "Export",
           "engine": "AstroStack",
