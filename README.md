@@ -1,6 +1,12 @@
 # AstroUI
 
-> Web interface for the [AstroStack](https://github.com/x42en/AstroStack)
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](./LICENSE)
+[![React 18](https://img.shields.io/badge/react-18-61DAFB.svg)](https://react.dev/)
+[![Vite 5](https://img.shields.io/badge/vite-5-646CFF.svg)](https://vitejs.dev/)
+[![Docker Image](https://img.shields.io/badge/ghcr.io-x42en%2Fastro--ui-2496ED.svg)](https://github.com/x42en/astro-ui/pkgs/container/astro-ui)
+[![Build & Publish](https://github.com/x42en/astro-ui/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/x42en/astro-ui/actions/workflows/docker-publish.yml)
+
+> Web interface for the [AstroStack](https://github.com/x42en/astro-stack)
 > astrophotography processing pipeline.
 
 AstroUI is a React single-page application that connects to the AstroStack
@@ -25,6 +31,8 @@ with the community.
 | UI primitives | Radix UI (dialog, dropdown, progress, select, switch, tooltip) |
 | Styling | Tailwind CSS v3 |
 | Icons | Lucide React |
+| Charts | Recharts |
+| Internationalization | i18next (English / French) |
 | Container | Nginx 1.27 Alpine |
 
 ---
@@ -64,6 +72,13 @@ with the community.
 - **Metadata cartouche** — discreet, collapsible overlay showing EXIF
   (camera, ISO, exposure, focal length, integration) and the pipeline used to
   produce each result.
+- **Adaptive-critic reasoning trace** — when AstroStack's optional vision
+  critic is enabled, a collapsible panel shows what it changed and why, per
+  refined step, once a result is ready.
+- **Adaptive-overrides panel** — surfaces any object-type-driven profile
+  adjustments the backend applied automatically before processing started.
+- **Internationalization** — English and French, with automatic browser
+  language detection.
 - **Branded identity** — bespoke telescope logo (favicon, header, login
   screen, empty states, gallery cartouche).
 - **Runtime configuration** — change API/WebSocket URLs, retry budgets, and
@@ -124,10 +139,10 @@ flowchart LR
 ### With Docker
 
 ```bash
-docker pull ghcr.io/x42en/astro-stack-ui:latest
+docker pull ghcr.io/x42en/astro-ui:latest
 
 docker run -d --name astro-ui -p 3000:80 \
-  ghcr.io/x42en/astro-stack-ui:latest
+  ghcr.io/x42en/astro-ui:latest
 ```
 
 Open `http://localhost:3000`. Use the Settings page to point the UI at your
@@ -144,7 +159,7 @@ out-of-the-box behind Traefik. Add the service to the backend's
 ```yaml
 services:
   astro-ui:
-    image: ghcr.io/x42en/astro-stack-ui:latest
+    image: ghcr.io/x42en/astro-ui:latest
     restart: unless-stopped
     ports:
       - "3000:80"
@@ -188,7 +203,7 @@ docker build \
   --build-arg VITE_AUTH_MODE=oidc \
   --build-arg VITE_OIDC_AUTHORITY=https://auth.astromote.com \
   --build-arg VITE_OIDC_CLIENT_ID=astrostack \
-  -t astro-stack-ui:local .
+  -t astro-ui:local .
 ```
 
 ### Runtime settings (Settings page, admin only)
@@ -251,17 +266,22 @@ collapsed so it never hides the photo.
 The following items are planned but not yet implemented. They are listed in
 priority order; the order may change based on feedback.
 
-1. **Planet-dedicated processing pipeline** with lucky-imaging support.
-2. **Observation time-slot suggestions** after selecting a celestial object and
+1. **Reference-image search** for AstroStack's adaptive critic — opt-in,
+   disabled by default; results would be surfaced here as stylistic context
+   alongside the critic's reasoning trace.
+2. **Planet-dedicated processing pipeline** with lucky-imaging support.
+3. **Observation time-slot suggestions** after selecting a celestial object and
    a location.
-3. **AI-driven session scheduling** and observation recommendations based on
+4. **AI-driven session scheduling** and observation recommendations based on
    weather forecast, location, and target.
-4. **Pipeline tools and steps exposed as MCP servers** so external agents can
+5. **Pipeline tools and steps exposed as MCP servers** so external agents can
    compose them.
-5. **AI-driven pipeline auto-selection and auto-improve** through agent
-   workflows.
 6. **Observation alerts** (cancel reminders for cloudy nights, favourite-target
    visibility windows, etc.).
+
+> AstroStack's pipeline already features an adaptive vision-critic loop
+> (off by default) that auto-selects and auto-improves its own configuration
+> — see the backend's README for details.
 
 ---
 
@@ -274,8 +294,8 @@ principles that apply to every change.
 Quick reference:
 
 ```bash
-git clone https://github.com/x42en/astro-stack-ui.git
-cd astro-stack-ui
+git clone https://github.com/x42en/astro-ui.git
+cd astro-ui
 cp .env.example .env
 npm install
 npm run dev               # http://localhost:5173 with HMR
@@ -297,7 +317,16 @@ conventions, and review process.
 
 ## License
 
-AstroUI is released under the [MIT License](./LICENSE).
-
-The [AstroStack](https://github.com/x42en/AstroStack) backend is a separate
-project with its own licensing terms — see its repository for details.
+| Component                | License |
+| ------------------------- | ------- |
+| AstroUI (this project)    | GPL-3.0-or-later |
+| React / React DOM         | MIT     |
+| Vite                      | MIT     |
+| Tailwind CSS               | MIT     |
+| Radix UI                  | MIT     |
+| TanStack Query             | MIT     |
+| Zustand                   | MIT     |
+| Lucide React               | ISC     |
+| oidc-client-ts             | Apache-2.0 |
+| Nginx                     | BSD-2-Clause |
+| AstroStack (backend, separate project) | GPL-3.0-or-later |

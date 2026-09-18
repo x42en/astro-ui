@@ -25,8 +25,8 @@ Thank you for taking the time to contribute. This document describes the convent
 ## Getting Started
 
 ```bash
-git clone https://github.com/x42en/astro-stack-ui.git
-cd astro-stack-ui
+git clone https://github.com/x42en/astro-ui.git
+cd astro-ui
 npm install
 cp .env.example .env   # set VITE_API_BASE_URL to your local backend
 npm run dev
@@ -192,7 +192,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 
 ## Reporting Issues
 
-Use [GitHub Issues](https://github.com/x42en/astro-stack-ui/issues). Include:
+Use [GitHub Issues](https://github.com/x42en/astro-ui/issues). Include:
 - **Environment:** browser, OS, Docker version, AstroStack backend version.
 - **Steps to reproduce.**
 - **Expected vs. actual behaviour.**

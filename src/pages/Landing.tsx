@@ -380,7 +380,7 @@ function Footer() {
             {t('landing.footer.heroPhoto')}
           </a>
           <a
-            href="https://github.com/x42en/AstroStack"
+            href="https://github.com/x42en/astro-stack"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 hover:text-text-secondary transition-colors"
@@ -388,7 +388,7 @@ function Footer() {
             <Github size={13} /> {t('landing.footer.backend')}
           </a>
           <a
-            href="https://github.com/x42en/astro-stack-ui"
+            href="https://github.com/x42en/astro-ui"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 hover:text-text-secondary transition-colors"

@@ -21,7 +21,7 @@ follow, testing, and the most common workflows.
 ## Principles
 
 These principles apply uniformly to both repositories (AstroUI and
-[AstroStack](https://github.com/x42en/AstroStack)). Examples below are
+[AstroStack](https://github.com/x42en/astro-stack)). Examples below are
 TypeScript-flavoured.
 
 1. **English only.** Code, comments, commit messages, pull requests,
@@ -126,14 +126,14 @@ Boundary rules:
 ### Prerequisites
 
 - Node.js ≥ 20
-- A running [AstroStack](https://github.com/x42en/AstroStack) backend
+- A running [AstroStack](https://github.com/x42en/astro-stack) backend
   (locally or via Docker).
 
 ### Bootstrap
 
 ```bash
-git clone https://github.com/x42en/astro-stack-ui.git
-cd astro-stack-ui
+git clone https://github.com/x42en/astro-ui.git
+cd astro-ui
 cp .env.example .env       # set VITE_API_BASE_URL, VITE_WS_BASE_URL
 npm install
 npm run dev                # http://localhost:5173 with HMR
