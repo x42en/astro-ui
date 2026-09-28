@@ -14,6 +14,9 @@ import {
   AlertCircle,
   Lock,
   Clock,
+  Bot,
+  Globe,
+  Zap,
 } from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
 import { useUiStore } from '../store/uiStore';
@@ -21,8 +24,8 @@ import { useIsAdmin } from '../store/authStore';
 import { AUTH_MODE } from '../lib/oidc';
 import api from '../lib/axios';
 import type { AppSettings } from '../store/settingsStore';
-import type { AppSettingsRemote, AppSettingsUpdate } from '../types';
-import { getRemoteSettings, updateRemoteSettings } from '../services/settings';
+import type { AppSettingsRemote, AppSettingsUpdate, LlmSettings } from '../types';
+import { getRemoteSettings, updateRemoteSettings, getLlmSettings, listLlmModels, testLlmProvider } from '../services/settings';
 
 // ── Shared UI primitives ───────────────────────────────────────────────────
 
@@ -292,6 +295,12 @@ function OperationalSettings() {
         inbox_path: data.inbox_path,
         ollama_url: data.ollama_url,
         ollama_model: data.ollama_model,
+        llm_active_provider: data.llm_active_provider,
+        llm_ollama_url: data.llm_ollama_url,
+        llm_ollama_model: data.llm_ollama_model,
+        llm_vllm_base_url: data.llm_vllm_base_url,
+        llm_vllm_model: data.llm_vllm_model,
+        llm_kilo_model: data.llm_kilo_model,
         pipeline_max_retries: data.pipeline_max_retries,
         session_stability_delay: data.session_stability_delay,
       });
@@ -304,6 +313,12 @@ function OperationalSettings() {
       form.inbox_path !== data.inbox_path ||
       form.ollama_url !== data.ollama_url ||
       form.ollama_model !== data.ollama_model ||
+      form.llm_active_provider !== data.llm_active_provider ||
+      form.llm_ollama_url !== data.llm_ollama_url ||
+      form.llm_ollama_model !== data.llm_ollama_model ||
+      form.llm_vllm_base_url !== data.llm_vllm_base_url ||
+      form.llm_vllm_model !== data.llm_vllm_model ||
+      form.llm_kilo_model !== data.llm_kilo_model ||
       form.pipeline_max_retries !== data.pipeline_max_retries ||
       form.session_stability_delay !== data.session_stability_delay
     );
@@ -335,6 +350,12 @@ function OperationalSettings() {
         inbox_path: data.inbox_path,
         ollama_url: data.ollama_url,
         ollama_model: data.ollama_model,
+        llm_active_provider: data.llm_active_provider,
+        llm_ollama_url: data.llm_ollama_url,
+        llm_ollama_model: data.llm_ollama_model,
+        llm_vllm_base_url: data.llm_vllm_base_url,
+        llm_vllm_model: data.llm_vllm_model,
+        llm_kilo_model: data.llm_kilo_model,
         pipeline_max_retries: data.pipeline_max_retries,
         session_stability_delay: data.session_stability_delay,
       });
@@ -410,12 +431,14 @@ function OperationalSettings() {
           <TextInput
             value={form.ollama_model ?? ''}
             onChange={(v) => patch({ ollama_model: v })}
-            placeholder="llama3.2"
+            placeholder="qwen3-vl:8b"
             monospace
             disabled={!canEdit}
           />
         </FieldRow>
       </SettingsSection>
+
+      <LlmProvidersSection form={form} patch={patch} canEdit={canEdit} />
 
       <SettingsSection
         icon={Cpu}
@@ -501,6 +524,275 @@ function OperationalSettings() {
         </div>
       )}
     </>
+  );
+}
+
+// ── LLM providers section (backend DB, admin-gated writes) ─────────────────
+
+const LLM_PROVIDER_OPTIONS = [
+  { value: 'ollama', icon: Server },
+  { value: 'vllm', icon: Zap },
+  { value: 'kilo', icon: Globe },
+] as const;
+
+function LlmProvidersSection({
+  form,
+  patch,
+  canEdit,
+}: {
+  form: AppSettingsUpdate;
+  patch: (partial: Partial<AppSettingsUpdate>) => void;
+  canEdit: boolean;
+}) {
+  const { t } = useTranslation();
+  const { data: llm } = useQuery<LlmSettings>({
+    queryKey: ['llm-settings'],
+    queryFn: getLlmSettings,
+  });
+  const [testResult, setTestResult] = useState<Record<string, string>>({});
+  const [testing, setTesting] = useState<string | null>(null);
+
+  const keyStatus = (provider: string): boolean | null => {
+    const found = llm?.profiles.find((prof) => prof.provider === provider);
+    return found ? found.has_api_key : null;
+  };
+
+  const handleTest = async (provider: string) => {
+    setTesting(provider);
+    try {
+      const res = await testLlmProvider(provider);
+      setTestResult((s) => ({ ...s, [provider]: t('settings.llm.testOk', { ms: res.latency_ms }) }));
+    } catch {
+      setTestResult((s) => ({ ...s, [provider]: t('settings.llm.testFailed') }));
+    } finally {
+      setTesting(null);
+    }
+  };
+
+  return (
+    <SettingsSection
+      icon={Bot}
+      title={t('settings.llm.title')}
+      description={t('settings.llm.description')}
+    >
+      <FieldRow
+        label={t('settings.llm.activeProvider')}
+        hint={t('settings.llm.activeProviderHint')}
+      >
+        <div className="grid grid-cols-3 gap-1.5">
+          {LLM_PROVIDER_OPTIONS.map(({ value, icon: Icon }) => {
+            const selected = (form.llm_active_provider ?? llm?.active_provider ?? 'vllm') === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                disabled={!canEdit}
+                onClick={() => patch({ llm_active_provider: value })}
+                aria-pressed={selected}
+                className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                  selected
+                    ? 'bg-primary/15 border-primary/50 text-text-primary'
+                    : 'bg-white/5 hover:bg-white/10 border-space-border hover:border-white/20 text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                <Icon size={13} />
+                {value === 'ollama' ? 'Ollama' : value === 'vllm' ? 'vLLM' : 'Kilo'}
+              </button>
+            );
+          })}
+        </div>
+      </FieldRow>
+
+      <div className="h-px bg-space-border/60" />
+
+      <FieldRow
+        label={t('settings.llm.providerOllama')}
+        hint={t('settings.llm.modelHintOllama')}
+      >
+        <div className="space-y-2">
+          <TextInput
+            value={form.llm_ollama_url ?? ''}
+            onChange={(v) => patch({ llm_ollama_url: v })}
+            placeholder="http://localhost:11434"
+            monospace
+            disabled={!canEdit}
+          />
+          <TextInput
+            value={form.llm_ollama_model ?? ''}
+            onChange={(v) => patch({ llm_ollama_model: v })}
+            placeholder="qwen3-vl:8b"
+            monospace
+            disabled={!canEdit}
+          />
+          <ProviderTestRow
+            provider="ollama"
+            hasKey={keyStatus('ollama')}
+            result={testResult.ollama}
+            testing={testing === 'ollama'}
+            onTest={() => handleTest('ollama')}
+          />
+        </div>
+      </FieldRow>
+
+      <div className="h-px bg-space-border/60" />
+
+      <FieldRow
+        label={t('settings.llm.providerVllm')}
+        hint={t('settings.llm.modelHintVllm')}
+      >
+        <div className="space-y-2">
+          <TextInput
+            value={form.llm_vllm_base_url ?? ''}
+            onChange={(v) => patch({ llm_vllm_base_url: v })}
+            placeholder="http://vllm:8000/v1"
+            monospace
+            disabled={!canEdit}
+          />
+          <TextInput
+            value={form.llm_vllm_model ?? ''}
+            onChange={(v) => patch({ llm_vllm_model: v })}
+            placeholder="lagarde-vllm"
+            monospace
+            disabled={!canEdit}
+          />
+          <ProviderTestRow
+            provider="vllm"
+            hasKey={keyStatus('vllm')}
+            result={testResult.vllm}
+            testing={testing === 'vllm'}
+            onTest={() => handleTest('vllm')}
+          />
+        </div>
+      </FieldRow>
+
+      <div className="h-px bg-space-border/60" />
+
+      <FieldRow
+        label={t('settings.llm.providerKilo')}
+        hint={t('settings.llm.modelHintKilo')}
+      >
+        <div className="space-y-2">
+          <TextInput
+            value={form.llm_kilo_model ?? ''}
+            onChange={(v) => patch({ llm_kilo_model: v })}
+            placeholder="qwen/qwen3.8-27b:free"
+            monospace
+            disabled={!canEdit}
+          />
+          <ProviderTestRow
+            provider="kilo"
+            hasKey={keyStatus('kilo')}
+            result={testResult.kilo}
+            testing={testing === 'kilo'}
+            onTest={() => handleTest('kilo')}
+          />
+          <ModelBrowser provider="kilo" canEdit={canEdit} onPick={(id) => patch({ llm_kilo_model: id })} />
+        </div>
+      </FieldRow>
+    </SettingsSection>
+  );
+}
+
+function ProviderTestRow({
+  provider,
+  hasKey,
+  result,
+  testing,
+  onTest,
+}: {
+  provider: string;
+  hasKey: boolean | null;
+  result?: string;
+  testing: boolean;
+  onTest: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <button
+        type="button"
+        onClick={onTest}
+        disabled={testing}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 border border-space-border hover:border-space-border-light text-text-secondary hover:text-text-primary bg-space-elevated rounded transition-all disabled:opacity-50"
+      >
+        {testing ? <Loader2 size={11} className="animate-spin" /> : <Wifi size={11} />}
+        {t('settings.llm.test')}
+      </button>
+      {hasKey !== null && (
+        <span className={hasKey ? 'text-success' : 'text-text-muted'}>
+          {hasKey ? t('settings.llm.hasKey') : t('settings.llm.noKey')}
+        </span>
+      )}
+      {result && (
+        <span className={result === t('settings.llm.testFailed') ? 'text-error' : 'text-success'}>
+          {result}
+        </span>
+      )}
+      <span className="sr-only">{provider}</span>
+    </div>
+  );
+}
+
+function ModelBrowser({
+  provider,
+  canEdit,
+  onPick,
+}: {
+  provider: string;
+  canEdit: boolean;
+  onPick: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const { data, isLoading } = useQuery({
+    queryKey: ['llm-models', provider],
+    queryFn: () => listLlmModels(provider),
+    enabled: open,
+    staleTime: 300_000,
+  });
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-xs text-accent hover:text-accent-hover underline underline-offset-2"
+      >
+        {t('settings.llm.browseModels')}
+      </button>
+    );
+  }
+  return (
+    <div className="max-h-40 overflow-y-auto border border-space-border rounded-md divide-y divide-space-border/60">
+      {isLoading && (
+        <div className="flex items-center gap-2 px-3 py-2 text-xs text-text-muted">
+          <Loader2 size={11} className="animate-spin" />
+          {t('settings.processingDefaults.loading')}
+        </div>
+      )}
+      {(data ?? []).slice(0, 60).map((m) => (
+        <button
+          key={m.id}
+          type="button"
+          disabled={!canEdit}
+          onClick={() => onPick(m.id)}
+          className="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-left text-xs hover:bg-white/5 transition-colors disabled:opacity-50"
+        >
+          <span className="font-mono text-text-secondary truncate">{m.id}</span>
+          <span className="flex gap-1 flex-shrink-0">
+            {m.free && (
+              <span className="px-1.5 py-0.5 rounded bg-success/15 text-success text-[10px] font-medium">
+                {t('settings.llm.free')}
+              </span>
+            )}
+            {m.vision && (
+              <span className="px-1.5 py-0.5 rounded bg-accent/15 text-accent text-[10px] font-medium">
+                {t('settings.llm.vision')}
+              </span>
+            )}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 

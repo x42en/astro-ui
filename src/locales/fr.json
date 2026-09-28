@@ -189,14 +189,14 @@
       "error": "Impossible de joindre le backend"
     },
     "inboxAi": {
-      "title": "Inbox & IA",
-      "description": "Chemins côté serveur et configuration IA Ollama — partagés entre toutes les instances",
+      "title": "Inbox & fournisseurs IA",
+      "description": "Chemins côté serveur et fournisseurs LLM de vision pour la critique adaptative — partagés entre toutes les instances",
       "inboxPath": "Chemin de l'inbox",
       "inboxPathHint": "Dossier surveillé par le backend pour les poses entrantes (correspond à la variable INBOX_PATH)",
       "ollamaUrl": "URL Ollama",
-      "ollamaUrlHint": "URL de base de l'instance Ollama pour la suppression de gradient par IA",
+      "ollamaUrlHint": "URL de base du stack Ollama local (compatible OpenAI sur <base>/v1) pour la critique vision",
       "ollamaModel": "Modèle Ollama",
-      "ollamaModelHint": "Nom du modèle utilisé pour les requêtes d'inférence Ollama"
+      "ollamaModelHint": "Modèle vision servi par Ollama (ex. qwen3-vl:8b)"
     },
     "processingDefaults": {
       "title": "Valeurs par défaut du traitement",
@@ -216,6 +216,30 @@
       "by": "par",
       "loading": "Chargement…",
       "errorLoad": "Impossible de charger les paramètres opérationnels depuis le backend."
+    },
+    "llm": {
+      "title": "Fournisseurs LLM",
+      "description": "Fournisseur actif de la critique vision et modèles par fournisseur. Les clés API restent dans les variables d'environnement du serveur.",
+      "activeProvider": "Fournisseur actif",
+      "activeProviderHint": "Fournisseur par défaut pour chaque interaction LLM (critique batch, critique live). Modifiable par job, session et profil.",
+      "providerOllama": "Ollama — stack local, modèles interchangeables",
+      "providerVllm": "vLLM — un modèle servi très vite",
+      "providerKilo": "Kilo — passerelle externe, nombreux modèles, décharge GPU",
+      "baseUrl": "Endpoint",
+      "model": "Modèle",
+      "modelHintOllama": "Modèle vision Ollama (ex. qwen3-vl:8b, llava, gemma4)",
+      "modelHintVllm": "Nom du modèle servi par vLLM (--served-model-name)",
+      "modelHintKilo": "Identifiant Kilo (provider/model). qwen/qwen3.8-27b:free est gratuit et vision.",
+      "noKey": "Pas de clé API (env serveur)",
+      "hasKey": "Clé API configurée (env serveur)",
+      "browseModels": "Parcourir",
+      "test": "Tester",
+      "testOk": "Accessible en {{ms}} ms",
+      "testFailed": "Inaccessible",
+      "free": "gratuit",
+      "vision": "vision",
+      "saved": "Paramètres LLM enregistrés",
+      "saveFailed": "Échec de l'enregistrement"
     }
   },
   "gallery": {

@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Loader2, Play, StopCircle, Upload } from 'lucide-react';
 import { CalibrationPromptModal } from '../components/livestack/CalibrationPromptModal';
+import { LlmChoiceSelect } from '../components/processing/LlmChoiceSelect';
+import type { LlmOverride } from '../types';
 import {
   getLivePreviewUrl,
   getLiveState,
@@ -34,6 +36,7 @@ export function LiveSession() {
   const [previewGeneration, setPreviewGeneration] = useState(0);
   const [logLines, setLogLines] = useState<string[]>([]);
   const [calibrationOpen, setCalibrationOpen] = useState(false);
+  const [llm, setLlm] = useState<LlmOverride>({ provider: 'default' });
 
   const sessionQuery = useQuery({
     queryKey: ['session', sessionId],
@@ -49,7 +52,7 @@ export function LiveSession() {
   });
 
   const startMutation = useMutation({
-    mutationFn: () => startLive(sessionId!),
+    mutationFn: () => startLive(sessionId!, llm.provider === 'default' && !llm.model ? undefined : llm),
     onSuccess: () => {
       addToast({ variant: 'success', title: t('liveSession.armed') });
       queryClient.invalidateQueries({ queryKey: ['live-state', sessionId] });
@@ -127,6 +130,11 @@ export function LiveSession() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {!isRunning && (
+            <div className="hidden xl:block w-52">
+              <LlmChoiceSelect value={llm} onChange={setLlm} compact ariaLabel="Live vision-critic LLM" />
+            </div>
+          )}
           {!isRunning ? (
             <button
               type="button"

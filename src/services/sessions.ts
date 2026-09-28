@@ -7,6 +7,7 @@ import type {
   JobRead,
   SessionMode,
   LiveStackState,
+  LlmOverride,
 } from '../types';
 
 export interface SessionCreate {
@@ -69,13 +70,26 @@ export async function getLatestJobForSession(
   }
 }
 
+/**
+ * Start pipeline processing for a session, with an optional per-job LLM
+ * override for the vision critic (`default` = active provider).
+ *
+ * @param sessionId - Session UUID to process.
+ * @param preset - Processing preset to use.
+ * @param profileId - Saved profile UUID for the ADVANCED preset.
+ * @param llm - Optional per-job LLM provider/model override.
+ * @returns The created job id.
+ */
 export async function startProcessing(
   sessionId: string,
   preset: ProfilePreset,
-  profileId?: string
+  profileId?: string,
+  llm?: LlmOverride
 ): Promise<{ job_id: string }> {
   const params: Record<string, string> = { preset };
   if (profileId) params.profile_id = profileId;
+  if (llm && llm.provider !== 'default') params.llm_provider = llm.provider;
+  if (llm?.model) params.llm_model = llm.model;
   const response = await api.post<{ job_id: string }>(
     `/sessions/${sessionId}/process`,
     null,
@@ -137,9 +151,25 @@ export async function createLiveSession(data: {
   return response.data;
 }
 
-export async function startLive(sessionId: string): Promise<{ is_running: boolean }> {
+/**
+ * Start (or resume) live-stacking for a session, with an optional per-session
+ * LLM override for the live vision critic.
+ *
+ * @param sessionId - Session UUID.
+ * @param llm - Optional per-session LLM provider/model override.
+ * @returns The running flag.
+ */
+export async function startLive(
+  sessionId: string,
+  llm?: LlmOverride
+): Promise<{ is_running: boolean }> {
+  const params: Record<string, string> = {};
+  if (llm && llm.provider !== 'default') params.llm_provider = llm.provider;
+  if (llm?.model) params.llm_model = llm.model;
   const response = await api.post<{ session_id: string; is_running: boolean }>(
     `/sessions/${sessionId}/live/start`,
+    null,
+    { params }
   );
   return { is_running: response.data.is_running };
 }
