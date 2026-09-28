@@ -22,11 +22,12 @@ import { ProgressPanel } from './ProgressPanel';
 import { OutputActions } from './OutputActions';
 import { MetadataCartouche } from './MetadataCartouche';
 import { ProfileChoiceSelect, type ProfileChoice } from './ProfileChoiceSelect';
+import { LlmChoiceSelect } from './LlmChoiceSelect';
 import { StatusBadge } from '../ui/StatusBadge';
 import { AdaptiveOverridesPanel } from '../sessions/AdaptiveOverridesPanel';
 import { AdaptiveIterationsPanel } from '../sessions/AdaptiveIterationsPanel';
 import { GalleryStarToggle } from '../gallery/GalleryStarToggle';
-import type { SessionRead, JobRead, ProfilePreset, ProfileSummary } from '../../types';
+import type { SessionRead, JobRead, ProfilePreset, ProfileSummary, LlmOverride } from '../../types';
 
 interface ProcessingPanelProps {
   session: SessionRead;
@@ -42,6 +43,8 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
     setSessionPreset,
     profileIdsBySession,
     setSessionProfileId,
+    llmBySession,
+    setSessionLlm,
   } = useUiStore();
 
   const sessionPreset = useMemo<ProfilePreset>(
@@ -53,6 +56,11 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   const [selectedProfileId, setSelectedProfileId] = useState<string>(
     profileIdsBySession[session.id] ?? '',
   );
+  const [llm, setLlmState] = useState<LlmOverride>(llmBySession[session.id] ?? { provider: 'default' });
+  const setLlm = (next: LlmOverride) => {
+    setLlmState(next);
+    setSessionLlm(session.id, next);
+  };
   const [livePreviewUrl, setLivePreviewUrl] = useState<string | null>(null);
   // Per-step preview override: when set, the background switches to the JPEG
   // produced after that pipeline step (browsable on completed sessions).
@@ -62,10 +70,12 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
     mutationFn: ({
       preset,
       profileId,
+      llm: llmOverride,
     }: {
       preset: ProfilePreset;
       profileId?: string;
-    }) => startProcessing(session.id, preset, profileId),
+      llm?: LlmOverride;
+    }) => startProcessing(session.id, preset, profileId, llmOverride),
     onSuccess: (data, vars) => {
       setSessionJob(session.id, data.job_id);
       setSessionPreset(session.id, vars.preset);
@@ -101,10 +111,11 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
   });
 
   const handleStart = () => {
+    const llmOverride = llm.provider === 'default' && !llm.model ? undefined : llm;
     if (selectedProfileId) {
-      processMutation.mutate({ preset: 'advanced', profileId: selectedProfileId });
+      processMutation.mutate({ preset: 'advanced', profileId: selectedProfileId, llm: llmOverride });
     } else {
-      processMutation.mutate({ preset: localPreset });
+      processMutation.mutate({ preset: localPreset, llm: llmOverride });
     }
   };
 
@@ -356,6 +367,11 @@ export function ProcessingPanel({ session, activeJob }: ProcessingPanelProps) {
                 onChange={handleProfileChoiceChange}
                 ariaLabel="Processing profile"
               />
+            </div>
+
+            {/* Per-job LLM override for the vision critic */}
+            <div>
+              <LlmChoiceSelect value={llm} onChange={setLlm} />
             </div>
 
             {/* Start button */}

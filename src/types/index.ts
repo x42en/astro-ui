@@ -234,6 +234,12 @@ export interface ProcessingProfileConfig {
    *  up server-side, patches auto-approve with a logged warning instead of
    *  stalling the job. */
   adaptive_critic_require_human_approval?: boolean;
+  /** Per-profile LLM override for the vision-critic loop. `default` follows
+   *  the operator-configured active provider; otherwise `ollama` | `vllm` |
+   *  `kilo` | `custom`. */
+  adaptive_llm_provider?: string;
+  /** Model override for the vision-critic loop (`provider/model` id for Kilo). */
+  adaptive_llm_model?: string | null;
 }
 
 export interface ProfileRead {
@@ -445,6 +451,12 @@ export interface AppSettingsRemote {
   inbox_path: string;
   ollama_url: string;
   ollama_model: string;
+  llm_active_provider: string;
+  llm_ollama_url: string;
+  llm_ollama_model: string;
+  llm_vllm_base_url: string;
+  llm_vllm_model: string;
+  llm_kilo_model: string;
   pipeline_max_retries: number;
   session_stability_delay: number;
   updated_at: string;
@@ -452,6 +464,39 @@ export interface AppSettingsRemote {
 }
 
 export type AppSettingsUpdate = Partial<Omit<AppSettingsRemote, 'updated_at' | 'updated_by_user_id'>>;
+
+/** LLM provider key shared by every LLM interaction (critic, chat, …). */
+export type LlmProvider = 'default' | 'ollama' | 'vllm' | 'kilo' | 'custom';
+
+/** Public descriptor for one LLM provider — API keys are never exposed. */
+export interface LlmProfileInfo {
+  provider: string;
+  display_name: string;
+  base_url: string;
+  model: string;
+  has_api_key: boolean;
+  is_active: boolean;
+}
+
+/** LLM provider overview returned by GET /settings/llm. */
+export interface LlmSettings {
+  active_provider: string;
+  profiles: LlmProfileInfo[];
+}
+
+/** One model id advertised by a provider's /models endpoint. */
+export interface LlmModelEntry {
+  id: string;
+  name?: string | null;
+  vision?: boolean | null;
+  free?: boolean | null;
+}
+
+/** Per-session LLM override chosen at launch time. */
+export interface LlmOverride {
+  provider: LlmProvider;
+  model?: string;
+}
 
 // ── Admin: Gallery analytics ─────────────────────────────────────────────────
 

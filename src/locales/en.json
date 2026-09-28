@@ -189,14 +189,14 @@
       "error": "Could not reach the backend"
     },
     "inboxAi": {
-      "title": "Inbox & AI",
-      "description": "Server-side paths and Ollama AI configuration — shared across all instances",
+      "title": "Inbox & AI Providers",
+      "description": "Server-side paths and vision-LLM providers for the adaptive critic — shared across all instances",
       "inboxPath": "Inbox Path",
       "inboxPathHint": "Folder watched by the backend for incoming session frames (matches INBOX_PATH env var)",
       "ollamaUrl": "Ollama URL",
-      "ollamaUrlHint": "Base URL of the Ollama instance used for AI-based gradient removal",
+      "ollamaUrlHint": "Base URL of the local Ollama stack (OpenAI-compatible at <base>/v1) for the vision critic",
       "ollamaModel": "Ollama Model",
-      "ollamaModelHint": "Model name used for inference requests to Ollama"
+      "ollamaModelHint": "Vision-capable model served by Ollama (e.g. qwen3-vl:8b)"
     },
     "processingDefaults": {
       "title": "Processing Defaults",
@@ -216,6 +216,30 @@
       "by": "by",
       "loading": "Loading…",
       "errorLoad": "Could not load operational settings from the backend."
+    },
+    "llm": {
+      "title": "LLM Providers",
+      "description": "Active vision-critic provider and per-provider models. API keys stay in server environment variables and are never shown here.",
+      "activeProvider": "Active provider",
+      "activeProviderHint": "Default provider for every LLM interaction (batch critic, live critic). Overridable per job, session and profile.",
+      "providerOllama": "Ollama — local stack, switchable models",
+      "providerVllm": "vLLM — one model served very fast",
+      "providerKilo": "Kilo — external gateway, many models, offloads GPU",
+      "baseUrl": "Endpoint",
+      "model": "Model",
+      "modelHintOllama": "Vision-capable Ollama model (e.g. qwen3-vl:8b, llava, gemma4)",
+      "modelHintVllm": "Model name served by vLLM (--served-model-name)",
+      "modelHintKilo": "Kilo model id (provider/model). qwen/qwen3.8-27b:free is free and vision-capable.",
+      "noKey": "No API key configured (server env)",
+      "hasKey": "API key configured (server env)",
+      "browseModels": "Browse",
+      "test": "Test",
+      "testOk": "Reachable in {{ms}} ms",
+      "testFailed": "Unreachable",
+      "free": "free",
+      "vision": "vision",
+      "saved": "LLM settings saved",
+      "saveFailed": "Save failed"
     }
   },
   "gallery": {

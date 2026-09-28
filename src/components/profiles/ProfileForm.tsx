@@ -573,6 +573,55 @@ export function ProfileForm({
           </StepSection>
 
           <StepSection
+            title="Vision Critic LLM"
+            description="Pins the adaptive vision-critic loop to one LLM provider. Default follows the operator-configured active provider; override to test a specific stack or model."
+            icon={<Sparkles size={13} />}
+            enabled={c.adaptive_critic_enabled ?? false}
+            onEnabledChange={(v) => update({ adaptive_critic_enabled: v })}
+            defaultOpen={false}
+          >
+            <SelectField
+              label="LLM provider"
+              value={c.adaptive_llm_provider ?? 'default'}
+              options={[
+                { value: 'default', label: 'Global default (active provider)' },
+                { value: 'ollama', label: 'Ollama (local stack)' },
+                { value: 'vllm', label: 'vLLM (fast, one model)' },
+                { value: 'kilo', label: 'Kilo (external gateway)' },
+              ]}
+              onChange={(v) => update({ adaptive_llm_provider: v })}
+            />
+            <div>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                LLM model override (optional)
+              </label>
+              <input
+                type="text"
+                value={c.adaptive_llm_model ?? ''}
+                onChange={(e) => update({ adaptive_llm_model: e.target.value || undefined })}
+                placeholder="provider/model (Kilo) or vision model"
+                className="w-full px-3 py-2 bg-space-elevated border border-space-border rounded text-sm text-text-primary font-mono placeholder:text-text-muted focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 transition-all"
+              />
+            </div>
+            <SelectField
+              label="Max iterations"
+              value={String(c.adaptive_critic_max_iterations ?? 3)}
+              options={[
+                { value: '1', label: '1' },
+                { value: '2', label: '2' },
+                { value: '3', label: '3 (default)' },
+                { value: '5', label: '5' },
+              ]}
+              onChange={(v) => update({ adaptive_critic_max_iterations: Number(v) })}
+            />
+            <ToggleField
+              label="Require human approval"
+              value={c.adaptive_critic_require_human_approval ?? false}
+              onChange={(v) => update({ adaptive_critic_require_human_approval: v })}
+            />
+          </StepSection>
+
+          <StepSection
             title="Retry"
             description="Automatic retry policy for transient failures (network timeouts, GPU contention)."
             icon={<RefreshCw size={13} />}

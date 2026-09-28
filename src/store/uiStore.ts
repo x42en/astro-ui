@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ProfilePreset } from '../types';
+import type { ProfilePreset, LlmOverride } from '../types';
 import type { UploadProgress } from '../lib/upload';
 
 export type ToastVariant = 'success' | 'error' | 'warning' | 'info';
@@ -48,6 +48,9 @@ interface UiStore {
   profileIdsBySession: Record<string, string>;
   setSessionProfileId: (sessionId: string, profileId: string) => void;
 
+  llmBySession: Record<string, LlmOverride>;
+  setSessionLlm: (sessionId: string, llm: LlmOverride) => void;
+
   uploads: Record<string, UploadState>;
   setUpload: (fileId: string, state: UploadState) => void;
   removeUpload: (fileId: string) => void;
@@ -94,6 +97,10 @@ export const useUiStore = create<UiStore>()(
       setSessionProfileId: (sessionId, profileId) =>
         set((s) => ({ profileIdsBySession: { ...s.profileIdsBySession, [sessionId]: profileId } })),
 
+      llmBySession: {},
+      setSessionLlm: (sessionId, llm) =>
+        set((s) => ({ llmBySession: { ...s.llmBySession, [sessionId]: llm } })),
+
       uploads: {},
       setUpload: (fileId, state) =>
         set((s) => ({ uploads: { ...s.uploads, [fileId]: state } })),
@@ -113,6 +120,7 @@ export const useUiStore = create<UiStore>()(
         nightMode: s.nightMode,
         presetsBySession: s.presetsBySession,
         profileIdsBySession: s.profileIdsBySession,
+        llmBySession: s.llmBySession,
       }),
     }
   )
